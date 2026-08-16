@@ -10,6 +10,7 @@ import gameRoutes from "./routes/games.js";
 import teamRoutes from "./routes/teams.js";
 import picksRoutes from "./routes/picks.js";
 import parlayRoutes from "./routes/parlays.js";
+import billingRoutes from "./routes/billing.js";
 
 import {
   notFound,
@@ -109,6 +110,11 @@ app.use(
 app.use(
   "/api/parlays",
   parlayRoutes
+);
+
+app.use(
+  "/api/billing",
+  billingRoutes
 );
 
 app.use(notFound);
