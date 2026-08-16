@@ -69,6 +69,13 @@ export default function Header() {
           >
             Methodology
           </NavLink>
+
+          <NavLink
+            to="/pricing"
+            onClick={() => setOpen(false)}
+          >
+            Pricing
+          </NavLink>
         </nav>
 
         <div className="nav-actions">

@@ -132,3 +132,141 @@
     padding: 20px;
   }
 }
+
+.pricing-page {
+  padding-bottom: 70px;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 22px;
+  margin: 34px 0;
+  align-items: stretch;
+}
+
+.price-card {
+  position: relative;
+  padding: 30px;
+  border-radius: 24px;
+  background:
+    rgba(255,255,255,.035);
+  border:
+    1px solid rgba(255,255,255,.09);
+  display: flex;
+  flex-direction: column;
+}
+
+.price-card.featured {
+  transform: translateY(-8px);
+  border-color:
+    rgba(129,140,248,.45);
+  box-shadow:
+    0 20px 70px
+    rgba(79,70,229,.15);
+}
+
+.popular {
+  position: absolute;
+  top: -13px;
+  right: 20px;
+  padding: 7px 11px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .09em;
+  background: #fff;
+  color: #080b12;
+}
+
+.plan-label {
+  font-size: 12px;
+  letter-spacing: .12em;
+  font-weight: 800;
+  opacity: .7;
+}
+
+.price-card h2 {
+  font-size: 46px;
+  margin: 15px 0 0;
+}
+
+.price-card h2 small {
+  font-size: 15px;
+  opacity: .55;
+}
+
+.price-card > p {
+  color: #aeb8c8;
+}
+
+.price-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 24px 0 30px;
+  display: grid;
+  gap: 13px;
+  flex: 1;
+}
+
+.price-card li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #c4ccda;
+}
+
+.price-card li svg {
+  width: 17px;
+}
+
+.price-button {
+  width: 100%;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.pricing-disclaimer {
+  text-align: center;
+  max-width: 750px;
+  margin: 28px auto;
+  color: #7f8998;
+  font-size: 13px;
+}
+
+.success-page {
+  min-height: 70vh;
+  display: grid;
+  place-items: center;
+}
+
+.success-card {
+  text-align: center;
+  max-width: 600px;
+  padding: 55px;
+  border-radius: 28px;
+  background:
+    rgba(255,255,255,.04);
+  border:
+    1px solid rgba(255,255,255,.1);
+}
+
+.success-card > svg {
+  margin-bottom: 20px;
+}
+
+.success-card p {
+  color: #aeb8c8;
+  margin-bottom: 30px;
+}
+
+@media (max-width: 900px) {
+  .pricing-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .price-card.featured {
+    transform: none;
+  }
+}
