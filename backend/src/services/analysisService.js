@@ -1,179 +1,360 @@
-function clamp(n, min, max) {
-  return Math.max(min, Math.min(max, n));
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
 }
 
-function rating(abbr) {
-  return (
-    78 +
-    [...abbr].reduce(
-      (sum, char) => sum + char.charCodeAt(0),
-      0
-    ) %
-      18
+function americanToProbability(odds) {
+  const n = Number(odds);
+
+  if (!Number.isFinite(n) || n === 0) return null;
+
+  return n > 0
+    ? 100 / (n + 100)
+    : Math.abs(n) / (Math.abs(n) + 100);
+}
+
+function removeVig(homePrice, awayPrice) {
+  const homeRaw = americanToProbability(homePrice);
+  const awayRaw = americanToProbability(awayPrice);
+
+  if (homeRaw == null || awayRaw == null) return null;
+
+  const total = homeRaw + awayRaw;
+  if (!total) return null;
+
+  return {
+    home: homeRaw / total,
+    away: awayRaw / total,
+    vig: total - 1,
+  };
+}
+
+function median(values) {
+  const nums = values
+    .map(Number)
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b);
+
+  if (!nums.length) return null;
+
+  const middle = Math.floor(nums.length / 2);
+
+  return nums.length % 2
+    ? nums[middle]
+    : (nums[middle - 1] + nums[middle]) / 2;
+}
+
+function average(values) {
+  const nums = values.map(Number).filter(Number.isFinite);
+
+  if (!nums.length) return null;
+
+  return nums.reduce((a, b) => a + b, 0) / nums.length;
+}
+
+function standardDeviation(values) {
+  const nums = values.map(Number).filter(Number.isFinite);
+
+  if (nums.length < 2) return 0;
+
+  const avg = average(nums);
+
+  return Math.sqrt(
+    nums.reduce((sum, value) => sum + (value - avg) ** 2, 0) /
+      nums.length
   );
 }
 
+function getBookmakerSnapshots(game) {
+  if (Array.isArray(game.bookmakers) && game.bookmakers.length) {
+    return game.bookmakers;
+  }
+
+  // Backward compatibility with the first provider implementation.
+  if (game.moneyline?.length) {
+    return [
+      {
+        title: game.bookmaker?.title || "Market",
+        moneyline: game.moneyline,
+        spread: game.spread,
+        total: game.total,
+      },
+    ];
+  }
+
+  return [];
+}
+
 export function analyzeGame(game) {
-  const homeRating =
-    rating(game.home.abbr) + 2.5;
+  const books = getBookmakerSnapshots(game);
 
-  const awayRating =
-    rating(game.away.abbr);
+  const homeProbabilities = [];
+  const awayProbabilities = [];
+  const spreadLines = [];
+  const totals = [];
+  const vigLevels = [];
 
-  const diff =
-    homeRating - awayRating;
+  for (const book of books) {
+    const moneyline = book.moneyline || [];
 
-  const homeWin =
-    clamp(50 + diff * 2.25, 20, 80);
-
-  const awayWin =
-    100 - homeWin;
-
-  const confidence =
-    Math.round(
-      clamp(
-        58 + Math.abs(diff) * 3.1,
-        58,
-        91
-      )
+    const home = moneyline.find(
+      (outcome) =>
+        outcome.team === game.home.name ||
+        outcome.abbr === game.home.abbr
     );
 
+    const away = moneyline.find(
+      (outcome) =>
+        outcome.team === game.away.name ||
+        outcome.abbr === game.away.abbr
+    );
+
+    if (home && away) {
+      const fair = removeVig(home.price, away.price);
+
+      if (fair) {
+        homeProbabilities.push(fair.home);
+        awayProbabilities.push(fair.away);
+        vigLevels.push(fair.vig);
+      }
+    }
+
+    const line =
+      book.spread?.line ??
+      book.spread ??
+      null;
+
+    if (Number.isFinite(Number(line))) {
+      spreadLines.push(Number(line));
+    }
+
+    const total =
+      book.total?.line ??
+      book.total ??
+      null;
+
+    if (Number.isFinite(Number(total))) {
+      totals.push(Number(total));
+    }
+  }
+
+  let homeProbability = average(homeProbabilities);
+  let awayProbability = average(awayProbabilities);
+
+  // If only the normalized top-level market exists.
+  if (homeProbability == null && game.moneyline?.length) {
+    const home = game.moneyline.find(
+      (x) => x.team === game.home.name
+    );
+
+    const away = game.moneyline.find(
+      (x) => x.team === game.away.name
+    );
+
+    if (home && away) {
+      const fair = removeVig(home.price, away.price);
+
+      if (fair) {
+        homeProbability = fair.home;
+        awayProbability = fair.away;
+      }
+    }
+  }
+
+  const marketAvailable =
+    homeProbability != null &&
+    awayProbability != null;
+
+  // Never fabricate a high-confidence prediction when market data is absent.
+  if (!marketAvailable) {
+    return {
+      gameId: game.id,
+      pick: null,
+      confidence: 0,
+      grade: "NO PICK",
+      edge: 0,
+      homeWinProbability: null,
+      awayWinProbability: null,
+      consensusBooks: books.length,
+      marketAgreement: null,
+      spreadConsensus: median(spreadLines),
+      totalConsensus: median(totals) ?? game.total ?? null,
+      summary:
+        "Insufficient market data for a reliable Jedi prediction.",
+      factors: [
+        {
+          label: "Market data",
+          impact: "Insufficient",
+        },
+      ],
+    };
+  }
+
   const pick =
-    homeWin >= 50
+    homeProbability >= awayProbability
       ? game.home.abbr
       : game.away.abbr;
 
-  const total =
-    game.total || 44;
+  const selectedProbability =
+    Math.max(homeProbability, awayProbability);
+
+  /*
+   * Edge here means distance from a 50/50 matchup.
+   * It is NOT yet a claim of sportsbook expected value.
+   */
+  const marketEdge =
+    Math.abs(selectedProbability - 0.5) * 100;
+
+  const disagreement =
+    standardDeviation(homeProbabilities) * 100;
+
+  const agreementScore =
+    clamp(100 - disagreement * 5, 0, 100);
+
+  const bookDepth =
+    clamp(books.length / 8, 0, 1);
+
+  /*
+   * Confidence intentionally stays conservative.
+   * Strong favorite probability raises it.
+   * Bookmaker agreement and market depth reinforce it.
+   */
+  const confidence = Math.round(
+    clamp(
+      45 +
+        marketEdge * 0.65 +
+        agreementScore * 0.12 +
+        bookDepth * 8,
+      45,
+      92
+    )
+  );
+
+  let grade = "LEAN";
+
+  if (confidence >= 82) grade = "STRONG";
+  else if (confidence >= 72) grade = "PLAY";
+  else if (confidence < 60) grade = "PASS";
+
+  const totalConsensus =
+    median(totals) ??
+    game.total ??
+    null;
+
+  const spreadConsensus =
+    median(spreadLines) ??
+    game.spread?.line ??
+    null;
 
   return {
     gameId: game.id,
-
     pick,
-
     confidence,
+    grade,
 
     homeWinProbability:
-      +homeWin.toFixed(1),
+      +(homeProbability * 100).toFixed(1),
 
     awayWinProbability:
-      +awayWin.toFixed(1),
+      +(awayProbability * 100).toFixed(1),
 
     edge:
-      +Math.abs(
-        homeWin - 50
-      ).toFixed(1),
+      +marketEdge.toFixed(1),
 
-    projectedScore: {
-      away: Math.max(
-        1,
-        Math.round(
-          total / 2 - diff / 3
-        )
-      ),
+    consensusBooks: books.length,
 
-      home: Math.max(
-        1,
-        Math.round(
-          total / 2 + diff / 3
-        )
-      ),
-    },
+    marketAgreement:
+      +agreementScore.toFixed(1),
+
+    averageVig:
+      vigLevels.length
+        ? +(average(vigLevels) * 100).toFixed(2)
+        : null,
+
+    spreadConsensus,
+
+    totalConsensus,
 
     summary:
-      `${pick} has the stronger model profile after weighting team strength, venue adjustment, market context and matchup balance.`,
+      `${pick} is the market-consensus side with ` +
+      `${(selectedProbability * 100).toFixed(1)}% no-vig implied probability ` +
+      `across ${books.length || 1} available sportsbook source(s).`,
 
     factors: [
       {
-        label: "Power rating",
+        label: "No-vig win probability",
+        impact: `${(selectedProbability * 100).toFixed(1)}%`,
+      },
+      {
+        label: "Sportsbook agreement",
+        impact: `${agreementScore.toFixed(1)}%`,
+      },
+      {
+        label: "Consensus spread",
         impact:
-          diff >= 0
-            ? game.home.abbr
-            : game.away.abbr,
+          spreadConsensus == null
+            ? "N/A"
+            : String(spreadConsensus),
       },
       {
-        label: "Venue adjustment",
-        impact: game.home.abbr,
+        label: "Consensus total",
+        impact:
+          totalConsensus == null
+            ? "N/A"
+            : String(totalConsensus),
       },
       {
-        label: "Market spread",
-        impact: game.spread
-          ? `${game.spread.favorite} ${game.spread.line}`
-          : "N/A",
-      },
-      {
-        label: "Projected total",
-        impact: String(
-          game.total ?? "N/A"
-        ),
+        label: "Books analyzed",
+        impact: String(books.length || 1),
       },
     ],
   };
 }
 
-export function analyzeParlay(
-  legs = []
-) {
-  const valid =
-    legs.filter(
-      (leg) =>
-        leg &&
-        Number(leg.confidence)
-    );
+export function analyzeParlay(legs = []) {
+  const valid = legs.filter(
+    (leg) =>
+      leg &&
+      Number.isFinite(Number(leg.confidence)) &&
+      Number(leg.confidence) > 0
+  );
 
   if (!valid.length) {
     return {
       legs: 0,
       combinedConfidence: 0,
       risk: "N/A",
-      message:
-        "Add at least one leg.",
+      message: "Add at least one qualified Jedi pick.",
     };
   }
 
-  const average =
-    valid.reduce(
-      (sum, leg) =>
-        sum +
-        Number(
-          leg.confidence
-        ),
-      0
-    ) /
-    valid.length;
-
-  const penalty =
-    Math.max(
-      0,
-      (valid.length - 1) *
-        5.5
-    );
+  /*
+   * Convert individual confidence estimates into a rough
+   * joint probability rather than averaging the legs.
+   */
+  const jointProbability = valid.reduce(
+    (probability, leg) =>
+      probability * (Number(leg.confidence) / 100),
+    1
+  );
 
   const combined =
-    clamp(
-      average - penalty,
-      15,
-      95
-    );
+    clamp(jointProbability * 100, 1, 99);
 
-  const risk =
-    valid.length >= 5 ||
-    combined < 50
-      ? "High"
-      : valid.length >= 3 ||
-          combined < 65
-        ? "Medium"
-        : "Lower";
+  let risk = "Lower";
+
+  if (valid.length >= 5 || combined < 25) {
+    risk = "High";
+  } else if (valid.length >= 3 || combined < 45) {
+    risk = "Medium";
+  }
 
   return {
     legs: valid.length,
-
-    combinedConfidence:
-      +combined.toFixed(1),
-
+    combinedConfidence: +combined.toFixed(1),
     risk,
-
     message:
-      `${valid.length}-leg card with ${risk.toLowerCase()} model confidence. More legs increase uncertainty.`,
+      `${valid.length}-leg card has approximately ` +
+      `${combined.toFixed(1)}% combined model probability before ` +
+      `correlation and price adjustments.`,
   };
 }

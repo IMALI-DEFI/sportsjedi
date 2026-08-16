@@ -176,48 +176,10 @@ function normalizeGame(event) {
       ? {
           key: bookmaker.key,
           title: bookmaker.title,
-          lastUpdate: bookmaker.last_update,
+          lastUpdate:
+            bookmaker.last_update,
         }
       : null,
-
-    bookmakers: (event.bookmakers || []).map((book) => {
-      const h2h = findMarket(book, "h2h");
-      const spreads = findMarket(book, "spreads");
-      const totals = findMarket(book, "totals");
-
-      const favorite =
-        spreads?.outcomes?.find(
-          (outcome) =>
-            typeof outcome.point === "number" &&
-            outcome.point < 0
-        ) || spreads?.outcomes?.[0];
-
-      const total =
-        totals?.outcomes?.find(
-          (outcome) => outcome.name === "Over"
-        ) || totals?.outcomes?.[0];
-
-      return {
-        key: book.key,
-        title: book.title,
-        lastUpdate: book.last_update,
-
-        moneyline: (h2h?.outcomes || []).map((outcome) => ({
-          team: outcome.name,
-          abbr: abbreviation(outcome.name),
-          price: outcome.price,
-        })),
-
-        spread: favorite
-          ? {
-              favorite: abbreviation(favorite.name),
-              line: favorite.point ?? null,
-            }
-          : null,
-
-        total: total?.point ?? null,
-      };
-    }),
   };
 }
 

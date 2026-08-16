@@ -1,0 +1,901 @@
+
+==================== frontend/src/App.jsx ====================
+import {BrowserRouter,Route,Routes} from "react-router-dom";import Header from "./components/Header";import Dashboard from "./pages/Dashboard";import GameDetail from "./pages/GameDetail";import Picks from "./pages/Picks";import Parlay from "./pages/Parlay";
+export default function App(){return <BrowserRouter><Header/><Routes><Route path="/" element={<Dashboard/>}/><Route path="/picks" element={<Picks/>}/><Route path="/parlay" element={<Parlay/>}/><Route path="/game/:id" element={<GameDetail/>}/></Routes><footer><img src="/sports-jedi-logo.webp"/><div><b>SPORTS JEDI</b><span>AI Sports Intelligence · Informational analytics only.</span></div></footer></BrowserRouter>}
+
+==================== frontend/src/pages/Dashboard.jsx ====================
+import {useEffect,useMemo,useState} from "react";import {BarChart3,BrainCircuit,Radio,ShieldCheck,Sparkles,Trophy,Zap} from "lucide-react";import GameCard from "../components/GameCard";import {api} from "../lib/api";import {Link} from "react-router-dom";
+const leagues=["ALL","NFL","NBA","MLB"];
+export default function Dashboard(){const[games,setGames]=useState([]),[league,setLeague]=useState("ALL"),[loading,setLoading]=useState(true),[error,setError]=useState("");useEffect(()=>{setLoading(true);setError("");api.games(league==="ALL"?"":league).then(setGames).catch(e=>setError(e.message)).finally(()=>setLoading(false))},[league]);const live=useMemo(()=>games.filter(g=>g.status==="live").length,[games]);return <main className="shell"><section className="hero"><div className="hero-copy"><span className="eyebrow"><Sparkles size={14}/> Sports intelligence, simplified</span><h1>Your edge.<br/><em>Powered by the Jedi.</em></h1><p>One visual command center for scores, model picks, matchup probabilities and player props across NFL, NBA and MLB.</p><div className="hero-actions"><Link className="primary-btn" to="/picks"><Zap size={18}/> View Jedi Picks</Link><Link className="secondary-btn" to="/parlay">Open Parlay Lab</Link></div><div className="trust-row"><span><ShieldCheck/> Data-driven</span><span><BrainCircuit/> Model-ranked</span><span><BarChart3/> Built for clarity</span></div></div><div className="hero-visual"><div className="logo-glow"></div><img src="/sports-jedi-logo.webp" alt="Sports Jedi"/><div className="floating-chip chip-one"><Radio size={14}/> LIVE BOARD</div><div className="floating-chip chip-two"><BrainCircuit size={14}/> AI EDGE</div></div></section><section className="stats-grid"><div className="stat"><Trophy/><span><b>{games.length}</b> Games loaded</span></div><div className="stat"><Radio/><span><b>{live}</b> Live now</span></div><div className="stat"><BrainCircuit/><span><b>91%</b> Max confidence</span></div><div className="stat"><BarChart3/><span><b>3</b> Leagues enabled</span></div></section><section className="games-section"><div className="section-head"><div><span className="eyebrow">Game Center</span><h2>Today’s board</h2><p>Tap any matchup for the full Jedi breakdown.</p></div><div className="league-tabs">{leagues.map(l=><button key={l} className={league===l?"active":""} onClick={()=>setLeague(l)}>{l}</button>)}</div></div>{error&&<div className="error">{error}</div>}{loading?<div className="loading">Scanning today’s board…</div>:<div className="game-grid">{games.map(g=><GameCard key={g.id} game={g}/>)}</div>}</section></main>}
+
+==================== frontend/src/pages/Picks.jsx ====================
+import {useEffect,useState} from "react";import {BrainCircuit,ChevronRight,Flame,Target,UserRound} from "lucide-react";import {Link} from "react-router-dom";import {api} from "../lib/api";
+const leagues=["ALL","NFL","NBA","MLB"];
+export default function Picks(){const[league,setLeague]=useState("ALL"),[picks,setPicks]=useState([]),[props,setProps]=useState([]),[loading,setLoading]=useState(true);useEffect(()=>{setLoading(true);Promise.all([api.picks(league==="ALL"?"":league),api.props(league==="ALL"?"":league)]).then(([a,b])=>{setPicks(a);setProps(b)}).finally(()=>setLoading(false))},[league]);return <main className="shell"><section className="page-banner"><div><span className="eyebrow"><BrainCircuit size={14}/> Jedi Picks</span><h1>Model-ranked opportunities</h1><p>Game picks and player props ordered by model confidence. Use the breakdown, not just the headline.</p></div><Target size={64}/></section><div className="league-tabs standalone">{leagues.map(l=><button key={l} className={league===l?"active":""} onClick={()=>setLeague(l)}>{l}</button>)}</div>{loading?<div className="loading">Ranking picks…</div>:<><section><div className="section-head"><div><span className="eyebrow">Game Picks</span><h2>Top model edges</h2></div></div><div className="pick-grid">{picks.map(({game,analysis},i)=><Link to={`/game/${game.id}`} className="pick-card" key={game.id}><div className="rank">#{i+1}</div><div className="pick-main"><span>{game.league} · {game.away.abbr} @ {game.home.abbr}</span><h3>{analysis.pick}</h3><p>{analysis.summary}</p></div><div className="confidence-ring"><strong>{analysis.confidence}%</strong><span>confidence</span></div><ChevronRight/></Link>)}</div></section><section className="props-section"><div className="section-head"><div><span className="eyebrow">Player Props</span><h2>Prop radar</h2></div></div><div className="props-grid">{props.map(p=><article className="prop-card" key={p.id}><div className="prop-icon"><UserRound/></div><span>{p.league} · {p.team}</span><h3>{p.player}</h3><p>{p.market}</p><div className="prop-line"><b>{p.pick} {p.line}</b><span><Flame size={14}/>{p.confidence}%</span></div></article>)}</div></section></>}</main>}
+
+==================== frontend/src/pages/Parlay.jsx ====================
+import {useEffect,useMemo,useState} from "react";import {Plus,Trash2,WandSparkles,TriangleAlert} from "lucide-react";import {api} from "../lib/api";
+export default function Parlay(){const[picks,setPicks]=useState([]),[props,setProps]=useState([]),[legs,setLegs]=useState([]),[result,setResult]=useState(null);useEffect(()=>{Promise.all([api.picks(),api.props()]).then(([a,b])=>{setPicks(a);setProps(b)})},[]);const choices=useMemo(()=>[...picks.map(({game,analysis})=>({id:`game-${game.id}`,label:`${analysis.pick} vs ${analysis.pick===game.home.abbr?game.away.abbr:game.home.abbr}`,detail:`${game.league} game pick`,confidence:analysis.confidence})),...props.map(p=>({id:p.id,label:`${p.player} — ${p.pick} ${p.line}`,detail:p.market,confidence:p.confidence}))],[picks,props]);const add=c=>setLegs(x=>x.some(l=>l.id===c.id)?x:[...x,c]);const analyze=async()=>setResult(await api.analyzeParlay(legs));return <main className="shell"><section className="page-banner"><div><span className="eyebrow"><WandSparkles size={14}/> Parlay Lab</span><h1>Build a smarter card</h1><p>Combine model-ranked legs and see how added complexity changes the confidence profile.</p></div><WandSparkles size={64}/></section><div className="parlay-layout"><section className="builder-panel"><div className="section-head"><div><span className="eyebrow">Available Legs</span><h2>Choose your plays</h2></div></div><div className="choice-list">{choices.map(c=><button key={c.id} className="choice" onClick={()=>add(c)}><div><b>{c.label}</b><span>{c.detail}</span></div><div className="choice-score">{c.confidence}%</div><Plus/></button>)}</div></section><aside className="slip"><div className="slip-head"><span>JEDI SLIP</span><b>{legs.length} legs</b></div>{legs.length===0?<div className="empty-slip">Add picks from the left to build your card.</div>:legs.map(l=><div className="slip-leg" key={l.id}><div><b>{l.label}</b><span>{l.detail} · {l.confidence}%</span></div><button onClick={()=>setLegs(x=>x.filter(v=>v.id!==l.id))}><Trash2/></button></div>)}<button className="primary-btn wide" disabled={!legs.length} onClick={analyze}><WandSparkles/> Analyze Card</button>{result&&<div className={`parlay-result ${result.risk?.toLowerCase()}`}><span>Combined model confidence</span><strong>{result.combinedConfidence}%</strong><div><b>Risk: {result.risk}</b><p>{result.message}</p></div></div>}<div className="responsible-note"><TriangleAlert/><span>Model estimates are informational and not a guarantee of outcomes.</span></div></aside></div></main>}
+
+==================== frontend/src/pages/GameDetail.jsx ====================
+import {useEffect,useState} from "react";import {Link,useParams} from "react-router-dom";import {ArrowLeft,BrainCircuit,Clock,Gauge,MapPin,Target,TrendingUp} from "lucide-react";import {api} from "../lib/api";
+export default function GameDetail(){const{id}=useParams();const[game,setGame]=useState(null),[analysis,setAnalysis]=useState(null),[error,setError]=useState("");useEffect(()=>{Promise.all([api.game(id),api.analysis(id)]).then(([g,a])=>{setGame(g);setAnalysis(a)}).catch(e=>setError(e.message))},[id]);if(error)return <main className="shell"><div className="error">{error}</div></main>;if(!game||!analysis)return <main className="shell"><div className="loading">Jedi Engine is analyzing the matchup…</div></main>;return <main className="shell detail-page"><Link to="/" className="back"><ArrowLeft/> Back to board</Link><section className="matchup-hero"><div className="matchup-top"><span className={`league-pill ${game.league.toLowerCase()}`}>{game.league}</span><span className={`status ${game.status}`}>{game.status}</span></div><div className="matchup-teams"><div><small>AWAY</small><strong>{game.away.abbr}</strong><span>{game.away.name}</span><em>{game.away.record}</em></div><div className="versus">VS</div><div><small>HOME</small><strong>{game.home.abbr}</strong><span>{game.home.name}</span><em>{game.home.record}</em></div></div><div className="matchup-meta"><span><Clock/> {new Date(game.startTime).toLocaleString()}</span><span><MapPin/> {game.venue}</span><span><TrendingUp/> {game.spread.favorite} {game.spread.line} · O/U {game.total}</span></div></section><section className="analysis-grid"><div className="analysis-main"><div className="analysis-title"><BrainCircuit/><div><span className="eyebrow">Jedi Prediction</span><h2>{analysis.pick} is the model pick</h2></div></div><p>{analysis.summary}</p><div className="probability"><div><span>{game.away.abbr}</span><b>{analysis.awayWinProbability}%</b></div><div className="bar"><i style={{width:`${analysis.awayWinProbability}%`}}></i></div><div><span>{game.home.abbr}</span><b>{analysis.homeWinProbability}%</b></div></div></div><div className="metric-card"><Gauge/><span>Confidence</span><strong>{analysis.confidence}%</strong></div><div className="metric-card"><Target/><span>Model Edge</span><strong>{analysis.edge}%</strong></div><div className="metric-card"><span>Projected Score</span><strong>{game.away.abbr} {analysis.projectedScore.away}</strong><strong>{game.home.abbr} {analysis.projectedScore.home}</strong></div></section><section className="factor-card"><h3>Why the model leans {analysis.pick}</h3>{analysis.factors.map(f=><div className="factor" key={f.label}><span>{f.label}</span><b>{f.impact}</b></div>)}</section></main>}
+
+==================== frontend/src/components/GameCard.jsx ====================
+import {Link} from "react-router-dom";import {ChevronRight,Clock,MapPin} from "lucide-react";
+const when=s=>new Date(s).toLocaleString([], {month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
+export default function GameCard({game}){return <Link className="game-card" to={`/game/${game.id}`}><div className="game-top"><span className={`league-pill ${game.league.toLowerCase()}`}>{game.league}</span><span className={`status ${game.status}`}>{game.status}{game.inning?` · ${game.inning}`:""}</span></div><div className="team-row"><div><b>{game.away.abbr}</b><span>{game.away.name}</span><small>{game.away.record}</small></div><strong>{game.status==="upcoming"?"—":game.away.score}</strong></div><div className="team-row"><div><b>{game.home.abbr}</b><span>{game.home.name}</span><small>{game.home.record}</small></div><strong>{game.status==="upcoming"?"—":game.home.score}</strong></div><div className="market-strip"><span>{game.spread?`${game.spread.favorite} ${game.spread.line}`:"Spread —"}</span><span>O/U {game.total??"—"}</span></div><div className="game-meta"><span><Clock size={14}/>{when(game.startTime)}</span><span><MapPin size={14}/>{game.venue}</span><ChevronRight size={18}/></div></Link>}
+
+==================== frontend/src/components/Header.jsx ====================
+import { NavLink,Link } from "react-router-dom";import { Menu,Sparkles,X } from "lucide-react";import {useState} from "react";
+export default function Header(){const[open,setOpen]=useState(false);return <header className="topbar"><div className="nav-wrap"><Link to="/" className="brand" onClick={()=>setOpen(false)}><img src="/sports-jedi-logo.webp" alt="Sports Jedi" className="brand-logo"/><div className="brand-copy"><strong>SPORTS JEDI</strong><span>AI SPORTS INTELLIGENCE</span></div></Link><nav className={open?"nav-links open":"nav-links"}><NavLink to="/" end onClick={()=>setOpen(false)}>Dashboard</NavLink><NavLink to="/picks" onClick={()=>setOpen(false)}>Jedi Picks</NavLink><NavLink to="/parlay" onClick={()=>setOpen(false)}>Parlay Lab</NavLink></nav><div className="nav-actions"><span className="engine-pill"><Sparkles size={14}/> Engine Online</span><button className="menu-btn" onClick={()=>setOpen(v=>!v)} aria-label="Menu">{open?<X/>:<Menu/>}</button></div></div></header>}
+
+==================== frontend/src/lib/api.js ====================
+const BASE=import.meta.env.VITE_API_BASE_URL||"http://localhost:4100";
+async function request(path,opts={}){const res=await fetch(`${BASE}${path}`,{headers:{"Content-Type":"application/json",...(opts.headers||{})},...opts});const body=await res.json().catch(()=>({}));if(!res.ok||body.success===false)throw new Error(body.error||`Request failed (${res.status})`);return body.data??body;}
+export const api={games:(league="")=>request(`/api/games${league?`?league=${encodeURIComponent(league)}`:""}`),game:id=>request(`/api/games/${id}`),analysis:id=>request(`/api/games/${id}/analysis`),teams:(league="")=>request(`/api/teams${league?`?league=${encodeURIComponent(league)}`:""}`),picks:(league="")=>request(`/api/picks${league?`?league=${encodeURIComponent(league)}`:""}`),props:(league="")=>request(`/api/picks/props${league?`?league=${encodeURIComponent(league)}`:""}`),analyzeParlay:legs=>request(`/api/parlays/analyze`,{method:"POST",body:JSON.stringify({legs})})};
+
+==================== frontend/src/styles.css ====================
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f3f7ff;background:#05070d;font-synthesis:none;--cyan:#65e7ff;--blue:#249cff;--ink:#05070d;--panel:#0d131f;--muted:#8d9ab0;--line:rgba(255,255,255,.09)}*{box-sizing:border-box}body{margin:0;min-width:320px;min-height:100vh;background:radial-gradient(circle at 20% -10%,rgba(27,117,188,.22),transparent 32%),radial-gradient(circle at 85% 10%,rgba(101,231,255,.1),transparent 26%),linear-gradient(180deg,#070b12,#04060a 55%,#070a10)}a{color:inherit;text-decoration:none}button{font:inherit}.topbar{position:sticky;top:0;z-index:50;background:rgba(4,7,12,.84);border-bottom:1px solid var(--line);backdrop-filter:blur(20px)}.nav-wrap{max-width:1240px;margin:auto;padding:12px 22px;display:flex;align-items:center;gap:28px}.brand{display:flex;gap:11px;align-items:center;min-width:max-content}.brand-logo{width:58px;height:58px;border-radius:15px;object-fit:cover;box-shadow:0 0 30px rgba(101,231,255,.13)}.brand-copy{display:flex;flex-direction:column}.brand strong{font-size:16px;letter-spacing:.08em}.brand span{font-size:9px;letter-spacing:.18em;color:#8c9cb2;margin-top:3px}.nav-links{display:flex;align-items:center;gap:5px;margin-left:auto}.nav-links a{padding:9px 13px;border-radius:10px;color:#96a4b9;font-size:13px;font-weight:700}.nav-links a.active,.nav-links a:hover{background:rgba(101,231,255,.08);color:#fff}.nav-actions{display:flex;align-items:center;gap:10px}.engine-pill{display:flex;align-items:center;gap:6px;color:#8ef4c1;border:1px solid rgba(71,223,150,.2);background:rgba(71,223,150,.07);border-radius:999px;padding:8px 10px;font-size:11px;font-weight:800}.menu-btn{display:none;background:none;border:0;color:white}.shell{max-width:1240px;margin:0 auto;padding:36px 22px 70px}.hero{min-height:470px;border:1px solid var(--line);border-radius:32px;overflow:hidden;display:grid;grid-template-columns:1.18fr .82fr;background:linear-gradient(135deg,rgba(15,25,40,.94),rgba(5,9,15,.9));position:relative;box-shadow:0 30px 80px rgba(0,0,0,.28)}.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(100deg,rgba(36,156,255,.07),transparent 48%);pointer-events:none}.hero-copy{padding:52px;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:2}.eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:11px;letter-spacing:.17em;text-transform:uppercase;color:var(--cyan);font-weight:900}.hero h1,.page-banner h1{font-size:clamp(48px,6vw,76px);line-height:.95;margin:16px 0 20px;letter-spacing:-.055em}.hero h1 em{font-style:normal;background:linear-gradient(90deg,#fff,var(--cyan));-webkit-background-clip:text;color:transparent}.hero p,.page-banner p{color:#9ca9bb;font-size:17px;line-height:1.65;max-width:650px}.hero-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}.primary-btn,.secondary-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 17px;border-radius:12px;font-weight:900;border:1px solid transparent;cursor:pointer}.primary-btn{background:linear-gradient(135deg,var(--blue),var(--cyan));color:#03121c;box-shadow:0 10px 30px rgba(36,156,255,.22)}.primary-btn:disabled{opacity:.45;cursor:not-allowed}.secondary-btn{background:rgba(255,255,255,.04);border-color:var(--line);color:#dce7f7}.trust-row{display:flex;gap:18px;margin-top:26px;color:#8190a4;font-size:11px;font-weight:700;flex-wrap:wrap}.trust-row span{display:flex;align-items:center;gap:6px}.trust-row svg{width:15px}.hero-visual{position:relative;display:grid;place-items:center;min-height:400px;overflow:hidden}.hero-visual img{width:min(92%,430px);border-radius:28px;position:relative;z-index:2;filter:drop-shadow(0 35px 50px rgba(0,0,0,.45))}.logo-glow{position:absolute;width:360px;height:360px;border-radius:50%;background:rgba(36,156,255,.2);filter:blur(80px)}.floating-chip{position:absolute;z-index:3;display:flex;align-items:center;gap:6px;padding:9px 12px;border:1px solid var(--line);background:rgba(5,10,18,.85);backdrop-filter:blur(12px);border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.1em}.chip-one{left:8%;top:22%;color:#87f7c0}.chip-two{right:8%;bottom:20%;color:var(--cyan)}.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin:18px 0 48px}.stat{border:1px solid var(--line);background:rgba(255,255,255,.028);border-radius:18px;padding:17px;display:flex;align-items:center;gap:13px}.stat>svg{width:22px;color:var(--cyan)}.stat span{font-size:12px;color:#8492a7}.stat b{display:block;color:#fff;font-size:20px}.section-head{display:flex;justify-content:space-between;gap:20px;align-items:end;margin:0 0 18px}.section-head h2{margin:5px 0 3px;font-size:29px;letter-spacing:-.025em}.section-head p{margin:0;color:#8190a4;font-size:13px}.league-tabs{display:flex;gap:7px;flex-wrap:wrap}.league-tabs.standalone{margin:22px 0 34px}.league-tabs button{border:1px solid var(--line);background:rgba(255,255,255,.03);color:#8d9bb0;padding:9px 13px;border-radius:10px;cursor:pointer;font-weight:800;font-size:12px}.league-tabs button.active{background:linear-gradient(135deg,#1478ca,#3ddcf6);color:#04111a;border-color:transparent}.game-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.game-card{border:1px solid var(--line);background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.018));border-radius:20px;padding:18px;transition:.2s ease;box-shadow:0 12px 30px rgba(0,0,0,.14)}.game-card:hover{transform:translateY(-4px);border-color:rgba(101,231,255,.28);box-shadow:0 18px 40px rgba(0,0,0,.25)}.game-top,.team-row,.game-meta,.market-strip{display:flex;align-items:center;justify-content:space-between;gap:10px}.league-pill{font-size:10px;font-weight:900;letter-spacing:.13em;padding:6px 8px;border-radius:8px;color:#a9e9ff;background:rgba(36,156,255,.12)}.league-pill.nba{color:#ffd293;background:rgba(255,168,64,.1)}.league-pill.mlb{color:#a9ffc7;background:rgba(66,200,120,.1)}.status{font-size:10px;text-transform:uppercase;font-weight:900;color:#8e9aad}.status.live{color:#67f0af}.team-row{margin-top:17px}.team-row>div{display:flex;flex-direction:column;min-width:0}.team-row b{font-size:22px}.team-row span{color:#a0acbd;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}.team-row small{color:#66748a;margin-top:2px}.team-row strong{font-size:25px}.market-strip{background:rgba(0,0,0,.18);border-radius:9px;padding:9px 10px;margin-top:15px;color:#a8b5c6;font-size:11px}.game-meta{border-top:1px solid var(--line);margin-top:14px;padding-top:13px;color:#718096;font-size:10px}.game-meta span{display:flex;align-items:center;gap:4px;max-width:43%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.loading,.error{padding:26px;border:1px solid var(--line);border-radius:16px;color:#98a5b8;background:rgba(255,255,255,.025)}.error{color:#ff9bac}.page-banner{border:1px solid var(--line);border-radius:28px;padding:34px 40px;background:linear-gradient(135deg,rgba(36,156,255,.11),rgba(255,255,255,.025));display:flex;justify-content:space-between;align-items:center}.page-banner h1{font-size:clamp(38px,5vw,62px);margin:12px 0 14px}.page-banner>svg{color:var(--cyan);opacity:.65}.pick-grid{display:grid;gap:11px}.pick-card{display:grid;grid-template-columns:52px 1fr auto 26px;gap:16px;align-items:center;border:1px solid var(--line);background:rgba(255,255,255,.027);border-radius:17px;padding:16px 18px;transition:.2s}.pick-card:hover{border-color:rgba(101,231,255,.28);transform:translateX(3px)}.rank{width:42px;height:42px;border-radius:12px;background:rgba(36,156,255,.1);display:grid;place-items:center;color:var(--cyan);font-weight:900}.pick-main>span{color:#77869a;font-size:10px;text-transform:uppercase;font-weight:800}.pick-main h3{font-size:23px;margin:3px 0}.pick-main p{margin:0;color:#8997aa;font-size:12px}.confidence-ring{width:86px;height:86px;border-radius:50%;border:5px solid rgba(101,231,255,.22);display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(36,156,255,.04)}.confidence-ring strong{font-size:20px}.confidence-ring span{font-size:8px;color:#78869b;text-transform:uppercase}.props-section{margin-top:48px}.props-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.prop-card{border:1px solid var(--line);background:rgba(255,255,255,.027);border-radius:18px;padding:18px}.prop-icon{width:38px;height:38px;border-radius:11px;background:rgba(101,231,255,.08);display:grid;place-items:center;color:var(--cyan);margin-bottom:15px}.prop-card>span{font-size:10px;color:#78869a}.prop-card h3{margin:4px 0;font-size:20px}.prop-card p{color:#8d9bad;margin:0 0 15px;font-size:12px}.prop-line{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:13px}.prop-line span{display:flex;gap:4px;align-items:center;color:#86efb7;font-size:11px}.parlay-layout{display:grid;grid-template-columns:1.35fr .65fr;gap:18px;margin-top:24px}.builder-panel,.slip{border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.025);padding:20px}.choice-list{display:grid;gap:8px}.choice{width:100%;display:grid;grid-template-columns:1fr auto 20px;align-items:center;gap:12px;text-align:left;background:rgba(255,255,255,.025);color:white;border:1px solid var(--line);border-radius:13px;padding:13px;cursor:pointer}.choice:hover{border-color:rgba(101,231,255,.3)}.choice div:first-child{display:flex;flex-direction:column}.choice span{color:#7f8da1;font-size:10px;margin-top:3px}.choice-score{color:#88efb6;font-weight:900}.slip{height:max-content;position:sticky;top:100px}.slip-head{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:14px;font-size:12px;letter-spacing:.12em}.empty-slip{padding:28px 8px;color:#748196;text-align:center;font-size:12px}.slip-leg{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}.slip-leg>div{display:flex;flex-direction:column}.slip-leg b{font-size:12px}.slip-leg span{font-size:10px;color:#7b899e;margin-top:4px}.slip-leg button{background:none;border:0;color:#78869b;cursor:pointer}.slip-leg svg{width:17px}.wide{width:100%;margin-top:16px}.parlay-result{margin-top:13px;padding:15px;border-radius:14px;background:rgba(36,156,255,.07);border:1px solid rgba(36,156,255,.18)}.parlay-result>span{font-size:10px;text-transform:uppercase;color:#8290a5}.parlay-result>strong{display:block;font-size:38px;margin:3px 0 8px}.parlay-result p{color:#8390a2;font-size:11px;line-height:1.45}.responsible-note{display:flex;gap:8px;align-items:flex-start;color:#68768a;font-size:9px;margin-top:13px}.responsible-note svg{width:15px}.back{display:inline-flex;align-items:center;gap:7px;color:#8391a4;margin-bottom:18px;font-size:12px}.back svg{width:17px}.matchup-hero{border:1px solid var(--line);border-radius:26px;background:linear-gradient(145deg,rgba(36,156,255,.07),rgba(255,255,255,.02));padding:26px}.matchup-top{display:flex;justify-content:space-between}.matchup-teams{display:grid;grid-template-columns:1fr 90px 1fr;align-items:center;text-align:center;margin:30px 0}.matchup-teams>div:not(.versus){display:flex;flex-direction:column}.matchup-teams small{color:#637288;font-weight:800;font-size:9px;letter-spacing:.14em}.matchup-teams strong{font-size:clamp(52px,8vw,84px);letter-spacing:-.055em}.matchup-teams span{color:#a8b4c4}.matchup-teams em{font-style:normal;color:#66758a;font-size:11px;margin-top:5px}.versus{color:#58667c;font-weight:900}.matchup-meta{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px;color:#78879a;font-size:10px}.matchup-meta span{display:flex;align-items:center;gap:5px}.matchup-meta svg{width:14px}.analysis-grid{display:grid;grid-template-columns:2fr repeat(3,1fr);gap:13px;margin-top:14px}.analysis-main,.metric-card,.factor-card{border:1px solid var(--line);background:rgba(255,255,255,.027);border-radius:18px;padding:19px}.analysis-title{display:flex;gap:12px;align-items:center}.analysis-title>svg,.metric-card>svg{color:var(--cyan)}.analysis-title h2{margin:3px 0}.analysis-main p{color:#8997aa;line-height:1.6;font-size:12px}.probability{margin-top:18px}.probability>div:first-child,.probability>div:last-child{display:flex;justify-content:space-between;font-size:11px}.bar{height:8px;background:#18202c;border-radius:999px;overflow:hidden;margin:7px 0 10px}.bar i{display:block;height:100%;background:linear-gradient(90deg,#2099ff,#73efff)}.metric-card{display:flex;flex-direction:column;justify-content:center;gap:8px}.metric-card span{color:#7e8da2;font-size:10px}.metric-card strong{font-size:24px}.factor-card{margin-top:13px}.factor-card h3{margin-top:0}.factor{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding:12px 0;font-size:12px}.factor span{color:#8795a8}footer{max-width:1240px;margin:0 auto 35px;padding:24px 22px;border-top:1px solid var(--line);display:flex;align-items:center;gap:12px;color:#758397}footer img{width:42px;height:42px;border-radius:10px;object-fit:cover}footer div{display:flex;flex-direction:column}footer b{font-size:11px;letter-spacing:.1em;color:#c5d1df}footer span{font-size:9px;margin-top:3px}@media(max-width:980px){.hero{grid-template-columns:1fr}.hero-visual{min-height:360px}.stats-grid{grid-template-columns:repeat(2,1fr)}.game-grid,.props-grid{grid-template-columns:repeat(2,1fr)}.analysis-grid{grid-template-columns:1fr 1fr}.analysis-main{grid-column:1/-1}.parlay-layout{grid-template-columns:1fr}.slip{position:static}.engine-pill{display:none}}@media(max-width:760px){.nav-links{display:none;position:absolute;top:82px;left:14px;right:14px;flex-direction:column;align-items:stretch;background:#0a0f18;border:1px solid var(--line);border-radius:16px;padding:8px;box-shadow:0 20px 50px rgba(0,0,0,.45)}.nav-links.open{display:flex}.menu-btn{display:block}.hero-copy{padding:34px 24px}.hero h1{font-size:48px}.game-grid,.props-grid{grid-template-columns:1fr}.pick-card{grid-template-columns:44px 1fr auto}.pick-card>svg{display:none}.confidence-ring{width:68px;height:68px}.section-head{align-items:flex-start;flex-direction:column}.page-banner{padding:28px 22px}.page-banner>svg{display:none}.matchup-teams{grid-template-columns:1fr 45px 1fr}.analysis-grid{grid-template-columns:1fr}.matchup-teams strong{font-size:43px}}@media(max-width:520px){.nav-wrap{padding:10px 14px}.brand-logo{width:48px;height:48px}.brand span{display:none}.shell{padding:22px 14px 50px}.hero{border-radius:22px}.hero-visual{min-height:290px}.hero-visual img{width:82%}.floating-chip{font-size:8px}.stats-grid{grid-template-columns:1fr 1fr}.stat{padding:13px}.stat b{font-size:17px}.pick-card{grid-template-columns:1fr}.rank{display:none}.confidence-ring{width:auto;height:auto;border:0;align-items:flex-start;background:none}.matchup-meta{justify-content:flex-start}.hero-actions>*{width:100%}}
+
+==================== backend/src/server.js ====================
+import "dotenv/config";
+
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
+
+import healthRoutes from "./routes/health.js";
+import gameRoutes from "./routes/games.js";
+import teamRoutes from "./routes/teams.js";
+import picksRoutes from "./routes/picks.js";
+import parlayRoutes from "./routes/parlays.js";
+
+import {
+  notFound,
+  errorHandler,
+} from "./middleware/errorHandler.js";
+
+const app = express();
+
+const PORT =
+  Number(
+    process.env.PORT || 4100
+  );
+
+const allowedOrigins =
+  (
+    process.env.FRONTEND_ORIGIN ||
+    ""
+  )
+    .split(",")
+    .map((origin) =>
+      origin.trim()
+    )
+    .filter(Boolean);
+
+app.use(helmet());
+
+app.use(
+  cors({
+    origin: (
+      origin,
+      callback
+    ) => {
+      if (
+        !origin ||
+        !allowedOrigins.length ||
+        allowedOrigins.includes(
+          origin
+        )
+      ) {
+        return callback(
+          null,
+          true
+        );
+      }
+
+      callback(
+        new Error(
+          "Origin not allowed"
+        )
+      );
+    },
+
+    credentials: true,
+  })
+);
+
+app.use(
+  express.json({
+    limit: "100kb",
+  })
+);
+
+app.use(morgan("dev"));
+
+app.get("/", (req, res) => {
+  res.json({
+    name:
+      "Sports Jedi API",
+    version: "1.1.0",
+    provider:
+      process.env
+        .SPORTS_PROVIDER ||
+      "mock",
+  });
+});
+
+app.use(
+  "/api/health",
+  healthRoutes
+);
+
+app.use(
+  "/api/games",
+  gameRoutes
+);
+
+app.use(
+  "/api/teams",
+  teamRoutes
+);
+
+app.use(
+  "/api/picks",
+  picksRoutes
+);
+
+app.use(
+  "/api/parlays",
+  parlayRoutes
+);
+
+app.use(notFound);
+
+app.use(errorHandler);
+
+app.listen(
+  PORT,
+  "0.0.0.0",
+  () => {
+    console.log(
+      `Sports Jedi API running on port ${PORT}`
+    );
+  }
+);
+
+==================== backend/src/routes/picks.js ====================
+import { Router } from "express";
+import { getSportsProvider } from "../services/sportsProvider.js";
+import { analyzeGame } from "../services/analysisService.js";
+
+const router = Router();
+const provider = getSportsProvider();
+
+router.get("/", async (req, res, next) => {
+  try {
+    const games = await provider.getGames({
+      league: req.query.league,
+    });
+
+    const picks = games
+      .filter((game) => game.status !== "final")
+      .map((game) => ({
+        game,
+        analysis: analyzeGame(game),
+      }))
+      .sort(
+        (a, b) =>
+          b.analysis.confidence - a.analysis.confidence
+      );
+
+    res.json({
+      success: true,
+      data: picks,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/props", async (req, res, next) => {
+  try {
+    const props = await provider.getPlayerProps({
+      league: req.query.league,
+    });
+
+    res.json({
+      success: true,
+      data: props,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+export default router;
+
+==================== backend/src/services/analysisService.js ====================
+function clamp(n, min, max) {
+  return Math.max(min, Math.min(max, n));
+}
+
+function rating(abbr) {
+  return (
+    78 +
+    [...abbr].reduce(
+      (sum, char) => sum + char.charCodeAt(0),
+      0
+    ) %
+      18
+  );
+}
+
+export function analyzeGame(game) {
+  const homeRating =
+    rating(game.home.abbr) + 2.5;
+
+  const awayRating =
+    rating(game.away.abbr);
+
+  const diff =
+    homeRating - awayRating;
+
+  const homeWin =
+    clamp(50 + diff * 2.25, 20, 80);
+
+  const awayWin =
+    100 - homeWin;
+
+  const confidence =
+    Math.round(
+      clamp(
+        58 + Math.abs(diff) * 3.1,
+        58,
+        91
+      )
+    );
+
+  const pick =
+    homeWin >= 50
+      ? game.home.abbr
+      : game.away.abbr;
+
+  const total =
+    game.total || 44;
+
+  return {
+    gameId: game.id,
+
+    pick,
+
+    confidence,
+
+    homeWinProbability:
+      +homeWin.toFixed(1),
+
+    awayWinProbability:
+      +awayWin.toFixed(1),
+
+    edge:
+      +Math.abs(
+        homeWin - 50
+      ).toFixed(1),
+
+    projectedScore: {
+      away: Math.max(
+        1,
+        Math.round(
+          total / 2 - diff / 3
+        )
+      ),
+
+      home: Math.max(
+        1,
+        Math.round(
+          total / 2 + diff / 3
+        )
+      ),
+    },
+
+    summary:
+      `${pick} has the stronger model profile after weighting team strength, venue adjustment, market context and matchup balance.`,
+
+    factors: [
+      {
+        label: "Power rating",
+        impact:
+          diff >= 0
+            ? game.home.abbr
+            : game.away.abbr,
+      },
+      {
+        label: "Venue adjustment",
+        impact: game.home.abbr,
+      },
+      {
+        label: "Market spread",
+        impact: game.spread
+          ? `${game.spread.favorite} ${game.spread.line}`
+          : "N/A",
+      },
+      {
+        label: "Projected total",
+        impact: String(
+          game.total ?? "N/A"
+        ),
+      },
+    ],
+  };
+}
+
+export function analyzeParlay(
+  legs = []
+) {
+  const valid =
+    legs.filter(
+      (leg) =>
+        leg &&
+        Number(leg.confidence)
+    );
+
+  if (!valid.length) {
+    return {
+      legs: 0,
+      combinedConfidence: 0,
+      risk: "N/A",
+      message:
+        "Add at least one leg.",
+    };
+  }
+
+  const average =
+    valid.reduce(
+      (sum, leg) =>
+        sum +
+        Number(
+          leg.confidence
+        ),
+      0
+    ) /
+    valid.length;
+
+  const penalty =
+    Math.max(
+      0,
+      (valid.length - 1) *
+        5.5
+    );
+
+  const combined =
+    clamp(
+      average - penalty,
+      15,
+      95
+    );
+
+  const risk =
+    valid.length >= 5 ||
+    combined < 50
+      ? "High"
+      : valid.length >= 3 ||
+          combined < 65
+        ? "Medium"
+        : "Lower";
+
+  return {
+    legs: valid.length,
+
+    combinedConfidence:
+      +combined.toFixed(1),
+
+    risk,
+
+    message:
+      `${valid.length}-leg card with ${risk.toLowerCase()} model confidence. More legs increase uncertainty.`,
+  };
+}
+
+==================== backend/src/services/sportsProvider.js ====================
+const SPORT_KEYS = {
+  NFL: "americanfootball_nfl",
+  NBA: "basketball_nba",
+  MLB: "baseball_mlb",
+};
+
+const API_BASE =
+  process.env.SPORTS_API_BASE ||
+  "https://api.the-odds-api.com/v4";
+
+const API_KEY =
+  process.env.SPORTS_API_KEY || "";
+
+const REGIONS =
+  process.env.SPORTS_ODDS_REGIONS || "us";
+
+const CACHE_MS =
+  Number(process.env.SPORTS_CACHE_MS || 60000);
+
+const cache = new Map();
+
+function getCached(key) {
+  const item = cache.get(key);
+
+  if (!item) return null;
+
+  if (Date.now() - item.time > CACHE_MS) {
+    cache.delete(key);
+    return null;
+  }
+
+  return item.data;
+}
+
+function setCached(key, data) {
+  cache.set(key, {
+    time: Date.now(),
+    data,
+  });
+
+  return data;
+}
+
+function leagueFromSportKey(key) {
+  return (
+    Object.entries(SPORT_KEYS)
+      .find(([, value]) => value === key)?.[0] ||
+    key
+  );
+}
+
+function abbreviation(name = "") {
+  const known = {
+    "Philadelphia Eagles": "PHI",
+    "Dallas Cowboys": "DAL",
+    "Kansas City Chiefs": "KC",
+    "Buffalo Bills": "BUF",
+    "Baltimore Ravens": "BAL",
+    "Detroit Lions": "DET",
+
+    "Boston Celtics": "BOS",
+    "New York Knicks": "NYK",
+    "Los Angeles Lakers": "LAL",
+    "Golden State Warriors": "GSW",
+    "Denver Nuggets": "DEN",
+    "Oklahoma City Thunder": "OKC",
+
+    "New York Yankees": "NYY",
+    "Baltimore Orioles": "BAL",
+    "Los Angeles Dodgers": "LAD",
+    "Boston Red Sox": "BOS",
+    "Chicago Cubs": "CHC",
+    "Atlanta Braves": "ATL",
+  };
+
+  if (known[name]) {
+    return known[name];
+  }
+
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word[0])
+    .join("")
+    .slice(0, 4)
+    .toUpperCase();
+}
+
+function findMarket(bookmaker, key) {
+  return bookmaker?.markets?.find(
+    (market) => market.key === key
+  );
+}
+
+function normalizeGame(event) {
+  const bookmaker =
+    event.bookmakers?.[0] || null;
+
+  const spreadMarket =
+    findMarket(bookmaker, "spreads");
+
+  const totalMarket =
+    findMarket(bookmaker, "totals");
+
+  const moneylineMarket =
+    findMarket(bookmaker, "h2h");
+
+  const spreadOutcome =
+    spreadMarket?.outcomes?.find(
+      (outcome) =>
+        typeof outcome.point === "number" &&
+        outcome.point < 0
+    ) ||
+    spreadMarket?.outcomes?.[0];
+
+  const totalOutcome =
+    totalMarket?.outcomes?.find(
+      (outcome) =>
+        outcome.name === "Over"
+    ) ||
+    totalMarket?.outcomes?.[0];
+
+  return {
+    id: event.id,
+
+    league:
+      event.sport_title ||
+      leagueFromSportKey(event.sport_key),
+
+    sportKey: event.sport_key,
+
+    status: "upcoming",
+
+    startTime: event.commence_time,
+
+    away: {
+      name: event.away_team,
+      abbr: abbreviation(event.away_team),
+      record: "",
+      score: 0,
+    },
+
+    home: {
+      name: event.home_team,
+      abbr: abbreviation(event.home_team),
+      record: "",
+      score: 0,
+    },
+
+    venue: "",
+
+    spread: spreadOutcome
+      ? {
+          favorite:
+            abbreviation(spreadOutcome.name),
+          line:
+            spreadOutcome.point ?? null,
+        }
+      : null,
+
+    total:
+      totalOutcome?.point ?? null,
+
+    moneyline:
+      moneylineMarket
+        ? moneylineMarket.outcomes.map(
+            (outcome) => ({
+              team: outcome.name,
+              abbr: abbreviation(outcome.name),
+              price: outcome.price,
+            })
+          )
+        : [],
+
+    bookmaker: bookmaker
+      ? {
+          key: bookmaker.key,
+          title: bookmaker.title,
+          lastUpdate:
+            bookmaker.last_update,
+        }
+      : null,
+  };
+}
+
+async function fetchJson(url) {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    const body = await response.text();
+
+    throw new Error(
+      `Sports API ${response.status}: ${body}`
+    );
+  }
+
+  return response.json();
+}
+
+async function fetchOddsForLeague(league) {
+  const upper =
+    String(league || "").toUpperCase();
+
+  const sportKey =
+    SPORT_KEYS[upper];
+
+  if (!sportKey) {
+    return [];
+  }
+
+  const cacheKey =
+    `odds:${sportKey}`;
+
+  const cached =
+    getCached(cacheKey);
+
+  if (cached) {
+    return cached;
+  }
+
+  const params =
+    new URLSearchParams({
+      apiKey: API_KEY,
+      regions: REGIONS,
+      markets: "h2h,spreads,totals",
+      oddsFormat: "american",
+      dateFormat: "iso",
+    });
+
+  const url =
+    `${API_BASE}/sports/${sportKey}/odds?${params}`;
+
+  const data =
+    await fetchJson(url);
+
+  return setCached(
+    cacheKey,
+    data.map(normalizeGame)
+  );
+}
+
+async function fetchAllGames() {
+  const results =
+    await Promise.allSettled(
+      Object.keys(SPORT_KEYS).map(
+        fetchOddsForLeague
+      )
+    );
+
+  return results.flatMap((result) =>
+    result.status === "fulfilled"
+      ? result.value
+      : []
+  );
+}
+
+function normalizePlayerProps(
+  response,
+  league
+) {
+  const props = [];
+
+  for (
+    const bookmaker of
+    response.bookmakers || []
+  ) {
+    for (
+      const market of
+      bookmaker.markets || []
+    ) {
+      if (
+        !market.key.startsWith("player_")
+      ) {
+        continue;
+      }
+
+      for (
+        const outcome of
+        market.outcomes || []
+      ) {
+        props.push({
+          id:
+            `${response.id}-${bookmaker.key}-${market.key}-${outcome.description || outcome.name}-${outcome.point || ""}`,
+
+          eventId:
+            response.id,
+
+          league,
+
+          player:
+            outcome.description ||
+            outcome.name,
+
+          team: "",
+
+          market:
+            market.key,
+
+          line:
+            outcome.point ?? null,
+
+          pick:
+            outcome.name,
+
+          price:
+            outcome.price,
+
+          confidence: null,
+
+          bookmaker:
+            bookmaker.title,
+        });
+      }
+    }
+  }
+
+  return props;
+}
+
+class TheOddsApiProvider {
+  async getGames({
+    league,
+  } = {}) {
+    if (league) {
+      return fetchOddsForLeague(
+        league
+      );
+    }
+
+    return fetchAllGames();
+  }
+
+  async getGame(id) {
+    const games =
+      await fetchAllGames();
+
+    return (
+      games.find(
+        (game) => game.id === id
+      ) || null
+    );
+  }
+
+  async getTeams({
+    league,
+  } = {}) {
+    const games =
+      await this.getGames({
+        league,
+      });
+
+    const map =
+      new Map();
+
+    for (const game of games) {
+      for (const side of [
+        game.home,
+        game.away,
+      ]) {
+        if (
+          !map.has(side.name)
+        ) {
+          map.set(side.name, {
+            id:
+              side.abbr.toLowerCase(),
+            league: game.league,
+            name: side.name,
+            abbr: side.abbr,
+            city: "",
+            rating: null,
+          });
+        }
+      }
+    }
+
+    return [...map.values()];
+  }
+
+  async getPlayerProps({
+    league = "NFL",
+  } = {}) {
+    const upper =
+      String(league).toUpperCase();
+
+    const sportKey =
+      SPORT_KEYS[upper];
+
+    if (!sportKey) {
+      return [];
+    }
+
+    const games =
+      await fetchOddsForLeague(
+        upper
+      );
+
+    const firstGames =
+      games.slice(0, 3);
+
+    const propMarkets = {
+      NFL:
+        "player_pass_yds,player_rush_yds,player_reception_yds",
+      NBA:
+        "player_points,player_rebounds,player_assists,player_threes",
+      MLB:
+        "batter_hits,batter_total_bases,batter_home_runs",
+    };
+
+    const markets =
+      propMarkets[upper];
+
+    if (!markets) {
+      return [];
+    }
+
+    const allProps = [];
+
+    for (const game of firstGames) {
+      const cacheKey =
+        `props:${sportKey}:${game.id}`;
+
+      const cached =
+        getCached(cacheKey);
+
+      if (cached) {
+        allProps.push(...cached);
+        continue;
+      }
+
+      const params =
+        new URLSearchParams({
+          apiKey: API_KEY,
+          regions: REGIONS,
+          markets,
+          oddsFormat: "american",
+        });
+
+      const url =
+        `${API_BASE}/sports/${sportKey}/events/${game.id}/odds?${params}`;
+
+      try {
+        const response =
+          await fetchJson(url);
+
+        const props =
+          normalizePlayerProps(
+            response,
+            upper
+          );
+
+        setCached(
+          cacheKey,
+          props
+        );
+
+        allProps.push(
+          ...props
+        );
+      } catch (error) {
+        console.error(
+          "Player props error:",
+          error.message
+        );
+      }
+    }
+
+    return allProps;
+  }
+}
+
+class MockSportsProvider {
+  async getGames() {
+    return [];
+  }
+
+  async getGame() {
+    return null;
+  }
+
+  async getTeams() {
+    return [];
+  }
+
+  async getPlayerProps() {
+    return [];
+  }
+}
+
+export function getSportsProvider() {
+  if (
+    process.env.SPORTS_PROVIDER ===
+    "theoddsapi"
+  ) {
+    if (!API_KEY) {
+      throw new Error(
+        "SPORTS_API_KEY is missing"
+      );
+    }
+
+    return new TheOddsApiProvider();
