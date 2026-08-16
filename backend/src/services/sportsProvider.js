@@ -1,24 +1,75 @@
-import { games, teams } from "../data/mockSports.js";
+import {
+  games,
+  teams,
+  playerProps,
+} from "../data/mockSports.js";
 
 class MockSportsProvider {
-  async getGames({ league } = {}) {
-    return league ? games.filter(g => g.league.toLowerCase() === league.toLowerCase()) : games;
+  async getGames({
+    league,
+  } = {}) {
+    return league
+      ? games.filter(
+          (game) =>
+            game.league.toLowerCase() ===
+            league.toLowerCase()
+        )
+      : games;
   }
 
   async getGame(id) {
-    return games.find(g => g.id === id) || null;
+    return (
+      games.find(
+        (game) =>
+          game.id === id
+      ) || null
+    );
   }
 
-  async getTeams({ league } = {}) {
-    return league ? teams.filter(t => t.league.toLowerCase() === league.toLowerCase()) : teams;
+  async getTeams({
+    league,
+  } = {}) {
+    if (!league) {
+      return teams;
+    }
+
+    const abbreviations =
+      new Set(
+        games
+          .filter(
+            (game) =>
+              game.league ===
+              league.toUpperCase()
+          )
+          .flatMap(
+            (game) => [
+              game.away.abbr,
+              game.home.abbr,
+            ]
+          )
+      );
+
+    return teams.filter(
+      (team) =>
+        abbreviations.has(
+          team.abbr
+        )
+    );
+  }
+
+  async getPlayerProps({
+    league,
+  } = {}) {
+    return league
+      ? playerProps.filter(
+          (prop) =>
+            prop.league.toLowerCase() ===
+            league.toLowerCase()
+        )
+      : playerProps;
   }
 }
 
 export function getSportsProvider() {
-  const provider = (process.env.SPORTS_PROVIDER || "mock").toLowerCase();
-  switch (provider) {
-    case "mock":
-    default:
-      return new MockSportsProvider();
-  }
+  return new MockSportsProvider();
 }

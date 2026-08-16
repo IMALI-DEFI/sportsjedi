@@ -43,3 +43,66 @@ export const teams = [
   { id: "nyy", league: "MLB", name: "New York Yankees", abbr: "NYY", city: "New York", rating: 90 },
   { id: "bal", league: "MLB", name: "Baltimore Orioles", abbr: "BAL", city: "Baltimore", rating: 87 }
 ];
+
+export const playerProps = [
+  {
+    id: "prop-1",
+    league: "NFL",
+    player: "Jalen Hurts",
+    team: "PHI",
+    market: "Passing Yards",
+    line: 244.5,
+    pick: "Over",
+    confidence: 78
+  },
+  {
+    id: "prop-2",
+    league: "NFL",
+    player: "CeeDee Lamb",
+    team: "DAL",
+    market: "Receiving Yards",
+    line: 76.5,
+    pick: "Over",
+    confidence: 73
+  },
+  {
+    id: "prop-3",
+    league: "NBA",
+    player: "Stephen Curry",
+    team: "GSW",
+    market: "3-Pointers Made",
+    line: 4.5,
+    pick: "Over",
+    confidence: 81
+  },
+  {
+    id: "prop-4",
+    league: "NBA",
+    player: "LeBron James",
+    team: "LAL",
+    market: "Points + Assists",
+    line: 33.5,
+    pick: "Over",
+    confidence: 76
+  },
+  {
+    id: "prop-5",
+    league: "MLB",
+    player: "Aaron Judge",
+    team: "NYY",
+    market: "Total Bases",
+    line: 1.5,
+    pick: "Over",
+    confidence: 80
+  },
+  {
+    id: "prop-6",
+    league: "MLB",
+    player: "Shohei Ohtani",
+    team: "LAD",
+    market: "Hits",
+    line: 1.5,
+    pick: "Over",
+    confidence: 74
+  }
+];
