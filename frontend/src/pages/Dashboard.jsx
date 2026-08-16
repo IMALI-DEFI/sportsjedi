@@ -119,6 +119,23 @@ export default function Dashboard() {
             </Link>
           </div>
 
+          <Link
+            to="/pricing"
+            className="home-price-banner"
+          >
+            <span>
+              SPORTS JEDI PRO
+            </span>
+
+            <strong>
+              Starting at $19.95/month
+            </strong>
+
+            <small>
+              Free access available · View plans →
+            </small>
+          </Link>
+
           <div className="trust-row">
             <span>
               <ShieldCheck /> Multi-book consensus
