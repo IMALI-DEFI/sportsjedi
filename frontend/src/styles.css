@@ -315,3 +315,231 @@
   color: #aeb8c8;
   font-size: 12px;
 }
+
+/* Sports Jedi automated insights */
+
+.blog-page .loading,
+.blog-page .error {
+  margin-top: 28px;
+}
+
+.blog-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 22px;
+  margin-top: 30px;
+}
+
+.blog-card {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: rgba(255,255,255,.03);
+  transition: transform .2s ease,
+    border-color .2s ease;
+}
+
+.blog-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(101,231,255,.3);
+}
+
+.blog-image {
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #0b1420;
+}
+
+.blog-image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: transform .3s ease;
+}
+
+.blog-card:hover .blog-image img {
+  transform: scale(1.025);
+}
+
+.blog-card-copy {
+  padding: 24px;
+}
+
+.blog-meta,
+.blog-stats,
+.article-meta,
+.article-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.blog-meta {
+  justify-content: space-between;
+  color: #78879a;
+  font-size: 11px;
+}
+
+.blog-meta span {
+  color: var(--cyan);
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+.blog-card h2 {
+  margin: 14px 0 10px;
+  font-size: 25px;
+  line-height: 1.15;
+}
+
+.blog-card p {
+  color: #98a5b8;
+  line-height: 1.65;
+  font-size: 13px;
+}
+
+.blog-stats span {
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(101,231,255,.07);
+  color: #a9ddec;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.read-link {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  margin-top: 18px;
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.article-page {
+  max-width: 1020px;
+}
+
+.article-card {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: rgba(255,255,255,.028);
+}
+
+.article-heading {
+  padding: 42px;
+}
+
+.article-heading h1 {
+  margin: 15px 0;
+  max-width: 850px;
+  font-size: clamp(38px, 6vw, 65px);
+  line-height: 1;
+  letter-spacing: -.045em;
+}
+
+.article-heading > p {
+  max-width: 750px;
+  color: #9ca9bb;
+  line-height: 1.65;
+}
+
+.article-meta {
+  margin-top: 22px;
+  color: #7e8da2;
+  font-size: 11px;
+}
+
+.article-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.article-image {
+  display: block;
+  width: 100%;
+  max-height: 680px;
+  object-fit: cover;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.article-body {
+  max-width: 780px;
+  margin: auto;
+  padding: 44px;
+}
+
+.article-body > p {
+  color: #b0bbca;
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+.article-signal {
+  margin: 34px 0;
+  padding: 25px;
+  border: 1px solid rgba(101,231,255,.2);
+  border-radius: 20px;
+  background: rgba(36,156,255,.06);
+}
+
+.article-signal > span {
+  color: var(--cyan);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.article-signal > strong {
+  display: block;
+  margin: 8px 0 20px;
+  font-size: 30px;
+}
+
+.article-signal > div {
+  display: flex;
+  gap: 30px;
+}
+
+.article-signal b {
+  font-size: 24px;
+}
+
+.article-signal small {
+  display: block;
+  color: #7e8da2;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.article-actions {
+  margin-top: 35px;
+}
+
+@media (max-width: 760px) {
+  .blog-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .article-heading,
+  .article-body {
+    padding: 25px 20px;
+  }
+
+  .article-heading h1 {
+    font-size: 40px;
+  }
+
+  .article-actions a {
+    width: 100%;
+  }
+}

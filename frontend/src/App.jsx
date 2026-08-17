@@ -15,6 +15,8 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Pricing from "./pages/Pricing";
 import Success from "./pages/Success";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 
 export default function App() {
   return (
@@ -31,6 +33,8 @@ export default function App() {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/success" element={<Success />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
       </Routes>
 
       <footer>
@@ -49,6 +53,7 @@ export default function App() {
         </div>
 
         <div className="footer-links">
+          <Link to="/blog">Insights</Link>
           <Link to="/methodology">Methodology</Link>
           <Link to="/terms">Terms</Link>
           <Link to="/privacy">Privacy</Link>

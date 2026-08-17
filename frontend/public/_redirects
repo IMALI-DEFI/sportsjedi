@@ -1,1 +1,5 @@
+# Dynamic Sports Jedi sitemap
+/sitemap.xml  https://api.sportsjedi.com/sitemap.xml  200
+
+# React SPA fallback
 /*    /index.html   200

@@ -71,6 +71,13 @@ export default function Header() {
           </NavLink>
 
           <NavLink
+            to="/blog"
+            onClick={() => setOpen(false)}
+          >
+            Insights
+          </NavLink>
+
+          <NavLink
             to="/pricing"
             onClick={() => setOpen(false)}
           >
