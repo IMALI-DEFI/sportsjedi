@@ -15,6 +15,7 @@ import {
 } from "react-router-dom";
 
 import { api, assetUrl } from "../lib/api";
+import TeamMatchup from "../components/TeamMatchup";
 
 export default function BlogPost() {
   const { slug } = useParams();
@@ -111,6 +112,11 @@ export default function BlogPost() {
             </span>
           </div>
         </div>
+
+        <TeamMatchup
+          article={article}
+          large
+        />
 
         <img
           className="article-image"

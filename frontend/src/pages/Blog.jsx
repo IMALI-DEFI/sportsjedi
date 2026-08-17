@@ -9,7 +9,8 @@ import {
 } from "lucide-react";
 
 import { Link } from "react-router-dom";
-import { api, assetUrl } from "../lib/api";
+import { api } from "../lib/api";
+import TeamMatchup from "../components/TeamMatchup";
 
 export default function Blog() {
   const [articles, setArticles] = useState([]);
@@ -80,13 +81,9 @@ export default function Blog() {
           >
             <Link
               to={`/blog/${article.slug}`}
-              className="blog-image"
+              aria-label={article.title}
             >
-              <img
-                src={assetUrl(article.imageUrl)}
-                alt={article.title}
-                loading="lazy"
-              />
+              <TeamMatchup article={article} />
             </Link>
 
             <div className="blog-card-copy">
