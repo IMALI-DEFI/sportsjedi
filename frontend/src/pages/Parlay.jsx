@@ -81,7 +81,8 @@ export default function Parlay() {
       ) {
         ids.set(
           prop.eventId,
-          prop.eventId.slice(0, 8)
+          prop.matchup ||
+            prop.eventId.slice(0, 8)
         );
       }
     }
@@ -281,7 +282,7 @@ export default function Parlay() {
                     setSelectedGame(id)
                   }
                 >
-                  Game {index + 1}
+                  {label}
                 </button>
               )
             )}
@@ -305,13 +306,16 @@ export default function Parlay() {
               >
                 <div>
                   <small>
-                    {prop.bookmaker ||
-                      league}
+                    {prop.matchup || league}
                   </small>
 
                   <h3>
                     {prop.player}
                   </h3>
+
+                  <span className="prop-book">
+                    {prop.bookmaker || ""}
+                  </span>
 
                   <p>
                     {formatMarket(
@@ -394,6 +398,10 @@ export default function Parlay() {
                   key={leg.id}
                 >
                   <div>
+                    <small>
+                      {leg.matchup || leg.league}
+                    </small>
+
                     <b>{leg.player}</b>
 
                     <span>

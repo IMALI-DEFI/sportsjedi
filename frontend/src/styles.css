@@ -849,3 +849,23 @@
     grid-template-columns: 1fr;
   }
 }
+
+.prop-book {
+  display: block;
+  margin-top: 3px;
+  color: #6f7d91;
+  font-size: 11px;
+}
+
+.slip-leg small {
+  color: #6f7d91;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.event-filter button {
+  max-width: 230px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
