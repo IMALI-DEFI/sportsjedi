@@ -15,7 +15,7 @@ const REGIONS =
   process.env.SPORTS_ODDS_REGIONS || "us";
 
 const CACHE_MS =
-  Number(process.env.SPORTS_CACHE_MS || 60000);
+  Number(process.env.SPORTS_CACHE_MS || 3600000);
 
 const cache = new Map();
 
@@ -294,7 +294,8 @@ async function fetchAllGames() {
 
 function normalizePlayerProps(
   response,
-  league
+  league,
+  game
 ) {
   const props = [];
 
@@ -306,9 +307,12 @@ function normalizePlayerProps(
       const market of
       bookmaker.markets || []
     ) {
-      if (
-        !market.key.startsWith("player_")
-      ) {
+      const isPlayerMarket =
+        market.key.startsWith("player_") ||
+        market.key.startsWith("batter_") ||
+        market.key.startsWith("pitcher_");
+
+      if (!isPlayerMarket) {
         continue;
       }
 
@@ -324,6 +328,26 @@ function normalizePlayerProps(
             response.id,
 
           league,
+
+          matchup:
+            game
+              ? `${game.away.name} @ ${game.home.name}`
+              : `${response.away_team || ""} @ ${response.home_team || ""}`,
+
+          awayTeam:
+            game?.away?.name ||
+            response.away_team ||
+            "",
+
+          homeTeam:
+            game?.home?.name ||
+            response.home_team ||
+            "",
+
+          startTime:
+            game?.startTime ||
+            response.commence_time ||
+            null,
 
           player:
             outcome.description ||
@@ -433,7 +457,7 @@ class TheOddsApiProvider {
       );
 
     const firstGames =
-      games.slice(0, 3);
+      games.slice(0, 12);
 
     const propMarkets = {
       NFL:
@@ -483,7 +507,8 @@ class TheOddsApiProvider {
         const props =
           normalizePlayerProps(
             response,
-            upper
+            upper,
+            game
           );
 
         setCached(
