@@ -1,6 +1,6 @@
 const BASE =
   import.meta.env.VITE_API_BASE_URL ||
-  "http://localhost:4100";
+  "https://api.sportsjedi.com";
 
 async function request(path, opts = {}) {
   const res = await fetch(`${BASE}${path}`, {
