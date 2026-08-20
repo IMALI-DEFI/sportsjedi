@@ -2145,3 +2145,289 @@ button:active,
     grid-template-columns: 1fr;
   }
 }
+
+/* =====================================================
+   SPORTS JEDI AUTH + ACCOUNT
+   ===================================================== */
+
+.auth-page {
+  min-height: 78vh;
+  display: grid;
+  place-items: center;
+}
+
+.auth-card {
+  position: relative;
+  overflow: hidden;
+  width: min(520px, 100%);
+  padding: 38px;
+  border-radius: 28px;
+  text-align: center;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(7,19,40,.94),
+      rgba(3,8,20,.92)
+    );
+
+  border:
+    1px solid
+    rgba(66,220,255,.32);
+
+  box-shadow:
+    0 0 32px
+      rgba(66,220,255,.10),
+    0 0 100px
+      rgba(110,65,255,.09),
+    0 30px 90px
+      rgba(0,0,0,.55);
+}
+
+.auth-glow {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  top: -180px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background:
+    rgba(66,220,255,.25);
+  filter: blur(90px);
+}
+
+.auth-card h1 {
+  position: relative;
+  margin: 12px 0;
+}
+
+.auth-card h1 em {
+  color: #42dcff;
+  font-style: normal;
+
+  text-shadow:
+    0 0 12px
+      rgba(66,220,255,.7),
+    0 0 35px
+      rgba(66,220,255,.30);
+}
+
+.auth-card p {
+  color: #aab6c8;
+  line-height: 1.7;
+}
+
+.google-signin-btn {
+  width: 100%;
+  margin-top: 28px;
+  padding: 15px 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  border-radius: 15px;
+
+  color: #fff !important;
+  font-size: 15px;
+  font-weight: 800;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(25,104,180,.95),
+      rgba(55,60,180,.95)
+    ) !important;
+
+  border:
+    1px solid
+    rgba(85,225,255,.60) !important;
+
+  box-shadow:
+    0 0 18px
+      rgba(66,220,255,.22);
+
+  cursor: pointer;
+}
+
+.google-signin-btn:hover {
+  box-shadow:
+    0 0 20px
+      rgba(66,220,255,.55),
+    0 0 55px
+      rgba(66,220,255,.18);
+}
+
+.google-mark {
+  display: grid;
+  place-items: center;
+
+  width: 28px;
+  height: 28px;
+
+  border-radius: 50%;
+  background: white;
+  color: #4285f4;
+
+  font-weight: 900;
+}
+
+.auth-security,
+.auth-pro-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  margin-top: 16px;
+  font-size: 12px;
+  color: #8493a9;
+}
+
+.auth-security svg {
+  color: #4affa6;
+}
+
+.auth-pro-note svg {
+  color: #42dcff;
+}
+
+.auth-error {
+  margin-top: 15px;
+  padding: 12px;
+  border-radius: 12px;
+
+  color: #ffb4b4;
+  background:
+    rgba(255,70,70,.10);
+
+  border:
+    1px solid
+    rgba(255,90,90,.22);
+}
+
+/* ACCOUNT */
+
+.account-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  margin: 30px 0 50px;
+}
+
+.account-card {
+  padding: 25px;
+  border-radius: 22px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(8,18,39,.91),
+      rgba(3,8,20,.85)
+    );
+
+  border:
+    1px solid
+    rgba(66,220,255,.20);
+
+  box-shadow:
+    0 0 20px
+      rgba(66,220,255,.05),
+    0 25px 70px
+      rgba(0,0,0,.35);
+}
+
+.account-card h2 {
+  margin: 10px 0 18px;
+  overflow-wrap: anywhere;
+}
+
+.access-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  padding: 8px 12px;
+  margin-bottom: 22px;
+
+  border-radius: 999px;
+
+  color: #fff;
+  font-weight: 900;
+  font-size: 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(36,160,210,.30),
+      rgba(145,70,255,.25)
+    );
+
+  border:
+    1px solid
+    rgba(66,220,255,.38);
+
+  box-shadow:
+    0 0 15px
+      rgba(66,220,255,.10);
+}
+
+.account-detail {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+
+  padding: 12px 0;
+
+  border-bottom:
+    1px solid
+    rgba(255,255,255,.07);
+}
+
+.account-detail span {
+  color: #8594a9;
+}
+
+.account-detail strong {
+  text-transform: capitalize;
+}
+
+.feature-access-list {
+  display: grid;
+  gap: 12px;
+}
+
+.feature-access-list span {
+  display: flex;
+  gap: 9px;
+
+  color: #dce7f7;
+
+  padding: 9px 0;
+
+  border-bottom:
+    1px solid
+    rgba(255,255,255,.05);
+}
+
+.account-action {
+  width: 100%;
+  margin-top: 12px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+
+  text-decoration: none;
+}
+
+@media (max-width: 900px) {
+  .account-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

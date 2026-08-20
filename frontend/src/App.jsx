@@ -1,3 +1,5 @@
+import Account from "./pages/Account";
+import Login from "./pages/Login";
 import Starfield from "./components/Starfield";
 import {
   BrowserRouter,
@@ -33,6 +35,8 @@ export default function App() {
         <Route path="/methodology" element={<Methodology />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/account" element={<Account />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/success" element={<Success />} />
         <Route path="/blog" element={<Blog />} />
