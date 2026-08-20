@@ -157,6 +157,43 @@ export default function Parlay() {
     setAnalysis(null);
   }
 
+  async function generateAutoParlay(mode) {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await fetch(
+        `${API}/api/parlays/auto?league=${league}&mode=${mode}`
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.error || "Unable to generate auto parlay"
+        );
+      }
+
+      setLegs(result.data.selections || []);
+
+      setAnalysis({
+        impliedProbability: result.data.impliedProbability,
+        combinedAmerican: result.data.combinedAmerican,
+        combinedDecimal: result.data.combinedDecimal,
+        risk: result.data.risk,
+        sameGame: result.data.sameGame,
+        warnings:
+          result.data.warnings?.length
+            ? result.data.warnings
+            : [],
+      });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function analyze() {
     if (legs.length < 2) {
       setError(
@@ -241,6 +278,38 @@ export default function Parlay() {
           </button>
         ))}
       </div>
+
+      <section className="auto-parlay-card">
+        <div>
+          <span className="eyebrow">
+            Auto Parlay Generator
+          </span>
+
+          <h2>Build me a parlay</h2>
+
+          <p>
+            Sports Jedi automatically selects diversified
+            live-market legs based on your risk preference.
+          </p>
+        </div>
+
+        <div className="auto-parlay-buttons">
+          <button onClick={() => generateAutoParlay("safe")}>
+            Safer
+          </button>
+
+          <button
+            className="active"
+            onClick={() => generateAutoParlay("balanced")}
+          >
+            Balanced
+          </button>
+
+          <button onClick={() => generateAutoParlay("longshot")}>
+            Long Shot
+          </button>
+        </div>
+      </section>
 
       <div className="parlay-layout">
         <section className="prop-browser">
