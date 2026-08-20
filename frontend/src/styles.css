@@ -1342,3 +1342,384 @@ body {
   }
 }
 
+
+/* =========================================================
+   GALACTIC UI — CONTRAST + INTERACTIONS
+   ========================================================= */
+
+/* FORCE READABLE BUTTON / LINK TEXT */
+
+button,
+.primary-btn,
+.secondary-btn,
+.price-button,
+.auto-parlay-buttons button,
+.league-tabs button,
+.event-filter button,
+.player-prop-option button,
+.menu-btn {
+  color: #f8fbff !important;
+  text-shadow: 0 0 8px rgba(66,220,255,.18);
+}
+
+button:disabled {
+  color: rgba(235,242,255,.48) !important;
+}
+
+.secondary-btn:hover,
+.auto-parlay-buttons button:hover,
+.league-tabs button:hover,
+.event-filter button:hover,
+.player-prop-option button:hover {
+  color: #ffffff !important;
+}
+
+/* MORE STARS */
+
+.space-background::before,
+.space-background::after {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  pointer-events: none;
+  background-repeat: repeat;
+}
+
+.space-background::before {
+  background-image:
+    radial-gradient(circle, #ffffff 1px, transparent 1.4px),
+    radial-gradient(circle, #70dcff 1px, transparent 1.5px),
+    radial-gradient(circle, #ffffff 1.5px, transparent 2px);
+
+  background-size:
+    31px 31px,
+    67px 67px,
+    137px 137px;
+
+  background-position:
+    0 0,
+    17px 31px,
+    60px 81px;
+
+  opacity: .24;
+
+  animation:
+    starLayerFast 70s linear infinite;
+}
+
+.space-background::after {
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,.95) 2px, transparent 2.5px),
+    radial-gradient(circle, rgba(120,200,255,.85) 1.5px, transparent 2px);
+
+  background-size:
+    241px 241px,
+    313px 313px;
+
+  background-position:
+    30px 60px,
+    120px 190px;
+
+  opacity: .16;
+
+  animation:
+    starLayerSlow 150s linear infinite reverse;
+}
+
+@keyframes starLayerFast {
+  from {
+    transform: translate3d(0,0,0);
+  }
+
+  to {
+    transform: translate3d(-260px,420px,0);
+  }
+}
+
+@keyframes starLayerSlow {
+  from {
+    transform: translate3d(0,0,0) scale(1);
+  }
+
+  to {
+    transform: translate3d(220px,-300px,0) scale(1.04);
+  }
+}
+
+/* TWINKLING */
+
+.stars-small,
+.stars-medium,
+.stars-large {
+  animation-name:
+    starsMove,
+    starTwinkle !important;
+
+  animation-timing-function:
+    linear,
+    ease-in-out !important;
+
+  animation-iteration-count:
+    infinite,
+    infinite !important;
+}
+
+@keyframes starTwinkle {
+  0%,
+  100% {
+    opacity: .24;
+  }
+
+  50% {
+    opacity: .55;
+  }
+}
+
+/* SPACE HUD GRID */
+
+#root::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -8;
+  pointer-events: none;
+
+  background-image:
+    linear-gradient(
+      rgba(66,220,255,.025) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(66,220,255,.025) 1px,
+      transparent 1px
+    );
+
+  background-size:
+    80px 80px;
+
+  mask-image:
+    linear-gradient(
+      to bottom,
+      transparent,
+      black 25%,
+      black 80%,
+      transparent
+    );
+}
+
+/* HOLOGRAPHIC CARD SWEEP */
+
+.game-card::after,
+.pick-card::after,
+.player-prop-option::after,
+.auto-parlay-card::after,
+.price-card::after {
+  content: "";
+  position: absolute;
+  top: -60%;
+  left: -120%;
+  width: 80%;
+  height: 220%;
+
+  pointer-events: none;
+
+  transform:
+    rotate(18deg);
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(89,220,255,.08),
+      rgba(255,255,255,.12),
+      transparent
+    );
+
+  transition:
+    left .8s ease;
+}
+
+.game-card:hover::after,
+.pick-card:hover::after,
+.player-prop-option:hover::after,
+.auto-parlay-card:hover::after,
+.price-card:hover::after {
+  left: 150%;
+}
+
+/* CARD ENERGY EDGE */
+
+.game-card,
+.pick-card,
+.player-prop-option,
+.auto-parlay-card,
+.price-card {
+  transition:
+    transform .22s ease,
+    box-shadow .22s ease,
+    border-color .22s ease;
+}
+
+.game-card:hover,
+.pick-card:hover,
+.player-prop-option:hover,
+.auto-parlay-card:hover,
+.price-card:hover {
+  transform:
+    translateY(-4px);
+
+  box-shadow:
+    0 0 20px rgba(66,220,255,.12),
+    0 0 60px rgba(82,92,255,.08),
+    0 28px 80px rgba(0,0,0,.5);
+}
+
+/* GLOWING SECTION HEADINGS */
+
+.section-head h2,
+.page-banner h1,
+.auto-parlay-card h2 {
+  text-shadow:
+    0 0 16px rgba(66,220,255,.10);
+}
+
+/* INTERACTIVE ENERGY BUTTONS */
+
+.primary-btn,
+.secondary-btn,
+.auto-parlay-buttons button,
+.player-prop-option button {
+  position: relative;
+  overflow: hidden;
+}
+
+.primary-btn::after,
+.secondary-btn::after,
+.auto-parlay-buttons button::after,
+.player-prop-option button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      110deg,
+      transparent 15%,
+      rgba(255,255,255,.15) 45%,
+      transparent 75%
+    );
+
+  transform:
+    translateX(-140%);
+
+  transition:
+    transform .55s ease;
+}
+
+.primary-btn:hover::after,
+.secondary-btn:hover::after,
+.auto-parlay-buttons button:hover::after,
+.player-prop-option button:hover::after {
+  transform:
+    translateX(140%);
+}
+
+/* CLICK FEEDBACK */
+
+button:active,
+.primary-btn:active,
+.secondary-btn:active {
+  transform:
+    scale(.97);
+}
+
+/* FLOATING HUD CHIPS */
+
+.floating-chip {
+  backdrop-filter:
+    blur(12px);
+
+  border:
+    1px solid rgba(66,220,255,.25) !important;
+
+  background:
+    rgba(5,13,28,.72) !important;
+
+  box-shadow:
+    0 0 20px rgba(66,220,255,.10),
+    inset 0 0 14px rgba(66,220,255,.04);
+
+  animation:
+    hudFloat 5s ease-in-out infinite;
+}
+
+.chip-two {
+  animation-delay: -2.2s;
+}
+
+@keyframes hudFloat {
+  0%,
+  100% {
+    transform:
+      translateY(0);
+  }
+
+  50% {
+    transform:
+      translateY(-7px);
+  }
+}
+
+/* GENTLE PAGE ENERGY PULSE */
+
+.hero::before {
+  animation:
+    heroEnergy 8s ease-in-out infinite alternate;
+}
+
+@keyframes heroEnergy {
+  from {
+    opacity: .6;
+    transform:
+      scale(.96);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      scale(1.08);
+  }
+}
+
+/* MOBILE: KEEP INTERACTIONS LIGHT */
+
+@media (max-width: 700px) {
+  .space-background::before {
+    opacity: .18;
+  }
+
+  .space-background::after {
+    opacity: .10;
+  }
+
+  .game-card:hover,
+  .pick-card:hover,
+  .player-prop-option:hover,
+  .auto-parlay-card:hover,
+  .price-card:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .space-background::before,
+  .space-background::after,
+  .floating-chip,
+  .hero::before {
+    animation:
+      none !important;
+  }
+}
+
