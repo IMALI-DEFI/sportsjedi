@@ -2431,3 +2431,117 @@ button:active,
   }
 }
 
+
+/* Sports Jedi account navigation */
+
+.signin-nav-link,
+.account-nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 38px;
+  padding: 8px 16px;
+
+  border-radius: 999px;
+
+  color: #ffffff !important;
+  font-weight: 800;
+  text-decoration: none;
+
+  border: 1px solid rgba(75, 220, 255, .65);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(25, 125, 210, .90),
+      rgba(105, 55, 220, .90)
+    );
+
+  box-shadow:
+    0 0 10px rgba(66, 220, 255, .45),
+    0 0 25px rgba(105, 55, 220, .20);
+
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease;
+}
+
+.signin-nav-link:hover,
+.account-nav-link:hover {
+  color: #ffffff !important;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 0 16px rgba(66, 220, 255, .75),
+    0 0 38px rgba(105, 55, 220, .40);
+}
+
+.auth-mode-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 24px 0 18px;
+}
+
+.auth-mode-tabs button {
+  padding: 11px;
+  border-radius: 12px;
+  color: #dbe9f9 !important;
+  background: rgba(8,17,34,.82) !important;
+  border: 1px solid rgba(66,220,255,.18) !important;
+  font-weight: 800;
+}
+
+.auth-mode-tabs button.active {
+  color: #fff !important;
+  border-color: rgba(66,220,255,.55) !important;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(25,130,200,.40),
+      rgba(100,55,210,.34)
+    ) !important;
+  box-shadow:
+    0 0 16px rgba(66,220,255,.14);
+}
+
+.auth-form {
+  display: grid;
+  gap: 16px;
+  text-align: left;
+}
+
+.auth-form label {
+  display: grid;
+  gap: 7px;
+  color: #dce7f7;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 13px 14px;
+  border-radius: 12px;
+  color: #fff;
+  background: rgba(3,9,22,.92);
+  border: 1px solid rgba(66,220,255,.22);
+  outline: none;
+}
+
+.auth-form input:focus {
+  border-color: rgba(66,220,255,.70);
+  box-shadow:
+    0 0 14px rgba(66,220,255,.12);
+}
+
+.auth-submit {
+  margin-top: 6px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}

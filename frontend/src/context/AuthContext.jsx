@@ -13,6 +13,7 @@ import {
 import {
   auth,
   googleProvider,
+  firebaseReady,
 } from "../lib/firebase";
 
 const AuthContext =
@@ -109,6 +110,24 @@ export function AuthProvider({
   }
 
   async function loginWithGoogle() {
+    if (!firebaseReady) {
+      throw new Error(
+        "Google sign-in needs the Sports Jedi Firebase environment variables."
+      );
+    }
+
+    if (!auth) {
+      throw new Error(
+        "Firebase Auth did not initialize."
+      );
+    }
+
+    if (!googleProvider) {
+      throw new Error(
+        "Google authentication provider did not initialize."
+      );
+    }
+
     const result =
       await signInWithPopup(
         auth,
@@ -130,8 +149,7 @@ export function AuthProvider({
           body: JSON.stringify({
             id_token: idToken,
             tier: "starter",
-            strategy:
-              "ai_weighted",
+            strategy: "ai_weighted",
             accepted_terms: true,
           }),
         }
@@ -153,7 +171,7 @@ export function AuthProvider({
 
     if (!token) {
       throw new Error(
-        "Authentication token was not returned"
+        "IMALI authentication token was not returned."
       );
     }
 

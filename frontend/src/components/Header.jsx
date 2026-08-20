@@ -11,8 +11,11 @@ import {
 
 import { useState } from "react";
 
+import { useAuth } from "../context/AuthContext";
+
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const { user, account } = useAuth();
 
   return (
     <header className="topbar">
@@ -83,6 +86,26 @@ export default function Header() {
           >
             Pricing
           </NavLink>
+
+          {user ? (
+            <NavLink
+              to="/account"
+              className="account-nav-link"
+              onClick={() => setOpen(false)}
+            >
+              {account?.isAdmin
+                ? "Admin"
+                : "Account"}
+            </NavLink>
+          ) : (
+            <NavLink
+              to="/login"
+              className="signin-nav-link"
+              onClick={() => setOpen(false)}
+            >
+              Sign In
+            </NavLink>
+          )}
         </nav>
 
         <div className="nav-actions">
