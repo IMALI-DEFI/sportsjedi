@@ -1,62 +1,26 @@
-const API_BASE =
+const BASE =
   import.meta.env.VITE_API_BASE_URL ||
   "https://api.sportsjedi.com";
 
-const TOKEN_KEY = "sports_jedi_token";
+async function request(path, opts = {}) {
+  const res = await fetch(`${BASE}${path}`, {
+    headers: {
+      "Content-Type": "application/json",
+      ...(opts.headers || {}),
+    },
+    ...opts,
+  });
 
-function token() {
-  return localStorage.getItem(TOKEN_KEY);
-}
+  const body = await res.json().catch(() => ({}));
 
-async function request(
-  path,
-  options = {}
-) {
-  const authToken = token();
-
-  const headers = {
-    ...(options.body
-      ? { "Content-Type": "application/json" }
-      : {}),
-    ...(options.headers || {}),
-  };
-
-  if (authToken) {
-    headers.Authorization =
-      `Bearer ${authToken}`;
+  if (!res.ok || body.success === false) {
+    throw new Error(
+      body.error ||
+      `Request failed (${res.status})`
+    );
   }
 
-  const response = await fetch(
-    `${API_BASE}${path}`,
-    {
-      ...options,
-      headers,
-    }
-  );
-
-  const payload =
-    await response.json();
-
-  if (!response.ok) {
-    const error =
-      new Error(
-        payload?.error ||
-        "Sports Jedi request failed"
-      );
-
-    error.status =
-      response.status;
-
-    error.code =
-      payload?.code;
-
-    error.payload =
-      payload;
-
-    throw error;
-  }
-
-  return payload;
+  return body.data ?? body;
 }
 
 export function assetUrl(path = "") {
@@ -64,80 +28,63 @@ export function assetUrl(path = "") {
     return path;
   }
 
-  return `${API_BASE}${path}`;
+  return `${BASE}${path}`;
 }
 
-export const sportsApi = {
-  games(league) {
-    return request(
+export const api = {
+  games: (league = "") =>
+    request(
       `/api/games${
-        league && league !== "ALL"
+        league
           ? `?league=${encodeURIComponent(league)}`
           : ""
       }`
-    );
-  },
+    ),
 
-  game(id) {
-    return request(
-      `/api/games/${id}`
-    );
-  },
+  game: (id) =>
+    request(`/api/games/${id}`),
 
-  analysis(id) {
-    return request(
-      `/api/games/${id}/analysis`
-    );
-  },
+  analysis: (id) =>
+    request(`/api/games/${id}/analysis`),
 
-  picks(league) {
-    return request(
+  teams: (league = "") =>
+    request(
+      `/api/teams${
+        league
+          ? `?league=${encodeURIComponent(league)}`
+          : ""
+      }`
+    ),
+
+  picks: (league = "") =>
+    request(
       `/api/picks${
         league
           ? `?league=${encodeURIComponent(league)}`
           : ""
       }`
-    );
-  },
+    ),
 
-  props(league) {
-    return request(
-      `/api/picks/props?league=${encodeURIComponent(league)}`
-    );
-  },
+  props: (league = "") =>
+    request(
+      `/api/picks/props${
+        league
+          ? `?league=${encodeURIComponent(league)}`
+          : ""
+      }`
+    ),
 
-  autoParlay(
-    league,
-    mode = "balanced"
-  ) {
-    return request(
-      `/api/parlays/auto?league=${encodeURIComponent(league)}&mode=${encodeURIComponent(mode)}`
-    );
-  },
+  analyzeParlay: (legs) =>
+    request("/api/parlays/analyze", {
+      method: "POST",
+      body: JSON.stringify({ legs }),
+    }),
 
-  playerParlay(selections) {
-    return request(
-      "/api/parlays/player",
-      {
-        method: "POST",
-        body: JSON.stringify({
-          selections,
-        }),
-      }
-    );
-  },
+  blog: () =>
+    request("/api/blog"),
 
-  account() {
-    return request(
-      "/api/account/me"
-    );
-  },
+  blogPost: (slug) =>
+    request(
+      `/api/blog/${encodeURIComponent(slug)}`
+    ),
 };
-
-export default sportsApi;
-
-/*
- * Backward-compatible named export.
- * Existing Sports Jedi pages import { api }.
- */
-export const api = sportsApi;
