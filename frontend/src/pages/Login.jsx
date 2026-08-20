@@ -1,17 +1,42 @@
-import { useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
-import { LogIn, ShieldCheck } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import {
+  useState,
+} from "react";
+
+import {
+  Navigate,
+  useNavigate,
+} from "react-router-dom";
+
+import {
+  LogIn,
+  UserPlus,
+  ShieldCheck,
+} from "lucide-react";
+
+import {
+  useAuth,
+} from "../context/AuthContext";
 
 export default function Login() {
   const {
     user,
     account,
     loading,
-    loginWithGoogle,
+    login,
+    signup,
   } = useAuth();
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
+
+  const [mode, setMode] =
+    useState("login");
+
+  const [email, setEmail] =
+    useState("");
+
+  const [password, setPassword] =
+    useState("");
 
   const [working, setWorking] =
     useState(false);
@@ -20,22 +45,38 @@ export default function Login() {
     useState("");
 
   if (!loading && user && account) {
-    return <Navigate to="/account" replace />;
+    return (
+      <Navigate
+        to="/account"
+        replace
+      />
+    );
   }
 
-  async function handleGoogle() {
+  async function submit(e) {
+    e.preventDefault();
+
     try {
       setWorking(true);
       setError("");
 
-      await loginWithGoogle();
+      if (mode === "login") {
+        await login(
+          email,
+          password
+        );
+      } else {
+        await signup(
+          email,
+          password
+        );
+      }
 
       navigate("/account");
     } catch (err) {
-      console.error(err);
       setError(
         err.message ||
-          "Google sign-in failed."
+        "Authentication failed."
       );
     } finally {
       setWorking(false);
@@ -58,24 +99,99 @@ export default function Login() {
         </h1>
 
         <p>
-          Sign in to access your Sports Jedi
-          picks, player props, advanced parlay
-          builders and subscription.
+          Sign in or create an account to access
+          Sports Jedi picks, player props,
+          advanced builders and subscription
+          features.
         </p>
 
-        <button
-          className="google-signin-btn"
-          onClick={handleGoogle}
-          disabled={working}
-        >
-          <span className="google-mark">
-            G
-          </span>
+        <div className="auth-mode-tabs">
+          <button
+            type="button"
+            className={
+              mode === "login"
+                ? "active"
+                : ""
+            }
+            onClick={() =>
+              setMode("login")
+            }
+          >
+            Sign In
+          </button>
 
-          {working
-            ? "Connecting..."
-            : "Continue with Google"}
-        </button>
+          <button
+            type="button"
+            className={
+              mode === "signup"
+                ? "active"
+                : ""
+            }
+            onClick={() =>
+              setMode("signup")
+            }
+          >
+            Create Account
+          </button>
+        </div>
+
+        <form
+          className="auth-form"
+          onSubmit={submit}
+        >
+          <label>
+            Email
+            <input
+              type="email"
+              value={email}
+              onChange={(e) =>
+                setEmail(
+                  e.target.value
+                )
+              }
+              required
+              autoComplete="email"
+            />
+          </label>
+
+          <label>
+            Password
+            <input
+              type="password"
+              value={password}
+              onChange={(e) =>
+                setPassword(
+                  e.target.value
+                )
+              }
+              required
+              minLength={8}
+              autoComplete={
+                mode === "login"
+                  ? "current-password"
+                  : "new-password"
+              }
+            />
+          </label>
+
+          <button
+            type="submit"
+            className="primary-btn auth-submit"
+            disabled={working}
+          >
+            {mode === "login"
+              ? <LogIn size={18} />
+              : <UserPlus size={18} />
+            }
+
+            {working
+              ? "Working..."
+              : mode === "login"
+                ? "Sign In"
+                : "Create Account"
+            }
+          </button>
+        </form>
 
         {error && (
           <div className="auth-error">
@@ -85,19 +201,8 @@ export default function Login() {
 
         <div className="auth-security">
           <ShieldCheck size={17} />
-
           <span>
-            Secure authentication through
-            your IMALI account
-          </span>
-        </div>
-
-        <div className="auth-pro-note">
-          <LogIn size={17} />
-
-          <span>
-            Pro features require an active
-            Sports Jedi subscription.
+            Secure IMALI account authentication
           </span>
         </div>
       </section>
