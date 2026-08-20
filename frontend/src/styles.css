@@ -2545,3 +2545,344 @@ button:active,
   justify-content: center;
   gap: 8px;
 }
+
+/* =========================================================
+   MOBILE STABILITY + NO HORIZONTAL PAGE MOVEMENT
+   ========================================================= */
+
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100%;
+  margin: 0;
+  overflow-x: hidden !important;
+}
+
+body {
+  position: relative;
+  overscroll-behavior-x: none;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
+main,
+section,
+article,
+aside,
+header,
+footer,
+nav,
+div {
+  min-width: 0;
+}
+
+.shell,
+.nav-wrap,
+.page-banner,
+.parlay-layout,
+.player-prop-grid,
+.account-grid,
+.game-grid,
+.picks-grid,
+.dashboard-grid {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* Prevent animated space layers from creating overflow */
+.space-background {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+.space-layer,
+.stars,
+.stars-a,
+.stars-b,
+.stars-c,
+.stars-small,
+.stars-medium,
+.stars-large,
+.space-nebula,
+.space-vignette {
+  max-width: 100vw !important;
+  overflow: hidden !important;
+}
+
+/* Cards should shrink instead of forcing page width */
+.game-card,
+.account-card,
+.auth-card,
+.parlay-slip,
+.prop-card,
+.pick-card,
+.pricing-card {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Long odds/player/team text cannot stretch cards */
+.player-name,
+.team-name,
+.matchup,
+.pick-name,
+.market-name,
+.account-card h2,
+article h2,
+article h3 {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+/* Responsive tables/rows */
+.table-wrap,
+.market-table,
+.odds-table {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .shell {
+    width: 100%;
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .page-banner {
+    grid-template-columns: 1fr !important;
+    gap: 20px;
+  }
+
+  .parlay-layout,
+  .account-grid,
+  .dashboard-grid,
+  .game-grid,
+  .picks-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .parlay-slip {
+    position: static !important;
+    width: 100%;
+  }
+
+  .nav-wrap {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .nav-links {
+    max-width: 100%;
+  }
+}
+
+/* =========================================================
+   PHONE
+   ========================================================= */
+
+@media (max-width: 620px) {
+  .shell {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .topbar {
+    width: 100%;
+  }
+
+  .nav-wrap {
+    min-height: 64px;
+    gap: 10px;
+  }
+
+  .brand {
+    min-width: 0;
+  }
+
+  .brand-logo {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+  }
+
+  .brand-copy {
+    min-width: 0;
+  }
+
+  .brand-copy strong {
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .brand-copy span {
+    font-size: 9px;
+    white-space: nowrap;
+  }
+
+  .engine-pill {
+    display: none !important;
+  }
+
+  .menu-btn {
+    display: inline-flex;
+    flex: 0 0 auto;
+  }
+
+  .nav-links {
+    position: absolute;
+    top: 100%;
+    left: 12px;
+    right: 12px;
+
+    width: auto;
+    max-width: none;
+
+    padding: 14px;
+
+    border-radius: 16px;
+
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+
+    background: rgba(2, 8, 20, .98);
+
+    border:
+      1px solid rgba(80, 210, 255, .20);
+
+    box-shadow:
+      0 20px 50px rgba(0,0,0,.55);
+
+    transform: translateY(-8px);
+    opacity: 0;
+    pointer-events: none;
+
+    z-index: 1000;
+  }
+
+  .nav-links.open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .nav-links a {
+    width: 100%;
+    padding: 11px 12px;
+    border-radius: 10px;
+  }
+
+  .signin-nav-link,
+  .account-nav-link {
+    width: 100%;
+  }
+
+  .page-banner {
+    padding: 22px 18px !important;
+  }
+
+  .page-banner h1 {
+    font-size: clamp(32px, 10vw, 46px);
+    line-height: 1.02;
+  }
+
+  .page-banner p {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .hero-actions,
+  .parlay-mode-buttons,
+  .filter-buttons,
+  .league-tabs,
+  .auth-mode-tabs {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    width: 100%;
+    gap: 10px;
+  }
+
+  button,
+  .primary-btn,
+  .secondary-btn {
+    max-width: 100%;
+  }
+
+  .player-prop-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .account-grid {
+    gap: 14px;
+  }
+
+  .account-card,
+  .auth-card,
+  .parlay-slip {
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .auth-card {
+    width: 100%;
+  }
+
+  .game-card {
+    padding: 16px;
+  }
+
+  .footer-links {
+    flex-wrap: wrap;
+  }
+}
+
+/* =========================================================
+   VERY SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 390px) {
+  .shell {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .brand-copy span {
+    display: none;
+  }
+
+  .page-banner {
+    padding: 18px 14px !important;
+  }
+
+  .page-banner h1 {
+    font-size: 30px;
+  }
+}
