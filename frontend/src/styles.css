@@ -869,3 +869,476 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* =========================================================
+   SPORTS JEDI GALACTIC THEME
+   ========================================================= */
+
+:root {
+  --space-black: #01030a;
+  --space-panel: rgba(5, 12, 28, 0.82);
+  --jedi-cyan: #42dcff;
+  --jedi-blue: #367cff;
+  --jedi-violet: #8b5cff;
+  --jedi-gold: #ffd978;
+}
+
+/* STARFIELD */
+
+.space-background {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -20;
+
+  background:
+    radial-gradient(
+      circle at 50% -10%,
+      #10234d 0%,
+      #050816 32%,
+      #010208 72%
+    );
+}
+
+.stars {
+  position: absolute;
+  inset: -100%;
+  background-repeat: repeat;
+  will-change: transform;
+}
+
+.stars-small {
+  background-image:
+    radial-gradient(
+      circle,
+      rgba(255,255,255,.9) 1px,
+      transparent 1.4px
+    );
+
+  background-size: 48px 48px;
+  opacity: .42;
+
+  animation:
+    starsMove 100s linear infinite;
+}
+
+.stars-medium {
+  background-image:
+    radial-gradient(
+      circle,
+      rgba(95,215,255,.95) 1.3px,
+      transparent 1.8px
+    );
+
+  background-size: 91px 91px;
+  opacity: .30;
+
+  animation:
+    starsMove 145s linear infinite reverse;
+}
+
+.stars-large {
+  background-image:
+    radial-gradient(
+      circle,
+      rgba(255,255,255,.95) 1.8px,
+      transparent 2.3px
+    );
+
+  background-size: 177px 177px;
+  opacity: .20;
+
+  animation:
+    starsMove 190s linear infinite;
+}
+
+@keyframes starsMove {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(
+      260px,
+      440px,
+      0
+    );
+  }
+}
+
+/* NEBULA GLOW */
+
+.space-nebula {
+  position: absolute;
+
+  width: 650px;
+  height: 650px;
+
+  border-radius: 50%;
+
+  filter: blur(120px);
+
+  opacity: .18;
+
+  animation:
+    nebulaFloat 15s
+    ease-in-out infinite alternate;
+}
+
+.nebula-one {
+  top: 5%;
+  left: -260px;
+  background: #057cff;
+}
+
+.nebula-two {
+  top: 38%;
+  right: -260px;
+  background: #762cff;
+  animation-delay: -6s;
+}
+
+@keyframes nebulaFloat {
+  from {
+    transform:
+      translateY(-45px)
+      scale(.9);
+  }
+
+  to {
+    transform:
+      translateY(80px)
+      scale(1.1);
+  }
+}
+
+.space-vignette {
+  position: absolute;
+  inset: 0;
+
+  background:
+    radial-gradient(
+      circle at center,
+      transparent 30%,
+      rgba(0,0,0,.72) 100%
+    );
+}
+
+/* GLOBAL GALACTIC PANELS */
+
+body {
+  background: #010208;
+}
+
+.topbar {
+  background:
+    rgba(2, 6, 16, .76) !important;
+
+  backdrop-filter:
+    blur(22px);
+
+  border-bottom:
+    1px solid
+    rgba(66,220,255,.18) !important;
+
+  box-shadow:
+    0 0 35px
+    rgba(66,220,255,.06);
+}
+
+.brand-logo {
+  filter:
+    drop-shadow(
+      0 0 8px
+      rgba(66,220,255,.75)
+    )
+    drop-shadow(
+      0 0 25px
+      rgba(54,124,255,.35)
+    );
+}
+
+.brand-copy strong {
+  text-shadow:
+    0 0 10px
+    rgba(66,220,255,.45);
+}
+
+.brand-copy span,
+.eyebrow {
+  color:
+    var(--jedi-cyan) !important;
+
+  text-shadow:
+    0 0 12px
+    rgba(66,220,255,.5);
+}
+
+/* HERO */
+
+.hero {
+  position: relative;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+
+  width: 520px;
+  height: 520px;
+
+  top: -180px;
+  right: -140px;
+
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(66,220,255,.18),
+      rgba(80,80,255,.07) 40%,
+      transparent 70%
+    );
+}
+
+.hero h1 em {
+  color:
+    var(--jedi-cyan) !important;
+
+  font-style: normal;
+
+  text-shadow:
+    0 0 7px
+      rgba(66,220,255,.95),
+    0 0 22px
+      rgba(66,220,255,.55),
+    0 0 55px
+      rgba(54,124,255,.3);
+}
+
+.hero-visual img {
+  animation:
+    jediFloat 4.5s
+    ease-in-out infinite;
+
+  filter:
+    drop-shadow(
+      0 0 16px
+      rgba(66,220,255,.65)
+    )
+    drop-shadow(
+      0 0 50px
+      rgba(139,92,255,.32)
+    );
+}
+
+@keyframes jediFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+/* HOLOGRAPHIC CARDS */
+
+.game-card,
+.pick-card,
+.prop-card,
+.player-prop-option,
+.parlay-slip,
+.auto-parlay-card,
+.price-card,
+.metric-card,
+.factor-card,
+.legal-card,
+.stat {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(8,18,39,.88),
+      rgba(3,8,20,.78)
+    ) !important;
+
+  border:
+    1px solid
+    rgba(66,220,255,.17) !important;
+
+  backdrop-filter:
+    blur(16px);
+
+  box-shadow:
+    inset 0 0 25px
+      rgba(66,220,255,.025),
+    0 18px 60px
+      rgba(0,0,0,.35);
+}
+
+.game-card:hover,
+.pick-card:hover,
+.player-prop-option:hover {
+  border-color:
+    rgba(66,220,255,.48)
+    !important;
+
+  box-shadow:
+    0 0 18px
+      rgba(66,220,255,.10),
+    0 20px 65px
+      rgba(0,0,0,.45);
+}
+
+/* GLOWING BUTTONS */
+
+.primary-btn {
+  background:
+    linear-gradient(
+      135deg,
+      #078fd1,
+      #3748ff
+    ) !important;
+
+  border:
+    1px solid
+    rgba(110,231,255,.7)
+    !important;
+
+  box-shadow:
+    0 0 12px
+      rgba(66,220,255,.30),
+    0 0 34px
+      rgba(66,220,255,.13),
+    inset 0 0 18px
+      rgba(255,255,255,.10);
+
+  transition:
+    .2s ease;
+}
+
+.primary-btn:hover {
+  transform:
+    translateY(-2px);
+
+  box-shadow:
+    0 0 17px
+      rgba(66,220,255,.60),
+    0 0 44px
+      rgba(66,220,255,.25);
+}
+
+.secondary-btn {
+  border-color:
+    rgba(66,220,255,.25)
+    !important;
+
+  background:
+    rgba(5,13,29,.75)
+    !important;
+}
+
+/* ACTIVE NAV/TABS */
+
+.nav-links a.active {
+  color: white !important;
+
+  text-shadow:
+    0 0 12px
+    var(--jedi-cyan);
+}
+
+.league-tabs button.active,
+.event-filter button.active,
+.auto-parlay-buttons button.active {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(22,134,210,.35),
+      rgba(104,62,230,.28)
+    ) !important;
+
+  border-color:
+    rgba(66,220,255,.60)
+    !important;
+
+  box-shadow:
+    0 0 15px
+    rgba(66,220,255,.15);
+}
+
+/* PARLAY GLOW */
+
+.parlay-slip {
+  border-color:
+    rgba(139,92,255,.33)
+    !important;
+
+  box-shadow:
+    0 0 35px
+      rgba(139,92,255,.10),
+    0 25px 70px
+      rgba(0,0,0,.45);
+}
+
+.parlay-score strong,
+.confidence-ring strong {
+  color:
+    var(--jedi-cyan);
+
+  text-shadow:
+    0 0 10px
+    rgba(66,220,255,.60);
+}
+
+/* SCANLINE / HOLOGRAM EFFECT */
+
+#root::after {
+  content: "";
+
+  position: fixed;
+  inset: 0;
+
+  z-index: 9999;
+
+  pointer-events: none;
+
+  opacity: .025;
+
+  background-image:
+    linear-gradient(
+      rgba(255,255,255,.7) 1px,
+      transparent 1px
+    );
+
+  background-size:
+    100% 4px;
+}
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+  .space-nebula {
+    width: 380px;
+    height: 380px;
+  }
+
+  .hero-visual img {
+    max-width: 230px;
+  }
+}
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+  .stars,
+  .space-nebula,
+  .hero-visual img {
+    animation:
+      none !important;
+  }
+}
+
