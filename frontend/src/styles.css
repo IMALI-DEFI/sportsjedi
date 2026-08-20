@@ -2911,3 +2911,111 @@ article h3 {
     order: 1;
   }
 }
+
+/* =========================================================
+   JEDI PICKS CARD CONTENT CONTAINMENT
+   ========================================================= */
+
+.pick-card,
+.picks-card,
+.game-card,
+.signal-card {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.pick-card *,
+.picks-card *,
+.game-card *,
+.signal-card * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.pick-card h1,
+.pick-card h2,
+.pick-card h3,
+.pick-card p,
+.pick-card span,
+.pick-card strong,
+.picks-card h1,
+.picks-card h2,
+.picks-card h3,
+.picks-card p,
+.picks-card span,
+.picks-card strong,
+.signal-card h1,
+.signal-card h2,
+.signal-card h3,
+.signal-card p,
+.signal-card span,
+.signal-card strong {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.pick-card .matchup,
+.pick-card .team-name,
+.pick-card .pick-name,
+.pick-card .market-name,
+.pick-card .analysis-text,
+.pick-card .confidence-row,
+.picks-card .matchup,
+.picks-card .team-name,
+.picks-card .pick-name,
+.picks-card .market-name,
+.picks-card .analysis-text {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.pick-card img,
+.picks-card img,
+.signal-card img {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Prevent odds / badges from forcing card width */
+.pick-card .badge,
+.pick-card .pill,
+.pick-card .odds,
+.pick-card .confidence,
+.picks-card .badge,
+.picks-card .pill,
+.picks-card .odds,
+.picks-card .confidence {
+  flex-shrink: 1;
+  max-width: 100%;
+}
+
+/* Stack crowded pick rows on smaller screens */
+@media (max-width: 620px) {
+  .pick-card,
+  .picks-card,
+  .signal-card {
+    padding: 16px !important;
+  }
+
+  .pick-card .pick-row,
+  .pick-card .market-row,
+  .pick-card .confidence-row,
+  .picks-card .pick-row,
+  .picks-card .market-row,
+  .picks-card .confidence-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .pick-card button,
+  .picks-card button,
+  .signal-card button {
+    max-width: 100%;
+  }
+}
