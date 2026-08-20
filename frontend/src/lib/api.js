@@ -3,23 +3,47 @@ const BASE =
   "https://api.sportsjedi.com";
 
 async function request(path, opts = {}) {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(opts.headers || {}),
-    },
-    ...opts,
-  });
+  const token =
+    localStorage.getItem("sports_jedi_token");
 
-  const body = await res.json().catch(() => ({}));
+  const headers = {
+    "Content-Type": "application/json",
+    ...(opts.headers || {}),
+  };
+
+  if (token) {
+    headers.Authorization =
+      `Bearer ${token}`;
+  }
+
+  const res = await fetch(
+    `${BASE}${path}`,
+    {
+      ...opts,
+      headers,
+    }
+  );
+
+  const body =
+    await res.json().catch(() => ({}));
 
   if (!res.ok || body.success === false) {
-    throw new Error(
+    const error = new Error(
       body.error ||
       `Request failed (${res.status})`
     );
+
+    error.status = res.status;
+    error.code = body.code;
+    error.payload = body;
+
+    throw error;
   }
 
+  /*
+   * IMPORTANT:
+   * Preserve original Sports Jedi response shape.
+   */
   return body.data ?? body;
 }
 
@@ -87,4 +111,27 @@ export const api = {
     request(
       `/api/blog/${encodeURIComponent(slug)}`
     ),
+
+
+  autoParlay: (
+    league,
+    mode = "balanced"
+  ) =>
+    request(
+      `/api/parlays/auto?league=${encodeURIComponent(league)}&mode=${encodeURIComponent(mode)}`
+    ),
+
+  playerParlay: (selections) =>
+    request(
+      "/api/parlays/player",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          selections,
+        }),
+      }
+    ),
+
+  account: () =>
+    request("/api/account/me"),
 };

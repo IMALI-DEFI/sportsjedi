@@ -1,3 +1,4 @@
+import { api } from "../lib/api";
 import {
   useEffect,
   useMemo,
@@ -162,30 +163,26 @@ export default function Parlay() {
       setLoading(true);
       setError("");
 
-      const response = await fetch(
-        `${API}/api/parlays/auto?league=${league}&mode=${mode}`
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          result.error || "Unable to generate auto parlay"
+      const result =
+        await api.autoParlay(
+          league,
+          mode
         );
-      }
 
-      setLegs(result.data.selections || []);
+      setLegs(result.selections || []);
 
       setAnalysis({
-        impliedProbability: result.data.impliedProbability,
-        combinedAmerican: result.data.combinedAmerican,
-        combinedDecimal: result.data.combinedDecimal,
-        risk: result.data.risk,
-        sameGame: result.data.sameGame,
+        impliedProbability: result.impliedProbability,
+        combinedAmerican: result.combinedAmerican,
+        combinedDecimal: result.combinedDecimal,
+        risk: result.risk,
+        sameGame: result.sameGame,
         warnings:
-          result.data.warnings?.length
-            ? result.data.warnings
-            : [],
+          result.warnings?.length
+            ? result.warnings
+            : result.warning
+              ? [result.warning]
+              : [],
       });
     } catch (err) {
       setError(err.message);
@@ -206,30 +203,12 @@ export default function Parlay() {
     setError("");
 
     try {
-      const response = await fetch(
-        `${API}/api/parlays/player`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            legs,
-          }),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          result.error ||
-            "Unable to analyze parlay"
+      const result =
+        await api.playerParlay(
+          legs
         );
-      }
 
-      setAnalysis(result.data);
+      setAnalysis(result);
     } catch (err) {
       setError(err.message);
     } finally {
