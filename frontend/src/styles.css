@@ -3019,3 +3019,72 @@ article h3 {
     max-width: 100%;
   }
 }
+
+/* =========================================================
+   MOBILE JEDI PICKS CONFIDENCE FIX
+   ========================================================= */
+
+@media (max-width: 620px) {
+  .pick-card {
+    position: relative;
+    overflow: hidden;
+    padding-right: 18px !important;
+  }
+
+  .confidence-ring {
+    position: static !important;
+    width: auto !important;
+    min-width: 88px;
+    max-width: 110px;
+
+    display: inline-flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    margin-top: 12px;
+    padding: 10px 14px;
+
+    border-radius: 14px;
+
+    background: rgba(5, 20, 38, .85);
+    border: 1px solid rgba(64, 220, 255, .30);
+
+    box-shadow:
+      0 0 14px rgba(55, 215, 255, .12);
+
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    white-space: nowrap !important;
+  }
+
+  .confidence-ring strong,
+  .confidence-ring b {
+    display: block;
+    width: auto !important;
+
+    font-size: 28px !important;
+    line-height: 1 !important;
+
+    color: #45e6ff;
+
+    white-space: nowrap !important;
+    writing-mode: horizontal-tb !important;
+  }
+
+  .confidence-ring span {
+    display: block;
+    width: auto !important;
+
+    margin-top: 4px;
+
+    font-size: 9px !important;
+    line-height: 1.1 !important;
+
+    letter-spacing: .14em;
+    text-transform: uppercase;
+
+    white-space: nowrap !important;
+    writing-mode: horizontal-tb !important;
+  }
+}
