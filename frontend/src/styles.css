@@ -2886,3 +2886,28 @@ article h3 {
     font-size: 30px;
   }
 }
+
+/* =========================================================
+   MOBILE PARLAY RESULT PRIORITY
+   ========================================================= */
+
+@media (max-width: 620px) {
+  .parlay-layout {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Show generated/analyzed result before builder controls */
+  .parlay-slip {
+    order: -1;
+    position: static !important;
+    width: 100%;
+    margin-bottom: 16px;
+  }
+
+  .parlay-builder,
+  .player-prop-section,
+  .parlay-selection-area {
+    order: 1;
+  }
+}
