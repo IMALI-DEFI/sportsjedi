@@ -2,7 +2,9 @@ import { useState } from "react";
 import {
   Check,
   Crown,
+  Lock,
   Sparkles,
+  WandSparkles,
   Zap,
 } from "lucide-react";
 
@@ -60,15 +62,15 @@ export default function Pricing() {
           </span>
 
           <h1>
-            Find the signal.
+            Unlock the full
             <br />
-            <em>Cut through the noise.</em>
+            <em>Jedi Builder Suite.</em>
           </h1>
 
           <p>
-            Start free. Upgrade when
-            you want the complete
-            Sports Jedi experience.
+            Start free with limited daily access.
+            Upgrade for unlimited picks, player props,
+            advanced parlays and automatic builders.
           </p>
         </div>
 
@@ -82,23 +84,43 @@ export default function Pricing() {
           </span>
 
           <h2>$0</h2>
-          <p>Forever</p>
+          <p>Limited daily access</p>
 
           <ul>
             <li>
               <Check /> Live game board
             </li>
+
             <li>
-              <Check /> Basic market data
+              <Check /> 3 Jedi Picks per day
             </li>
+
             <li>
-              <Check /> Limited Jedi signals
+              <Check /> 5 player props per day
             </li>
+
             <li>
-              <Check /> Selected player props
+              <Check /> Manual Parlay Lab
             </li>
+
             <li>
-              <Check /> Parlay Lab preview
+              <Check /> 1 Auto Parlay per day
+            </li>
+
+            <li>
+              <Check /> Basic market consensus
+            </li>
+
+            <li className="locked-feature">
+              <Lock /> Advanced builder modes locked
+            </li>
+
+            <li className="locked-feature">
+              <Lock /> Unlimited player parlays locked
+            </li>
+
+            <li className="locked-feature">
+              <Lock /> Multi-game builder locked
             </li>
           </ul>
 
@@ -120,35 +142,66 @@ export default function Pricing() {
           </span>
 
           <h2>
-            $19.99
+            $19.95
             <small>/mo</small>
           </h2>
 
           <p>
-            Full Sports Jedi intelligence
+            Full Sports Jedi builder access
           </p>
+
+          <div className="builder-badge">
+            <WandSparkles size={17} />
+            ADVANCED BUILDER SUITE
+          </div>
 
           <ul>
             <li>
-              <Check /> Full Jedi Picks
+              <Check /> Unlimited Jedi Picks
             </li>
+
             <li>
-              <Check /> Confidence rankings
+              <Check /> Unlimited player props
             </li>
+
             <li>
-              <Check /> Multi-book consensus
+              <Check /> Unlimited Parlay Lab
             </li>
+
+            <li>
+              <Check /> Auto Parlay Generator
+            </li>
+
+            <li className="builder-option">
+              <Zap /> Safer Builder
+            </li>
+
+            <li className="builder-option">
+              <Zap /> Balanced Builder
+            </li>
+
+            <li className="builder-option">
+              <Zap /> Long Shot Builder
+            </li>
+
+            <li>
+              <Check /> Advanced Player Parlay Builder
+            </li>
+
+            <li>
+              <Check /> Multi-game parlay builder
+            </li>
+
+            <li>
+              <Check /> Full sportsbook consensus
+            </li>
+
             <li>
               <Check /> No-vig probabilities
             </li>
+
             <li>
-              <Check /> Full player props
-            </li>
-            <li>
-              <Check /> Advanced Parlay Lab
-            </li>
-            <li>
-              <Check /> Future Pro features
+              <Check /> Future Pro alerts + saved parlays
             </li>
           </ul>
 
@@ -159,10 +212,11 @@ export default function Pricing() {
               checkout("monthly")
             }
           >
-            <Zap size={18} />
+            <Crown size={18} />
+
             {loading === "monthly"
               ? "Opening checkout…"
-              : "Start Pro"}
+              : "Unlock Pro"}
           </button>
         </article>
 
@@ -177,21 +231,45 @@ export default function Pricing() {
           </h2>
 
           <p>
-            Save compared with monthly
+            Full Pro access for less
           </p>
+
+          <div className="builder-badge">
+            <WandSparkles size={17} />
+            ALL ADVANCED BUILDERS
+          </div>
 
           <ul>
             <li>
               <Check /> Everything in Pro
             </li>
+
             <li>
-              <Check /> One annual payment
+              <Check /> Safer Builder
             </li>
+
             <li>
-              <Check /> Best launch value
+              <Check /> Balanced Builder
             </li>
+
             <li>
-              <Check /> Future Pro features
+              <Check /> Long Shot Builder
+            </li>
+
+            <li>
+              <Check /> Player Parlay Builder
+            </li>
+
+            <li>
+              <Check /> Multi-game Builder
+            </li>
+
+            <li>
+              <Check /> Unlimited usage
+            </li>
+
+            <li>
+              <Check /> Best annual value
             </li>
           </ul>
 
@@ -209,12 +287,38 @@ export default function Pricing() {
         </article>
       </section>
 
+      <section className="builder-comparison">
+        <span className="eyebrow">
+          Builder Access
+        </span>
+
+        <h2>
+          Free gives you a taste.
+          Pro unlocks the full arsenal.
+        </h2>
+
+        <div className="builder-comparison-grid">
+          <div>
+            <strong>FREE</strong>
+            <span>Manual builder</span>
+            <span>1 auto parlay/day</span>
+            <span>Limited props</span>
+          </div>
+
+          <div className="builder-comparison-pro">
+            <strong>PRO</strong>
+            <span>Unlimited Auto Parlays</span>
+            <span>Safer / Balanced / Long Shot</span>
+            <span>Advanced Player Builder</span>
+            <span>Multi-game Builder</span>
+          </div>
+        </div>
+      </section>
+
       <p className="pricing-disclaimer">
-        Sports Jedi provides sports
-        analytics and probability
-        estimates for informational
-        purposes. No outcome is
-        guaranteed.
+        Sports Jedi provides analytical tools
+        and probability estimates. No sporting
+        outcome or profit is guaranteed.
       </p>
     </main>
   );
