@@ -1,3 +1,4 @@
+import sportsApi from "../lib/api";
 import {
   useEffect,
   useMemo,
@@ -162,17 +163,11 @@ export default function Parlay() {
       setLoading(true);
       setError("");
 
-      const response = await fetch(
-        `${API}/api/parlays/auto?league=${league}&mode=${mode}`
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          result.error || "Unable to generate auto parlay"
+      const result =
+        await sportsApi.autoParlay(
+          league,
+          mode
         );
-      }
 
       setLegs(result.data.selections || []);
 
@@ -206,28 +201,10 @@ export default function Parlay() {
     setError("");
 
     try {
-      const response = await fetch(
-        `${API}/api/parlays/player`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            legs,
-          }),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          result.error ||
-            "Unable to analyze parlay"
+      const result =
+        await sportsApi.playerParlay(
+          selectedLegs
         );
-      }
 
       setAnalysis(result.data);
     } catch (err) {
