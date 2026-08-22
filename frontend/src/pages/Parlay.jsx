@@ -19,6 +19,27 @@ const API =
 
 const leagues = ["NFL", "NBA", "MLB"];
 
+const advancedMarkets = {
+  NFL: [
+    ["player_pass_yds", "Passing Yards"],
+    ["player_rush_yds", "Rushing Yards"],
+    ["player_reception_yds", "Receiving Yards"],
+  ],
+
+  NBA: [
+    ["player_points", "Points"],
+    ["player_rebounds", "Rebounds"],
+    ["player_assists", "Assists"],
+    ["player_threes", "3-Pointers"],
+  ],
+
+  MLB: [
+    ["batter_hits", "Hits"],
+    ["batter_total_bases", "Total Bases"],
+    ["batter_home_runs", "Home Runs"],
+  ],
+};
+
 function formatMarket(value = "") {
   return value
     .replace(/^player_/, "")
@@ -47,6 +68,36 @@ export default function Parlay() {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const [advancedOpen, setAdvancedOpen] =
+    useState(false);
+
+  const [builderType, setBuilderType] =
+    useState("player_props");
+
+  const [builderLegs, setBuilderLegs] =
+    useState(4);
+
+  const [gameMode, setGameMode] =
+    useState("diversified");
+
+  const [minConfidence, setMinConfidence] =
+    useState(70);
+
+  const [minPrice, setMinPrice] =
+    useState(-300);
+
+  const [direction, setDirection] =
+    useState("any");
+
+  const [uniquePlayers, setUniquePlayers] =
+    useState(true);
+
+  const [maxSameGame, setMaxSameGame] =
+    useState(1);
+
+  const [selectedMarkets, setSelectedMarkets] =
+    useState([]);
 
   useEffect(() => {
     setProps([]);
@@ -158,6 +209,62 @@ export default function Parlay() {
     setAnalysis(null);
   }
 
+  function toggleMarket(market) {
+    setSelectedMarkets((current) =>
+      current.includes(market)
+        ? current.filter(
+            (item) => item !== market
+          )
+        : [...current, market]
+    );
+  }
+
+  async function generateAdvancedParlay() {
+    try {
+      setLoading(true);
+      setError("");
+
+      const result =
+        await api.autoParlayAdvanced({
+          league,
+          type: builderType,
+          legs: builderLegs,
+          gameMode,
+          minConfidence,
+          minPrice,
+          direction,
+          uniquePlayers,
+          maxSameGame,
+          markets: selectedMarkets,
+        });
+
+      setLegs(result.selections || []);
+
+      setAnalysis({
+        impliedProbability:
+          result.impliedProbability,
+        combinedAmerican:
+          result.combinedAmerican,
+        combinedDecimal:
+          result.combinedDecimal,
+        risk:
+          result.risk,
+        sameGame:
+          result.sameGame,
+        warnings:
+          result.warnings?.length
+            ? result.warnings
+            : result.warning
+              ? [result.warning]
+              : [],
+      });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function generateAutoParlay(mode) {
     try {
       setLoading(true);
@@ -267,29 +374,302 @@ export default function Parlay() {
           <h2>Build me a parlay</h2>
 
           <p>
-            Sports Jedi automatically selects diversified
-            live-market legs based on your risk preference.
+            Use a quick Jedi preset or customize
+            exactly how Sports Jedi builds your card.
           </p>
         </div>
 
         <div className="auto-parlay-buttons">
-          <button onClick={() => generateAutoParlay("safe")}>
+          <button
+            onClick={() =>
+              generateAutoParlay("safe")
+            }
+          >
             Safer
           </button>
 
           <button
             className="active"
-            onClick={() => generateAutoParlay("balanced")}
+            onClick={() =>
+              generateAutoParlay("balanced")
+            }
           >
             Balanced
           </button>
 
-          <button onClick={() => generateAutoParlay("longshot")}>
+          <button
+            onClick={() =>
+              generateAutoParlay("longshot")
+            }
+          >
             Long Shot
           </button>
         </div>
-      </section>
 
+        <button
+          type="button"
+          className="advanced-toggle"
+          onClick={() =>
+            setAdvancedOpen(
+              (value) => !value
+            )
+          }
+        >
+          {advancedOpen
+            ? "Hide Advanced Builder"
+            : "Advanced Builder"}
+        </button>
+
+        {advancedOpen && (
+          <div className="advanced-builder">
+            <div className="advanced-field">
+              <label>Bet Type</label>
+
+              <div className="advanced-options">
+                {[
+                  ["mixed", "Mixed"],
+                  [
+                    "player_props",
+                    "Player Props Only",
+                  ],
+                  [
+                    "game_lines",
+                    "Game Lines Only",
+                  ],
+                ].map(([value, label]) => (
+                  <button
+                    type="button"
+                    key={value}
+                    className={
+                      builderType === value
+                        ? "active"
+                        : ""
+                    }
+                    onClick={() =>
+                      setBuilderType(value)
+                    }
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="advanced-grid">
+              <div className="advanced-field">
+                <label>Legs</label>
+
+                <select
+                  value={builderLegs}
+                  onChange={(e) =>
+                    setBuilderLegs(
+                      Number(e.target.value)
+                    )
+                  }
+                >
+                  {[2,3,4,5,6,7,8].map(
+                    (count) => (
+                      <option
+                        key={count}
+                        value={count}
+                      >
+                        {count} legs
+                      </option>
+                    )
+                  )}
+                </select>
+              </div>
+
+              <div className="advanced-field">
+                <label>
+                  Game Strategy
+                </label>
+
+                <select
+                  value={gameMode}
+                  onChange={(e) =>
+                    setGameMode(
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="diversified">
+                    Diversified
+                  </option>
+
+                  <option value="same_game">
+                    Same Game
+                  </option>
+
+                  <option value="either">
+                    Either
+                  </option>
+                </select>
+              </div>
+
+              <div className="advanced-field">
+                <label>
+                  Minimum Confidence
+                </label>
+
+                <select
+                  value={minConfidence}
+                  onChange={(e) =>
+                    setMinConfidence(
+                      Number(e.target.value)
+                    )
+                  }
+                >
+                  {[60,65,70,72,75,80,85,90]
+                    .map((value) => (
+                      <option
+                        key={value}
+                        value={value}
+                      >
+                        {value}%+
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div className="advanced-field">
+                <label>
+                  Minimum Odds
+                </label>
+
+                <select
+                  value={minPrice}
+                  onChange={(e) =>
+                    setMinPrice(
+                      Number(e.target.value)
+                    )
+                  }
+                >
+                  {[-400,-350,-300,-250,-200,-150,-110]
+                    .map((value) => (
+                      <option
+                        key={value}
+                        value={value}
+                      >
+                        {value}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div className="advanced-field">
+                <label>Direction</label>
+
+                <select
+                  value={direction}
+                  onChange={(e) =>
+                    setDirection(
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="any">
+                    Any
+                  </option>
+
+                  <option value="over">
+                    Overs Only
+                  </option>
+
+                  <option value="under">
+                    Unders Only
+                  </option>
+                </select>
+              </div>
+
+              <div className="advanced-field">
+                <label>
+                  Max Legs Per Game
+                </label>
+
+                <select
+                  value={maxSameGame}
+                  onChange={(e) =>
+                    setMaxSameGame(
+                      Number(e.target.value)
+                    )
+                  }
+                >
+                  {[1,2,3].map(
+                    (value) => (
+                      <option
+                        key={value}
+                        value={value}
+                      >
+                        {value}
+                      </option>
+                    )
+                  )}
+                </select>
+              </div>
+            </div>
+
+            <label className="advanced-check">
+              <input
+                type="checkbox"
+                checked={uniquePlayers}
+                onChange={(e) =>
+                  setUniquePlayers(
+                    e.target.checked
+                  )
+                }
+              />
+
+              Unique players only
+            </label>
+
+            {builderType !== "game_lines" && (
+              <div className="advanced-field">
+                <label>
+                  Player Markets
+                </label>
+
+                <div className="market-selector">
+                  {(advancedMarkets[league] || [])
+                    .map(
+                      ([value, label]) => (
+                        <button
+                          type="button"
+                          key={value}
+                          className={
+                            selectedMarkets.includes(
+                              value
+                            )
+                              ? "active"
+                              : ""
+                          }
+                          onClick={() =>
+                            toggleMarket(value)
+                          }
+                        >
+                          {label}
+                        </button>
+                      )
+                    )}
+                </div>
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="generate-advanced-btn"
+              onClick={generateAdvancedParlay}
+              disabled={loading}
+            >
+              <WandSparkles size={17} />
+
+              {loading
+                ? "Building..."
+                : "Generate Jedi Parlay"}
+            </button>
+          </div>
+        )}
+      </section>
       <div className="parlay-layout">
         <section className="prop-browser">
           <div className="section-head">

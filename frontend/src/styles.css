@@ -3088,3 +3088,130 @@ article h3 {
     writing-mode: horizontal-tb !important;
   }
 }
+
+/* Advanced Parlay Builder */
+
+.advanced-toggle {
+  margin-top: 16px;
+  padding: 11px 18px;
+  border-radius: 12px;
+  color: #fff !important;
+  background: rgba(8, 28, 52, .92) !important;
+  border: 1px solid rgba(70, 220, 255, .35) !important;
+  font-weight: 800;
+}
+
+.advanced-builder {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 18px;
+  background: rgba(2, 10, 24, .72);
+  border: 1px solid rgba(70, 220, 255, .18);
+}
+
+.advanced-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.advanced-field {
+  min-width: 0;
+  margin-top: 14px;
+}
+
+.advanced-field label {
+  display: block;
+  margin-bottom: 7px;
+  color: #b9cbe0;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.advanced-field select {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 10px;
+  color: #fff;
+  background: #061426;
+  border: 1px solid rgba(70,220,255,.24);
+}
+
+.advanced-options,
+.market-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.advanced-options button,
+.market-selector button {
+  padding: 9px 12px;
+  color: #dcecff !important;
+  background: rgba(7, 25, 45, .92) !important;
+  border: 1px solid rgba(70,220,255,.18) !important;
+  border-radius: 10px;
+}
+
+.advanced-options button.active,
+.market-selector button.active {
+  color: #fff !important;
+  border-color: rgba(70,220,255,.72) !important;
+  box-shadow: 0 0 14px rgba(70,220,255,.22);
+}
+
+.advanced-check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 18px;
+  color: #dcecff;
+}
+
+.generate-advanced-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #fff !important;
+  font-weight: 900;
+  border-radius: 12px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(15,140,210,.95),
+      rgba(100,55,210,.95)
+    ) !important;
+  border: 1px solid rgba(95,225,255,.55) !important;
+  box-shadow: 0 0 18px rgba(55,210,255,.18);
+}
+
+@media (max-width: 760px) {
+  .advanced-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .advanced-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .advanced-builder {
+    padding: 14px;
+  }
+
+  .advanced-options {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .market-selector button {
+    flex: 1 1 calc(50% - 8px);
+  }
+}

@@ -121,6 +121,47 @@ export const api = {
       `/api/parlays/auto?league=${encodeURIComponent(league)}&mode=${encodeURIComponent(mode)}`
     ),
 
+  autoParlayAdvanced: ({
+    league,
+    type = "mixed",
+    legs = 4,
+    gameMode = "diversified",
+    minConfidence = 70,
+    minPrice = -300,
+    direction = "any",
+    uniquePlayers = true,
+    maxSameGame = 1,
+    markets = [],
+  }) => {
+    const params = new URLSearchParams({
+      league,
+      mode: "custom",
+      type,
+      legs: String(legs),
+      gameMode,
+      minConfidence:
+        String(minConfidence),
+      minPrice:
+        String(minPrice),
+      direction,
+      uniquePlayers:
+        String(uniquePlayers),
+      maxSameGame:
+        String(maxSameGame),
+    });
+
+    if (markets.length) {
+      params.set(
+        "markets",
+        markets.join(",")
+      );
+    }
+
+    return request(
+      `/api/parlays/auto?${params.toString()}`
+    );
+  },
+
   playerParlay: (selections) =>
     request(
       "/api/parlays/player",
