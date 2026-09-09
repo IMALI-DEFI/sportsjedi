@@ -3215,3 +3215,53 @@ article h3 {
     flex: 1 1 calc(50% - 8px);
   }
 }
+
+/* Sportsbook links */
+.slip-leg-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.sportsbook-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.sportsbook-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.sportsbook-link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 640px) {
+  .sportsbook-links {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .sportsbook-link {
+    width: 100%;
+  }
+}

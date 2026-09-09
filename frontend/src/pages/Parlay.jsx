@@ -823,9 +823,18 @@ export default function Parlay() {
               {legs.map((leg) => (
                 <div
                   className="slip-leg"
-                  key={leg.id}
+                  key={
+                    leg.id ||
+                    [
+                      leg.eventId,
+                      leg.player,
+                      leg.market,
+                      leg.pick,
+                      leg.line,
+                    ].join("|")
+                  }
                 >
-                  <div>
+                  <div className="slip-leg-main">
                     <small>
                       {leg.matchup || leg.league}
                     </small>
@@ -845,6 +854,36 @@ export default function Parlay() {
                         leg.price
                       )}
                     </strong>
+
+                    {!!leg.sportsbookLinks?.length && (
+                      <div className="sportsbook-links">
+                        {leg.sportsbookLinks.map(
+                          (book) => {
+                            const url =
+                              book.deeplink ||
+                              book.fallbackUrl;
+
+                            if (!url) {
+                              return null;
+                            }
+
+                            return (
+                              <a
+                                key={book.key}
+                                className="sportsbook-link"
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer sponsored"
+                              >
+                                {book.deeplink
+                                  ? `Open in ${book.name}`
+                                  : `Visit ${book.name}`}
+                              </a>
+                            );
+                          }
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <button
