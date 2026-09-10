@@ -3416,3 +3416,72 @@ article h3 {
     font-size: 0.72rem;
   }
 }
+
+/* =========================================================
+   SPORTS JEDI — PORTRAIT MOBILE WIDTH FIX
+   ========================================================= */
+
+@media (max-width: 600px) {
+  html,
+  body,
+  #root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  main,
+  section,
+  article {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* Never allow content cards to force desktop width */
+  main > *,
+  section > *,
+  article > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* Long team/player text must stay inside the card */
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  span {
+    overflow-wrap: anywhere;
+  }
+
+  /* Inputs/buttons should fit the portrait viewport */
+  input,
+  select,
+  textarea,
+  button {
+    max-width: 100%;
+  }
+
+  /* Horizontal filter/chip rows may scroll */
+  [class*="filter"],
+  [class*="tabs"],
+  [class*="chips"],
+  [class*="games"] {
+    min-width: 0;
+  }
+
+  /* Card-style elements cannot exceed their parent */
+  [class*="card"],
+  [class*="prop"],
+  [class*="pick"] {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+}
