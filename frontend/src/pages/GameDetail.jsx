@@ -5,6 +5,7 @@ import {
 
 import {
   Link,
+  useNavigate,
   useParams,
 } from "react-router-dom";
 
@@ -19,12 +20,15 @@ import {
 } from "lucide-react";
 
 import { api } from "../lib/api";
+import LiveGamecast from "../components/LiveGamecast";
 
 export default function GameDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [game, setGame] = useState(null);
   const [analysis, setAnalysis] = useState(null);
+  const [gamecast, setGamecast] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -37,6 +41,82 @@ export default function GameDetail() {
         setAnalysis(analysisData);
       })
       .catch((err) => setError(err.message));
+  }, [id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    let timer;
+
+    async function refreshGamecast() {
+      try {
+        const data = await api.gamecast(id);
+
+        if (!cancelled) {
+          setGamecast(data);
+
+          if (
+            data?.score &&
+            data?.status
+          ) {
+            setGame((current) => {
+              if (!current) return current;
+
+              return {
+                ...current,
+                status:
+                  data.status ||
+                  current.status,
+                inning:
+                  data.inning ??
+                  current.inning,
+                inningState:
+                  data.inningState ??
+                  current.inningState,
+                inningOrdinal:
+                  data.inningOrdinal ??
+                  current.inningOrdinal,
+                away: {
+                  ...current.away,
+                  score:
+                    data.score.away ??
+                    current.away.score,
+                },
+                home: {
+                  ...current.home,
+                  score:
+                    data.score.home ??
+                    current.home.score,
+                },
+              };
+            });
+          }
+        }
+      } catch (err) {
+        /*
+         * Gamecast is supplemental.
+         * Never break Game Detail if the
+         * live feed is temporarily unavailable.
+         */
+        console.warn(
+          "Gamecast refresh failed:",
+          err.message
+        );
+      }
+
+      if (!cancelled) {
+        timer = window.setTimeout(
+          refreshGamecast,
+          7000
+        );
+      }
+    }
+
+    refreshGamecast();
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
   }, [id]);
 
   if (error) {
@@ -57,6 +137,18 @@ export default function GameDetail() {
     );
   }
 
+  function buildThisGameParlay() {
+    const params = new URLSearchParams({
+      league: game.league,
+      eventId: id,
+      gameMode: "same_game",
+    });
+
+    navigate(
+      `/parlay?${params.toString()}`
+    );
+  }
+
   return (
     <main className="shell detail-page">
       <Link to="/" className="back">
@@ -71,7 +163,11 @@ export default function GameDetail() {
           </span>
 
           <span className={`status ${game.status}`}>
-            {game.status}
+            {game.status === "live"
+              ? "LIVE"
+              : game.status === "final"
+                ? "FINAL"
+                : game.status}
           </span>
         </div>
 
@@ -82,7 +178,31 @@ export default function GameDetail() {
             <span>{game.away.name}</span>
           </div>
 
-          <div className="versus">VS</div>
+          <div className="versus">
+            {game.status === "live" ||
+            game.status === "final" ? (
+              <>
+                <strong>
+                  {game.away.score ?? 0}
+                  {" – "}
+                  {game.home.score ?? 0}
+                </strong>
+
+                {game.status === "live" &&
+                  game.inning && (
+                    <small>
+                      {game.inningState
+                        ? `${game.inningState} `
+                        : ""}
+                      {game.inningOrdinal ||
+                        `Inning ${game.inning}`}
+                    </small>
+                  )}
+              </>
+            ) : (
+              "VS"
+            )}
+          </div>
 
           <div>
             <small>HOME</small>
@@ -114,6 +234,42 @@ export default function GameDetail() {
             </span>
           )}
         </div>
+      </section>
+
+      {game.league === "MLB" && gamecast && (
+        <LiveGamecast gamecast={gamecast} />
+      )}
+
+      <section className="game-parlay-cta">
+        <div>
+          <span className="eyebrow">
+            {game.status === "live"
+              ? "LIVE PARLAY BUILDER"
+              : "SAME-GAME BUILDER"}
+          </span>
+
+          <h2>
+            {game.status === "live"
+              ? "Build a live parlay for this game"
+              : "Build a parlay for this game"}
+          </h2>
+
+          <p>
+            {game.status === "live"
+              ? "Sports Jedi will only use qualifying markets that remain available for this live matchup."
+              : "Sports Jedi will only use qualifying picks and player props from this matchup."}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          className="primary-button game-parlay-button"
+          onClick={buildThisGameParlay}
+        >
+          {game.status === "live"
+            ? "Build Live Parlay"
+            : "Build This Game Parlay"}
+        </button>
       </section>
 
       <section className="analysis-grid">

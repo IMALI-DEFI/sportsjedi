@@ -71,6 +71,9 @@ export const api = {
   analysis: (id) =>
     request(`/api/games/${id}/analysis`),
 
+  gamecast: (id) =>
+    request(`/api/games/${id}/gamecast`),
+
   teams: (league = "") =>
     request(
       `/api/teams${
@@ -132,6 +135,7 @@ export const api = {
     uniquePlayers = true,
     maxSameGame = 1,
     markets = [],
+    eventId = "",
   }) => {
     const params = new URLSearchParams({
       league,
@@ -154,6 +158,13 @@ export const api = {
       params.set(
         "markets",
         markets.join(",")
+      );
+    }
+
+    if (eventId) {
+      params.set(
+        "eventId",
+        eventId
       );
     }
 

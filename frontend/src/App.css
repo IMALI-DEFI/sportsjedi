@@ -1,0 +1,321 @@
+
+/* Sportsbook links */
+.slip-leg-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.sportsbook-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.sportsbook-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.sportsbook-link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 640px) {
+  .sportsbook-links {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .sportsbook-link {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   MLB LIVE GAMECAST
+   ========================================================= */
+
+.gamecast-card {
+  margin: 24px 0;
+  padding: 24px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 20px;
+  background: linear-gradient(
+    145deg,
+    rgba(17,25,40,.96),
+    rgba(7,12,22,.96)
+  );
+  overflow: hidden;
+}
+
+.gamecast-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.gamecast-heading h2 {
+  margin: 4px 0 0;
+}
+
+.gamecast-live-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.15);
+  font-size: .76rem;
+  font-weight: 800;
+  letter-spacing: .05em;
+}
+
+.gamecast-live-pill.is-live {
+  background: rgba(255,65,65,.14);
+  border-color: rgba(255,65,65,.45);
+}
+
+.gamecast-scoreboard {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  margin-bottom: 22px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.05);
+  text-align: center;
+}
+
+.gamecast-scoreboard > div:first-child,
+.gamecast-scoreboard > div:last-child {
+  display: flex;
+  flex-direction: column;
+}
+
+.gamecast-scoreboard span {
+  font-size: .7rem;
+  opacity: .65;
+  letter-spacing: .08em;
+}
+
+.gamecast-scoreboard strong {
+  font-size: 2rem;
+}
+
+.gamecast-period {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.gamecast-period strong {
+  font-size: .95rem;
+}
+
+.gamecast-body {
+  display: grid;
+  grid-template-columns:
+    minmax(260px,1fr)
+    minmax(260px,.9fr);
+  gap: 28px;
+  align-items: center;
+}
+
+.baseball-field {
+  position: relative;
+  width: min(100%,430px);
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 48% 48% 16% 16%;
+  background:
+    radial-gradient(
+      circle at 50% 72%,
+      #9a6a3c 0 10%,
+      transparent 10.5%
+    ),
+    linear-gradient(145deg,#245f39,#123c27);
+}
+
+.field-grass {
+  position: absolute;
+  width: 58%;
+  height: 58%;
+  left: 21%;
+  top: 21%;
+  transform: rotate(45deg);
+  border: 3px solid rgba(255,255,255,.2);
+  background: linear-gradient(
+    135deg,
+    rgba(183,126,71,.8) 0 14%,
+    rgba(40,106,60,.2) 14% 86%,
+    rgba(183,126,71,.8) 86%
+  );
+}
+
+.diamond-base {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  z-index: 4;
+  transform: rotate(45deg);
+  border: 2px solid rgba(255,255,255,.9);
+  border-radius: 3px;
+  background: rgba(255,255,255,.2);
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
+
+.diamond-base.occupied {
+  background: #ffd54a;
+  border-color: #ffd54a;
+  box-shadow:
+    0 0 0 5px rgba(255,213,74,.15),
+    0 0 18px rgba(255,213,74,.5);
+}
+
+.base-second {
+  top: 18%;
+  left: calc(50% - 12px);
+}
+
+.base-third {
+  top: 48%;
+  left: 20%;
+}
+
+.base-first {
+  top: 48%;
+  right: 20%;
+}
+
+.pitchers-mound {
+  position: absolute;
+  z-index: 3;
+  width: 22px;
+  height: 22px;
+  left: calc(50% - 11px);
+  top: calc(50% - 11px);
+  border-radius: 50%;
+  background: #b77e47;
+}
+
+.home-plate {
+  position: absolute;
+  z-index: 4;
+  width: 24px;
+  height: 24px;
+  bottom: 16%;
+  left: calc(50% - 12px);
+  transform: rotate(45deg);
+  background: #fff;
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 70%,
+    50% 100%,
+    0 70%
+  );
+}
+
+.gamecast-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.count-board {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 8px;
+}
+
+.count-board > div {
+  padding: 13px 8px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.06);
+  text-align: center;
+}
+
+.count-board span,
+.gamecast-players span,
+.latest-play > span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: .68rem;
+  opacity: .62;
+  letter-spacing: .08em;
+}
+
+.count-board strong {
+  font-size: 1.5rem;
+}
+
+.gamecast-players {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.gamecast-players > div,
+.latest-play {
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  background: rgba(255,255,255,.035);
+}
+
+.gamecast-players strong {
+  font-size: .9rem;
+}
+
+.latest-play p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+@media (max-width: 720px) {
+  .gamecast-card {
+    padding: 17px;
+  }
+
+  .gamecast-body {
+    grid-template-columns: 1fr;
+  }
+
+  .baseball-field {
+    width: min(100%,340px);
+  }
+
+  .gamecast-scoreboard {
+    gap: 8px;
+  }
+
+  .gamecast-scoreboard strong {
+    font-size: 1.55rem;
+  }
+
+  .gamecast-players {
+    grid-template-columns: 1fr;
+  }
+}
