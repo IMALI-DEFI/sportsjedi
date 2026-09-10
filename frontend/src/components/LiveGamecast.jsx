@@ -142,23 +142,23 @@ export default function LiveGamecast({
             </div>
           </div>
 
-          {(gamecast.batter ||
-            gamecast.pitcher) && (
+          {(gamecast.matchup?.batter ||
+            gamecast.matchup?.pitcher) && (
             <div className="gamecast-players">
-              {gamecast.batter && (
+              {gamecast.matchup?.batter && (
                 <div>
                   <span>AT BAT</span>
                   <strong>
-                    {gamecast.batter}
+                    {gamecast.matchup?.batter}
                   </strong>
                 </div>
               )}
 
-              {gamecast.pitcher && (
+              {gamecast.matchup?.pitcher && (
                 <div>
                   <span>PITCHING</span>
                   <strong>
-                    {gamecast.pitcher}
+                    {gamecast.matchup?.pitcher}
                   </strong>
                 </div>
               )}

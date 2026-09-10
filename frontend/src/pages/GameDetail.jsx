@@ -44,6 +44,12 @@ export default function GameDetail() {
   }, [id]);
 
   useEffect(() => {
+    if (
+      String(game?.league || "").toUpperCase() !== "MLB"
+    ) {
+      return;
+    }
+
     let cancelled = false;
     let timer;
 
@@ -117,7 +123,7 @@ export default function GameDetail() {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [id]);
+  }, [id, game?.league]);
 
   if (error) {
     return (
