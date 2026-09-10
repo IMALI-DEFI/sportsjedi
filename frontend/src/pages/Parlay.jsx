@@ -885,35 +885,6 @@ export default function Parlay() {
                       )}
                     </strong>
 
-                    {!!leg.sportsbookLinks?.length && (
-                      <div className="sportsbook-links">
-                        {leg.sportsbookLinks.map(
-                          (book) => {
-                            const url =
-                              book.deeplink ||
-                              book.fallbackUrl;
-
-                            if (!url) {
-                              return null;
-                            }
-
-                            return (
-                              <a
-                                key={book.key}
-                                className="sportsbook-link"
-                                href={url}
-                                target="_blank"
-                                rel="noopener noreferrer sponsored"
-                              >
-                                {book.deeplink
-                                  ? `Add to ${book.name}`
-                                  : `Open ${book.name}`}
-                              </a>
-                            );
-                          }
-                        )}
-                      </div>
-                    )}
                   </div>
 
                   <button
@@ -1006,6 +977,61 @@ export default function Parlay() {
               )}
             </div>
           )}
+
+          {!!legs.length && (() => {
+            const books = new Map();
+
+            legs.forEach((leg) => {
+              (leg.sportsbookLinks || []).forEach((book) => {
+                const url =
+                  book.fallbackUrl ||
+                  book.deeplink;
+
+                if (
+                  book?.key &&
+                  book?.name &&
+                  url &&
+                  !books.has(book.key)
+                ) {
+                  books.set(book.key, {
+                    ...book,
+                    url,
+                  });
+                }
+              });
+            });
+
+            if (!books.size) {
+              return null;
+            }
+
+            return (
+              <div className="parlay-sportsbooks">
+                <span className="eyebrow">
+                  Open Your Parlay
+                </span>
+
+                <p className="sportsbook-helper">
+                  Open your preferred sportsbook to
+                  place the selections from your card.
+                </p>
+
+                <div className="parlay-sportsbook-buttons">
+                  {[...books.values()].map((book) => (
+                    <a
+                      key={book.key}
+                      className="sportsbook-link"
+                      href={book.url}
+                      target="_blank"
+                      rel="noopener noreferrer sponsored"
+                    >
+                      Open {book.name}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           <p className="slip-disclaimer">
             Estimated combined odds and

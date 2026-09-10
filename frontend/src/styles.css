@@ -3485,3 +3485,94 @@ article h3 {
     max-width: 100% !important;
   }
 }
+
+/* =========================================================
+   CONSOLIDATED PARLAY SPORTSBOOK HANDOFF
+   ========================================================= */
+
+.parlay-sportsbooks {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sportsbook-helper {
+  margin: 7px 0 12px;
+  opacity: 0.72;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.parlay-sportsbook-buttons {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(130px, 1fr)
+  );
+  gap: 9px;
+  width: 100%;
+  min-width: 0;
+}
+
+.parlay-sportsbook-buttons .sportsbook-link {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.parlay-slip,
+.slip-legs,
+.slip-leg,
+.slip-leg-main,
+.parlay-analysis,
+.parlay-metrics,
+.parlay-sportsbooks,
+.parlay-sportsbook-buttons {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.slip-leg-main {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .parlay-page,
+  .parlay-layout,
+  .parlay-slip,
+  .slip-legs,
+  .slip-leg {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .parlay-slip {
+    overflow: hidden;
+  }
+
+  .slip-leg {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+
+  .parlay-sportsbook-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .parlay-sportsbook-buttons .sportsbook-link {
+    min-height: 48px;
+    font-size: 0.9rem;
+  }
+}
