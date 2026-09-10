@@ -118,11 +118,23 @@ export const api = {
 
   autoParlay: (
     league,
-    mode = "balanced"
-  ) =>
-    request(
-      `/api/parlays/auto?league=${encodeURIComponent(league)}&mode=${encodeURIComponent(mode)}`
-    ),
+    mode = "balanced",
+    eventId = ""
+  ) => {
+    const params = new URLSearchParams({
+      league,
+      mode,
+    });
+
+    if (eventId) {
+      params.set("eventId", eventId);
+      params.set("gameMode", "same_game");
+    }
+
+    return request(
+      `/api/parlays/auto?${params.toString()}`
+    );
+  },
 
   autoParlayAdvanced: ({
     league,

@@ -1,3 +1,5 @@
+import { useSearchParams } from "react-router-dom";
+
 import { api } from "../lib/api";
 import {
   useEffect,
@@ -61,7 +63,26 @@ function formatOdds(price) {
 }
 
 export default function Parlay() {
-  const [league, setLeague] = useState("NFL");
+  const [searchParams] = useSearchParams();
+
+  const scopedEventId =
+    searchParams.get("eventId") || "";
+
+  const scopedLeague =
+    searchParams.get("league") || "";
+
+  const scopedGameMode =
+    searchParams.get("gameMode") || "";
+
+  const initialLeague =
+    ["NFL", "NBA", "MLB"].includes(
+      scopedLeague.toUpperCase()
+    )
+      ? scopedLeague.toUpperCase()
+      : "NFL";
+
+  const [league, setLeague] =
+    useState(initialLeague);
   const [props, setProps] = useState([]);
   const [selectedGame, setSelectedGame] = useState("ALL");
   const [legs, setLegs] = useState([]);
@@ -175,6 +196,19 @@ export default function Parlay() {
     return [...unique.values()].slice(0, 100);
   }, [props, selectedGame]);
 
+  function legKey(leg) {
+    return (
+      leg.id ||
+      [
+        leg.eventId,
+        leg.player,
+        leg.market,
+        leg.pick,
+        leg.line,
+      ].join("|")
+    );
+  }
+
   function isSelected(prop) {
     return legs.some(
       (leg) => leg.id === prop.id
@@ -194,10 +228,10 @@ export default function Parlay() {
     setAnalysis(null);
   }
 
-  function removeLeg(id) {
+  function removeLeg(targetKey) {
     setLegs((current) =>
       current.filter(
-        (leg) => leg.id !== id
+        (leg) => legKey(leg) !== targetKey
       )
     );
 
@@ -229,13 +263,17 @@ export default function Parlay() {
           league,
           type: builderType,
           legs: builderLegs,
-          gameMode,
+          gameMode:
+            scopedEventId
+              ? "same_game"
+              : gameMode,
           minConfidence,
           minPrice,
           direction,
           uniquePlayers,
           maxSameGame,
           markets: selectedMarkets,
+          eventId: scopedEventId,
         });
 
       setLegs(result.selections || []);
@@ -273,7 +311,8 @@ export default function Parlay() {
       const result =
         await api.autoParlay(
           league,
-          mode
+          mode,
+          scopedEventId
         );
 
       setLegs(result.selections || []);
@@ -823,16 +862,7 @@ export default function Parlay() {
               {legs.map((leg) => (
                 <div
                   className="slip-leg"
-                  key={
-                    leg.id ||
-                    [
-                      leg.eventId,
-                      leg.player,
-                      leg.market,
-                      leg.pick,
-                      leg.line,
-                    ].join("|")
-                  }
+                  key={legKey(leg)}
                 >
                   <div className="slip-leg-main">
                     <small>
@@ -876,8 +906,8 @@ export default function Parlay() {
                                 rel="noopener noreferrer sponsored"
                               >
                                 {book.deeplink
-                                  ? `Open in ${book.name}`
-                                  : `Visit ${book.name}`}
+                                  ? `Add to ${book.name}`
+                                  : `Open ${book.name}`}
                               </a>
                             );
                           }
@@ -888,7 +918,7 @@ export default function Parlay() {
 
                   <button
                     onClick={() =>
-                      removeLeg(leg.id)
+                      removeLeg(legKey(leg))
                     }
                     aria-label="Remove leg"
                   >

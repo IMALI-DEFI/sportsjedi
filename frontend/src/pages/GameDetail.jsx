@@ -44,8 +44,14 @@ export default function GameDetail() {
   }, [id]);
 
   useEffect(() => {
+    const gamecastLeague = String(
+      game?.league || ""
+    ).toUpperCase();
+
     if (
-      String(game?.league || "").toUpperCase() !== "MLB"
+      !["MLB", "NFL", "NBA"].includes(
+        gamecastLeague
+      )
     ) {
       return;
     }
@@ -242,9 +248,12 @@ export default function GameDetail() {
         </div>
       </section>
 
-      {game.league === "MLB" && gamecast && (
-        <LiveGamecast gamecast={gamecast} />
-      )}
+      {["MLB", "NFL", "NBA"].includes(
+        String(game.league || "").toUpperCase()
+      ) &&
+        gamecast && (
+          <LiveGamecast gamecast={gamecast} />
+        )}
 
       <section className="game-parlay-cta">
         <div>
