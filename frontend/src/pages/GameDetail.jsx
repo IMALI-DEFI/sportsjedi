@@ -28,6 +28,8 @@ export default function GameDetail() {
 
   const [game, setGame] = useState(null);
   const [analysis, setAnalysis] = useState(null);
+  const [analysisUpdatedAt, setAnalysisUpdatedAt] =
+    useState(null);
   const [gamecast, setGamecast] = useState(null);
   const [error, setError] = useState("");
 
@@ -39,6 +41,10 @@ export default function GameDetail() {
       .then(([gameData, analysisData]) => {
         setGame(gameData);
         setAnalysis(analysisData);
+        setAnalysisUpdatedAt(
+          analysisData?.updatedAt ||
+            new Date().toISOString()
+        );
       })
       .catch((err) => setError(err.message));
   }, [id]);
@@ -130,6 +136,57 @@ export default function GameDetail() {
       window.clearTimeout(timer);
     };
   }, [id, game?.league]);
+
+  /*
+   * LIVE MARKET ANALYSIS
+   *
+   * Gamecast updates game state separately.
+   * While the game is live, refresh sportsbook
+   * analysis every 15 seconds from the backend's
+   * live-odds endpoint.
+   */
+  useEffect(() => {
+    if (game?.status !== "live") {
+      return;
+    }
+
+    let cancelled = false;
+    let timer;
+
+    async function refreshLiveAnalysis() {
+      try {
+        const data =
+          await api.analysis(id);
+
+        if (!cancelled) {
+          setAnalysis(data);
+          setAnalysisUpdatedAt(
+            data?.updatedAt ||
+              new Date().toISOString()
+          );
+        }
+      } catch (err) {
+        console.warn(
+          "Live analysis refresh failed:",
+          err.message
+        );
+      }
+
+      if (!cancelled) {
+        timer = window.setTimeout(
+          refreshLiveAnalysis,
+          15000
+        );
+      }
+    }
+
+    refreshLiveAnalysis();
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [id, game?.status]);
 
   if (error) {
     return (
@@ -294,8 +351,24 @@ export default function GameDetail() {
 
             <div>
               <span className="eyebrow">
-                Jedi Market Read
+                {game.status === "live"
+                  ? "LIVE MARKET READ"
+                  : "JEDI MARKET READ"}
               </span>
+
+              {game.status === "live" &&
+                analysisUpdatedAt && (
+                  <small className="live-analysis-updated">
+                    Live odds refreshed{" "}
+                    {new Date(
+                      analysisUpdatedAt
+                    ).toLocaleTimeString([], {
+                      hour: "numeric",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    })}
+                  </small>
+                )}
 
               <h2>
                 {analysis.pick

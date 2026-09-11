@@ -3576,3 +3576,69 @@ article h3 {
     font-size: 0.9rem;
   }
 }
+
+/* =========================================================
+   LIVE GAME DETAIL / LIVE PARLAY BUTTON
+   ========================================================= */
+
+.game-parlay-cta {
+  margin-top: 20px;
+}
+
+.game-parlay-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 13px 22px;
+  border: 1px solid rgba(101, 231, 255, 0.55);
+  border-radius: 14px;
+  background: linear-gradient(
+    135deg,
+    #178fe8,
+    #315cff
+  );
+  color: #ffffff !important;
+  font-weight: 900;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow:
+    0 8px 26px rgba(36, 156, 255, 0.24);
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+.game-parlay-button:hover {
+  filter: brightness(1.08);
+}
+
+.game-parlay-button:disabled {
+  background: rgba(70, 82, 105, 0.72) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: rgba(255, 255, 255, 0.78) !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
+}
+
+.live-analysis-updated {
+  display: block;
+  margin-top: 5px;
+  color: #67f0af;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+@media (max-width: 600px) {
+  .game-parlay-cta {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .game-parlay-button {
+    width: 100%;
+    min-height: 54px;
+    font-size: 1rem;
+  }
+}
