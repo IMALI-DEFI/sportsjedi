@@ -48,6 +48,216 @@ const advancedMarkets = {
   ],
 };
 
+
+const SPORTSBOOK_DIRECTORY = [
+  {
+    key: "betmgm",
+    name: "BetMGM",
+    fallbackUrl: "https://sports.betmgm.com/",
+    direct: true,
+  },
+  {
+    key: "draftkings",
+    name: "DraftKings",
+    fallbackUrl: "https://sportsbook.draftkings.com/",
+    direct: true,
+  },
+  {
+    key: "fanduel",
+    name: "FanDuel",
+    fallbackUrl: "https://sportsbook.fanduel.com/",
+  },
+  {
+    key: "caesars",
+    name: "Caesars Sportsbook",
+    fallbackUrl: "https://sportsbook.caesars.com/",
+  },
+  {
+    key: "fanatics",
+    name: "Fanatics Sportsbook",
+    fallbackUrl: "https://sportsbook.fanatics.com/",
+  },
+  {
+    key: "bet365",
+    name: "bet365",
+    fallbackUrl: "https://www.bet365.com/",
+  },
+];
+
+function findLegSportsbook(
+  leg,
+  sportsbookKey
+) {
+  return (leg?.sportsbookLinks || []).find(
+    (book) =>
+      String(book?.key || "").toLowerCase() ===
+      sportsbookKey
+  );
+}
+
+function querySelectionIds(
+  rawUrl,
+  parameter
+) {
+  if (!rawUrl) return [];
+
+  try {
+    const url = new URL(rawUrl);
+
+    const value =
+      url.searchParams.get(parameter);
+
+    if (!value) return [];
+
+    return value
+      .split(/[,\s+]+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function buildBetMgmParlayUrl(legs) {
+  const ids = [];
+
+  for (const leg of legs) {
+    const book =
+      findLegSportsbook(
+        leg,
+        "betmgm"
+      );
+
+    const selections =
+      querySelectionIds(
+        book?.deeplink,
+        "options"
+      );
+
+    /*
+     * We only claim full-parlay handoff
+     * when this exact leg supplies one
+     * identifiable BetMGM selection.
+     */
+    if (selections.length !== 1) {
+      return null;
+    }
+
+    ids.push(selections[0]);
+  }
+
+  if (
+    ids.length !== legs.length ||
+    new Set(ids).size !== ids.length
+  ) {
+    return null;
+  }
+
+  const options =
+    ids
+      .map(encodeURIComponent)
+      .join(",");
+
+  return (
+    "https://sports.betmgm.com/en/sports" +
+    `?options=${options}&type=combo`
+  );
+}
+
+function buildDraftKingsParlayUrl(legs) {
+  const ids = [];
+
+  for (const leg of legs) {
+    const book =
+      findLegSportsbook(
+        leg,
+        "draftkings"
+      );
+
+    const selections =
+      querySelectionIds(
+        book?.deeplink,
+        "outcomes"
+      );
+
+    /*
+     * Only advertise one-click when
+     * every leg has one DraftKings
+     * outcome identifier.
+     */
+    if (selections.length !== 1) {
+      return null;
+    }
+
+    ids.push(selections[0]);
+  }
+
+  if (
+    ids.length !== legs.length ||
+    new Set(ids).size !== ids.length
+  ) {
+    return null;
+  }
+
+  const outcomes =
+    ids
+      .map(encodeURIComponent)
+      .join("+");
+
+  return (
+    "https://sportsbook.draftkings.com/" +
+    `?outcomes=${outcomes}`
+  );
+}
+
+function sportsbookHandoffs(legs) {
+  return SPORTSBOOK_DIRECTORY.map(
+    (sportsbook) => {
+      let directUrl = null;
+
+      if (
+        sportsbook.key === "betmgm"
+      ) {
+        directUrl =
+          buildBetMgmParlayUrl(legs);
+      }
+
+      if (
+        sportsbook.key === "draftkings"
+      ) {
+        directUrl =
+          buildDraftKingsParlayUrl(legs);
+      }
+
+      /*
+       * Use the backend's normal book
+       * URL where available. Never use
+       * a single-leg deeplink as though
+       * it represented the whole card.
+       */
+      const backendBook =
+        legs
+          .map((leg) =>
+            findLegSportsbook(
+              leg,
+              sportsbook.key
+            )
+          )
+          .find(Boolean);
+
+      const fallbackUrl =
+        backendBook?.fallbackUrl ||
+        sportsbook.fallbackUrl;
+
+      return {
+        ...sportsbook,
+        url: directUrl || fallbackUrl,
+        oneClick: Boolean(directUrl),
+      };
+    }
+  ).filter((book) => book.url);
+}
+
 function formatMarket(value = "") {
   return value
     .replace(/^player_/, "")
@@ -985,53 +1195,42 @@ export default function Parlay() {
           )}
 
           {!!legs.length && (() => {
-            const books = new Map();
+            const books =
+              sportsbookHandoffs(legs);
 
-            legs.forEach((leg) => {
-              (leg.sportsbookLinks || []).forEach((book) => {
-                const url =
-                  book.fallbackUrl ||
-                  book.deeplink;
-
-                if (
-                  book?.key &&
-                  book?.name &&
-                  url &&
-                  !books.has(book.key)
-                ) {
-                  books.set(book.key, {
-                    ...book,
-                    url,
-                  });
-                }
-              });
-            });
-
-            if (!books.size) {
+            if (!books.length) {
               return null;
             }
 
             return (
               <div className="parlay-sportsbooks">
                 <span className="eyebrow">
-                  Open Your Parlay
+                  Sportsbook Handoff
                 </span>
 
                 <p className="sportsbook-helper">
-                  Open your preferred sportsbook to
-                  place the selections from your card.
+                  One-click betslip is shown only when
+                  Sports Jedi has a selection ID for
+                  every leg. Other buttons open the
+                  sportsbook normally.
                 </p>
 
                 <div className="parlay-sportsbook-buttons">
-                  {[...books.values()].map((book) => (
+                  {books.map((book) => (
                     <a
                       key={book.key}
-                      className="sportsbook-link"
+                      className={
+                        book.oneClick
+                          ? "sportsbook-link sportsbook-link-direct"
+                          : "sportsbook-link"
+                      }
                       href={book.url}
                       target="_blank"
                       rel="noopener noreferrer sponsored"
                     >
-                      Open {book.name}
+                      {book.oneClick
+                        ? `Add Entire Parlay to ${book.name}`
+                        : `Open ${book.name}`}
                     </a>
                   ))}
                 </div>
