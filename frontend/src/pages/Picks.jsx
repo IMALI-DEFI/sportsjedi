@@ -13,7 +13,7 @@ import {
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 
-const leagues = ["ALL", "NFL", "NBA", "MLB"];
+const leagues = ["ALL", "NFL", "NCAAF", "NBA", "MLB"];
 
 export default function Picks() {
   const [league, setLeague] = useState("ALL");

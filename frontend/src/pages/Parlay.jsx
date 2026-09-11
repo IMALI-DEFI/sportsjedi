@@ -19,10 +19,16 @@ const API =
   import.meta.env.VITE_API_BASE_URL ||
   "https://api.sportsjedi.com";
 
-const leagues = ["NFL", "NBA", "MLB"];
+const leagues = ["NFL", "NCAAF", "NBA", "MLB"];
 
 const advancedMarkets = {
   NFL: [
+    ["player_pass_yds", "Passing Yards"],
+    ["player_rush_yds", "Rushing Yards"],
+    ["player_reception_yds", "Receiving Yards"],
+  ],
+
+  NCAAF: [
     ["player_pass_yds", "Passing Yards"],
     ["player_rush_yds", "Rushing Yards"],
     ["player_reception_yds", "Receiving Yards"],
@@ -75,7 +81,7 @@ export default function Parlay() {
     searchParams.get("gameMode") || "";
 
   const initialLeague =
-    ["NFL", "NBA", "MLB"].includes(
+    ["NFL", "NCAAF", "NBA", "MLB"].includes(
       scopedLeague.toUpperCase()
     )
       ? scopedLeague.toUpperCase()

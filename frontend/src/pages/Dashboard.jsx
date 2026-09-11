@@ -18,7 +18,7 @@ import { Link } from "react-router-dom";
 import GameCard from "../components/GameCard";
 import { api } from "../lib/api";
 
-const leagues = ["ALL", "NFL", "NBA", "MLB"];
+const leagues = ["ALL", "NFL", "NCAAF", "NBA", "MLB"];
 
 export default function Dashboard() {
   const [games, setGames] = useState([]);
@@ -99,7 +99,7 @@ export default function Dashboard() {
           <p>
             Compare sportsbook consensus, no-vig probabilities,
             spreads, totals and ranked market signals across NFL,
-            NBA and MLB.
+            NCAAF, NBA and MLB.
           </p>
 
           <div className="hero-actions">

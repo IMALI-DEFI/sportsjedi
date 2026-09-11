@@ -357,7 +357,7 @@ export default function LiveGamecast({
   const title =
     league === "MLB"
       ? "Live Field"
-      : league === "NFL"
+      : ["NFL", "NCAAF"].includes(league)
         ? "Live Gridiron"
         : league === "NBA"
           ? "Live Court"
@@ -390,7 +390,7 @@ export default function LiveGamecast({
         />
       )}
 
-      {league === "NFL" && (
+      {["NFL", "NCAAF"].includes(league) && (
         <NflGamecast
           gamecast={gamecast}
           latestPlay={latestPlay}

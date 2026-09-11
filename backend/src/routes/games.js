@@ -3,6 +3,7 @@ import { getSportsProvider } from "../services/sportsProvider.js";
 import { analyzeGame } from "../services/analysisService.js";
 import { getMlbGamecast } from "../services/gamecast/mlb.js";
 import { getNflGamecast } from "../services/gamecast/nfl.js";
+import { getNcaafGamecast } from "../services/gamecast/ncaaf.js";
 import { getNbaGamecast } from "../services/gamecast/nba.js";
 
 const router = Router();
@@ -45,6 +46,9 @@ router.get("/:id/gamecast", async (req, res, next) => {
     } else if (league === "NFL") {
       gamecast =
         await getNflGamecast(game);
+    } else if (league === "NCAAF") {
+      gamecast =
+        await getNcaafGamecast(game);
     } else if (league === "NBA") {
       gamecast =
         await getNbaGamecast(game);
@@ -52,7 +56,7 @@ router.get("/:id/gamecast", async (req, res, next) => {
       return res.status(400).json({
         success: false,
         error:
-          "Gamecast is available for MLB, NFL and NBA.",
+          "Gamecast is available for MLB, NFL, NCAAF and NBA.",
       });
     }
 
@@ -78,10 +82,36 @@ router.get("/:id", async (req, res, next) => {
 
 router.get("/:id/analysis", async (req, res, next) => {
   try {
-    const game = await provider.getGame(req.params.id);
-    if (!game) return res.status(404).json({ success: false, error: "Game not found" });
-    res.json({ success: true, data: analyzeGame(game) });
-  } catch (err) { next(err); }
+    const game =
+      await provider.getLiveGame(req.params.id);
+
+    if (!game) {
+      return res.status(404).json({
+        success: false,
+        error: "Game not found",
+      });
+    }
+
+    const analysis =
+      analyzeGame(game);
+
+    res.set(
+      "Cache-Control",
+      "no-store"
+    );
+
+    res.json({
+      success: true,
+      data: {
+        ...analysis,
+        liveRefresh: true,
+        updatedAt:
+          new Date().toISOString(),
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 export default router;

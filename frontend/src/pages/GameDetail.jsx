@@ -55,7 +55,7 @@ export default function GameDetail() {
     ).toUpperCase();
 
     if (
-      !["MLB", "NFL", "NBA"].includes(
+      !["MLB", "NFL", "NCAAF", "NBA"].includes(
         gamecastLeague
       )
     ) {
@@ -305,7 +305,7 @@ export default function GameDetail() {
         </div>
       </section>
 
-      {["MLB", "NFL", "NBA"].includes(
+      {["MLB", "NFL", "NCAAF", "NBA"].includes(
         String(game.league || "").toUpperCase()
       ) &&
         gamecast && (

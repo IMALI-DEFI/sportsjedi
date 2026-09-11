@@ -1,5 +1,11 @@
+
+import {
+  matchMlbGame,
+} from "./gamecast/mlb.js";
+
 const SPORT_KEYS = {
   NFL: "americanfootball_nfl",
+  NCAAF: "americanfootball_ncaaf",
   NBA: "basketball_nba",
   MLB: "baseball_mlb",
 };
@@ -7,6 +13,15 @@ const SPORT_KEYS = {
 const API_BASE =
   process.env.SPORTS_API_BASE ||
   "https://api.the-odds-api.com/v4";
+
+function deepestSportsbookLink(bookmaker, market, outcome) {
+  return (
+    outcome?.link ||
+    market?.link ||
+    bookmaker?.link ||
+    null
+  );
+}
 
 const API_KEY =
   process.env.SPORTS_API_KEY || "";
@@ -19,12 +34,12 @@ const CACHE_MS =
 
 const cache = new Map();
 
-function getCached(key) {
+function getCached(key, maxAge = CACHE_MS) {
   const item = cache.get(key);
 
   if (!item) return null;
 
-  if (Date.now() - item.time > CACHE_MS) {
+  if (Date.now() - item.time > maxAge) {
     cache.delete(key);
     return null;
   }
@@ -168,7 +183,7 @@ function normalizeGame(event) {
               team: outcome.name,
               abbr: abbreviation(outcome.name),
               price: outcome.price,
-            })
+})
           )
         : [],
 
@@ -206,7 +221,7 @@ function normalizeGame(event) {
           team: outcome.name,
           abbr: abbreviation(outcome.name),
           price: outcome.price,
-        })),
+})),
 
         spread: favorite
           ? {
@@ -262,6 +277,8 @@ async function fetchOddsForLeague(league) {
       regions: REGIONS,
       markets: "h2h,spreads,totals",
       oddsFormat: "american",
+    includeLinks: "true",
+    includeSids: "true",
       dateFormat: "iso",
     });
 
@@ -271,9 +288,95 @@ async function fetchOddsForLeague(league) {
   const data =
     await fetchJson(url);
 
+  let games =
+    data.map(normalizeGame);
+
+  /*
+   * MLB GAME STATE
+   *
+   * The Odds API remains the wagering source.
+   * MLB supplies authoritative game status,
+   * score, and inning information.
+   */
+  if (upper === "MLB") {
+    games =
+      await Promise.all(
+        games.map(async (game) => {
+          try {
+            const mlbGame =
+              await matchMlbGame({
+                homeTeam:
+                  game.home?.name,
+
+                awayTeam:
+                  game.away?.name,
+
+                startTime:
+                  game.startTime,
+              });
+
+            if (!mlbGame) {
+              return game;
+            }
+
+            return {
+              ...game,
+
+              status:
+                mlbGame.status,
+
+              gamePk:
+                mlbGame.gamePk,
+
+              detailedStatus:
+                mlbGame.detailedStatus,
+
+              abstractStatus:
+                mlbGame.abstractStatus,
+
+              inning:
+                mlbGame.inning,
+
+              inningState:
+                mlbGame.inningState,
+
+              inningOrdinal:
+                mlbGame.inningOrdinal,
+
+              away: {
+                ...game.away,
+
+                score:
+                  mlbGame.score?.away ??
+                  game.away?.score ??
+                  0,
+              },
+
+              home: {
+                ...game.home,
+
+                score:
+                  mlbGame.score?.home ??
+                  game.home?.score ??
+                  0,
+              },
+            };
+          } catch (error) {
+            console.error(
+              "MLB game-state error:",
+              game.id,
+              error.message
+            );
+
+            return game;
+          }
+        })
+      );
+  }
+
   return setCached(
     cacheKey,
-    data.map(normalizeGame)
+    games
   );
 }
 
@@ -371,6 +474,22 @@ function normalizePlayerProps(
 
           bookmaker:
             bookmaker.title,
+
+          bookmakerKey:
+            bookmaker.key,
+
+          deeplink:
+            deepestSportsbookLink(
+              bookmaker,
+              market,
+              outcome
+            ),
+
+          sportsbookSid:
+            outcome.sid ||
+            market.sid ||
+            bookmaker.sid ||
+            null,
         });
       }
     }
@@ -390,6 +509,70 @@ class TheOddsApiProvider {
     }
 
     return fetchAllGames();
+  }
+
+  async getLiveGame(id) {
+    const baseGame = await this.getGame(id);
+
+    if (!baseGame) {
+      return null;
+    }
+
+    const league =
+      String(baseGame.league || "").toUpperCase();
+
+    const sportKey = SPORT_KEYS[league];
+
+    if (!sportKey) {
+      return baseGame;
+    }
+
+    const cacheKey =
+      `live-game:${sportKey}:${id}`;
+
+    const cached =
+      getCached(cacheKey, 15000);
+
+    if (cached) {
+      return cached;
+    }
+
+    const params =
+      new URLSearchParams({
+        apiKey: API_KEY,
+        regions: REGIONS,
+        markets: "h2h,spreads,totals",
+        oddsFormat: "american",
+        includeLinks: "true",
+        includeSids: "true",
+        dateFormat: "iso",
+      });
+
+    const url =
+      `${API_BASE}/sports/${sportKey}/events/${id}/odds?${params}`;
+
+    try {
+      const response =
+        await fetchJson(url);
+
+      const liveGame =
+        normalizeGame(response);
+
+      liveGame.league =
+        liveGame.league || league;
+
+      return setCached(
+        cacheKey,
+        liveGame
+      );
+    } catch (error) {
+      console.error(
+        "Live game odds refresh error:",
+        error.message
+      );
+
+      return baseGame;
+    }
   }
 
   async getGame(id) {
@@ -462,6 +645,8 @@ class TheOddsApiProvider {
     const propMarkets = {
       NFL:
         "player_pass_yds,player_rush_yds,player_reception_yds",
+      NCAAF:
+        "player_pass_yds,player_rush_yds,player_reception_yds",
       NBA:
         "player_points,player_rebounds,player_assists,player_threes",
       MLB:
@@ -495,6 +680,8 @@ class TheOddsApiProvider {
           regions: REGIONS,
           markets,
           oddsFormat: "american",
+    includeLinks: "true",
+    includeSids: "true",
         });
 
       const url =
@@ -525,6 +712,67 @@ class TheOddsApiProvider {
           error.message
         );
       }
+    }
+
+    // ------------------------------------------------------
+    // SPORTSBOOK DEEP-LINK INDEX
+    //
+    // Group the exact same wager across books:
+    // event + player + market + side + line.
+    // ------------------------------------------------------
+    const deepLinkIndex =
+      new Map();
+
+    const sportsbookAlias = {
+      draftkings: "draftkings",
+      fanduel: "fanduel",
+      betmgm: "betmgm",
+    };
+
+    for (const prop of allProps) {
+      const groupKey = [
+        prop.eventId,
+        prop.player,
+        prop.market,
+        prop.pick,
+        prop.line ?? "",
+      ].join("|");
+
+      if (!deepLinkIndex.has(groupKey)) {
+        deepLinkIndex.set(
+          groupKey,
+          {}
+        );
+      }
+
+      const normalizedBookKey =
+        sportsbookAlias[
+          String(
+            prop.bookmakerKey || ""
+          ).toLowerCase()
+        ];
+
+      if (
+        normalizedBookKey &&
+        prop.deeplink
+      ) {
+        deepLinkIndex
+          .get(groupKey)[normalizedBookKey] =
+          prop.deeplink;
+      }
+    }
+
+    for (const prop of allProps) {
+      const groupKey = [
+        prop.eventId,
+        prop.player,
+        prop.market,
+        prop.pick,
+        prop.line ?? "",
+      ].join("|");
+
+      prop.sportsbookDeepLinks =
+        deepLinkIndex.get(groupKey) || {};
     }
 
     return allProps;
