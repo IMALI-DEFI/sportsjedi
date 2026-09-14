@@ -117,7 +117,7 @@ export function AuthProvider({ children }) {
 
   async function signup(email, password) {
     const response = await fetch(
-      `${IMALI_API}/api/signup`,
+      `${IMALI_API}/api/auth/signup`,
       {
         method: "POST",
         headers: {
