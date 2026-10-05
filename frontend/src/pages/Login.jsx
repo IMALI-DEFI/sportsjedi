@@ -5,6 +5,7 @@ import {
 import {
   Navigate,
   useNavigate,
+  useSearchParams,
 } from "react-router-dom";
 
 import {
@@ -26,11 +27,12 @@ export default function Login() {
     signup,
   } = useAuth();
 
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const [mode, setMode] =
-    useState("login");
+  const [mode, setMode] = useState(
+    searchParams.get("mode") === "signup" ? "signup" : "login"
+  );
 
   const [email, setEmail] =
     useState("");
@@ -72,7 +74,7 @@ export default function Login() {
         );
       }
 
-      navigate("/account");
+      navigate(searchParams.get("next") || "/account");
     } catch (err) {
       setError(
         err.message ||

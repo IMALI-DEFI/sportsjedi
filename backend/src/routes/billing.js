@@ -63,6 +63,7 @@ router.post("/checkout", async (req, res, next) => {
           utm_medium: String(attribution.utm_medium || "").slice(0, 128),
           utm_campaign: String(attribution.utm_campaign || "").slice(0, 200),
           utm_content: String(attribution.utm_content || "").slice(0, 200),
+          referral_code: String(attribution.referral_code || "").slice(0, 80),
         },
       });
 
@@ -101,6 +102,14 @@ router.get("/session/:id", async (req, res, next) => {
           null,
         subscriptionStatus:
           session.subscription?.status ||
+          null,
+        customerId:
+          session.customer?.id ||
+          session.customer ||
+          null,
+        subscriptionId:
+          session.subscription?.id ||
+          session.subscription ||
           null,
         metadata: session.metadata || {},
       },

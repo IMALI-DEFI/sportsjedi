@@ -21,6 +21,7 @@ import Pricing from "./pages/Pricing";
 import Success from "./pages/Success";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
+import Referrals from "./pages/Referrals";
 
 export default function App() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="/success" element={<Success />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
+        <Route path="/referrals" element={<Referrals />} />
       </Routes>
 
       <footer>
@@ -65,6 +67,7 @@ export default function App() {
           <Link to="/methodology">Methodology</Link>
           <Link to="/terms">Terms</Link>
           <Link to="/privacy">Privacy</Link>
+          <Link to="/referrals">Partner Program</Link>
         </div>
 
         <p className="footer-disclaimer">

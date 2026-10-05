@@ -44,6 +44,19 @@ export default function Success() {
           sessionId:
             data.metadata?.marketing_session_id || undefined,
         });
+
+        const token = localStorage.getItem("sports_jedi_token");
+        if (token) {
+          fetch("https://api.imali-defi.com/api/referrals/sports-jedi/bind", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ session_id: sessionId }),
+            keepalive: true,
+          }).catch(() => {});
+        }
       })
       .catch(() => {});
   }, []);

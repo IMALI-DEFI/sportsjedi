@@ -3642,3 +3642,20 @@ article h3 {
     font-size: 1rem;
   }
 }
+
+.referrals-page{padding-bottom:72px}
+.referral-hero{margin-bottom:28px}
+.referral-benefits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:24px 0}
+.referral-benefits .account-card svg{color:#7bf0c0}
+.referral-join-card{margin:28px 0;padding:28px;border:1px solid rgba(255,255,255,.1);border-radius:24px;background:rgba(8,18,34,.84);box-shadow:0 24px 60px rgba(0,0,0,.28)}
+.referral-join-card h2{margin:8px 0 10px}
+.referral-link-box{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px;border:1px solid rgba(123,240,192,.24);border-radius:18px;background:rgba(8,26,31,.72)}
+.referral-link-box small{display:block;color:rgba(255,255,255,.5);margin-bottom:6px}
+.referral-link-box strong{display:block;overflow-wrap:anywhere}
+.referral-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}
+.referral-stats>div{padding:16px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+.referral-stats span{display:block;color:rgba(255,255,255,.5);font-size:.82rem}
+.referral-stats strong{display:block;font-size:1.5rem;margin-top:6px}
+.referral-notice{margin-top:14px;color:#7bf0c0}
+.referral-terms-note{color:rgba(255,255,255,.52);font-size:.9rem}
+@media(max-width:760px){.referral-benefits{grid-template-columns:1fr}.referral-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.referral-link-box{align-items:flex-start;flex-direction:column}}

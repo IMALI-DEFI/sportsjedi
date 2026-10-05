@@ -39,6 +39,7 @@ export default function Pricing() {
                 utm_campaign: a.utm_campaign || null,
                 utm_content: a.utm_content || null,
                 session_id: sessionStorage.getItem("sports_jedi_marketing_session"),
+                referral_code: a.referral_code || null,
               },
             };
           })()),
