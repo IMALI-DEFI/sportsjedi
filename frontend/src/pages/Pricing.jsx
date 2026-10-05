@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getMarketingAttribution, trackMarketingEvent } from "../utils/marketingAttribution";
 import {
   Check,
   Crown,
@@ -28,9 +29,19 @@ export default function Pricing() {
             "Content-Type":
               "application/json",
           },
-          body: JSON.stringify({
-            plan,
-          }),
+          body: JSON.stringify((() => {
+            const a = getMarketingAttribution();
+            return {
+              plan,
+              attribution: {
+                utm_source: a.utm_source || null,
+                utm_medium: a.utm_medium || null,
+                utm_campaign: a.utm_campaign || null,
+                utm_content: a.utm_content || null,
+                session_id: sessionStorage.getItem("sports_jedi_marketing_session"),
+              },
+            };
+          })()),
         }
       );
 
@@ -43,6 +54,10 @@ export default function Pricing() {
             "Unable to start checkout"
         );
       }
+
+      trackMarketingEvent("checkout_started", {
+        metadata: { plan },
+      });
 
       window.location.href =
         result.url;

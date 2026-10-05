@@ -26,6 +26,7 @@ router.post("/checkout", async (req, res, next) => {
         : "monthly";
 
     const price = PRICES[plan];
+    const attribution = req.body?.attribution || {};
 
     if (!price) {
       return res.status(500).json({
@@ -57,6 +58,11 @@ router.post("/checkout", async (req, res, next) => {
           app: "sportsjedi",
           product: "sports_jedi_pro",
           plan,
+          marketing_session_id: String(attribution.session_id || "").slice(0, 128),
+          utm_source: String(attribution.utm_source || "").slice(0, 128),
+          utm_medium: String(attribution.utm_medium || "").slice(0, 128),
+          utm_campaign: String(attribution.utm_campaign || "").slice(0, 200),
+          utm_content: String(attribution.utm_content || "").slice(0, 200),
         },
       });
 
@@ -96,6 +102,7 @@ router.get("/session/:id", async (req, res, next) => {
         subscriptionStatus:
           session.subscription?.status ||
           null,
+        metadata: session.metadata || {},
       },
     });
   } catch (error) {

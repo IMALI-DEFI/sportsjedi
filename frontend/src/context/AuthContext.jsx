@@ -4,6 +4,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { getMarketingAttribution, trackMarketingEvent } from "../utils/marketingAttribution";
 
 const AuthContext = createContext(null);
 
@@ -123,12 +124,22 @@ export function AuthProvider({ children }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email,
-          password,
-          tier: "starter",
-          strategy: "ai_weighted",
-        }),
+        body: JSON.stringify((() => {
+          const a = getMarketingAttribution();
+          return {
+            email,
+            password,
+            tier: "starter",
+            strategy: "ai_weighted",
+            utm_source: a.utm_source || null,
+            utm_medium: a.utm_medium || null,
+            utm_campaign: a.utm_campaign || null,
+            utm_content: a.utm_content || null,
+            marketing_product: "sports_jedi",
+            landing_page: a.landing_page || null,
+            referral_code: a.referral_code || null,
+          };
+        })()),
       }
     );
 
@@ -161,6 +172,9 @@ export function AuthProvider({ children }) {
     );
 
     await loadAccount(token);
+    trackMarketingEvent("signup_completed", {
+      userId: payload?.data?.user?.id || payload?.user?.id || null,
+    });
 
     return payload;
   }

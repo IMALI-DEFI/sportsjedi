@@ -9,6 +9,7 @@ import {
 } from "react-router-dom";
 
 import Header from "./components/Header";
+import MarketingTracker from "./components/MarketingTracker";
 import Dashboard from "./pages/Dashboard";
 import GameDetail from "./pages/GameDetail";
 import Picks from "./pages/Picks";
@@ -24,6 +25,7 @@ import BlogPost from "./pages/BlogPost";
 export default function App() {
   return (
     <BrowserRouter>
+      <MarketingTracker />
       <Starfield />
       <Header />
 
