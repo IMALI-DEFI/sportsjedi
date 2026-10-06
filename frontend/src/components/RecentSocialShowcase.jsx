@@ -3,13 +3,22 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Users } from "lucide-react";
 
 const API = import.meta.env.VITE_IMALI_API_URL || "https://api.imali-defi.com";
-const fallback = [
-  { id: "sj-1", title: "Latest from Sports Jedi", caption: "Fresh matchup signals, market insights, and daily sports content.", media_url: "/sports-jedi-logo.webp" },
-  { id: "sj-2", title: "Jedi Picks & Parlays", caption: "Follow the latest Sports Jedi picks, confidence signals, and parlay content.", media_url: "/sports-jedi-logo.webp" },
-];
+const approvedPlatforms = new Set(["instagram", "threads", "facebook", "x", "youtube", "tiktok"]);
+const goodPosts = (rows = []) => {
+  const seen = new Set();
+  return rows.filter((post) => {
+    const media = post?.media_url || post?.image_url || post?.thumbnail_url;
+    const caption = String(post?.caption || post?.text || "").trim();
+    const platform = String(post?.platform || "").toLowerCase();
+    if (!media || !post?.public_url || caption.length < 40 || !approvedPlatforms.has(platform)) return false;
+    if (/logo|fallback|placeholder/i.test(media) || !/APPROVED_|premium_/i.test(media) || seen.has(media)) return false;
+    seen.add(media);
+    return true;
+  }).slice(0, 6);
+};
 
 export default function RecentSocialShowcase() {
-  const [posts, setPosts] = useState(fallback);
+  const [posts, setPosts] = useState([]);
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -17,8 +26,8 @@ export default function RecentSocialShowcase() {
     fetch(`${API}/api/public/social/recent?product=sports-jedi&limit=8`)
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((j) => {
-        const rows = j?.data?.posts || j?.posts || j?.data;
-        if (alive && Array.isArray(rows) && rows.length) setPosts(rows);
+        const rows = goodPosts(j?.data?.posts || j?.posts || j?.data || []);
+        if (alive) setPosts(rows);
       })
       .catch(() => {});
     return () => { alive = false; };
@@ -30,10 +39,10 @@ export default function RecentSocialShowcase() {
     return () => clearInterval(timer);
   }, [posts.length]);
 
-  const post = posts[index % posts.length] || fallback[0];
-  const rawMedia = post.media_url || post.image_url || post.thumbnail_url;
+  const post = posts.length ? posts[index % posts.length] : null;
+  const rawMedia = post?.media_url || post?.image_url || post?.thumbnail_url;
   const media = rawMedia?.startsWith("/api/") ? `${API}${rawMedia}` : rawMedia;
-  const isVideo = /video/i.test(post.media_type || post.type || "") || /\.mp4(?:$|\?)/i.test(media || "");
+  const isVideo = /video/i.test(post?.media_type || post?.type || "") || /\.mp4(?:$|\?)/i.test(media || "");
 
   return (
     <section className="social-showcase">
@@ -45,29 +54,31 @@ export default function RecentSocialShowcase() {
         </div>
       </div>
 
-      <div className="social-slide">
-        <div className="social-media">
-          {media && (isVideo ? (
-            <video src={media} controls playsInline preload="metadata" />
-          ) : (
-            <img src={media} alt={post.title || "Sports Jedi social post"} />
-          ))}
-        </div>
-
-        <div className="social-copy">
-          <div>
-            <span className="eyebrow">{post.platform || "SPORTS JEDI SOCIAL"}</span>
-            <h3>{post.title || post.topic || "Latest Sports Jedi update"}</h3>
-            <p>{post.caption || post.text || "Follow Sports Jedi for the latest updates."}</p>
+      {post && (
+        <div className="social-slide">
+          <div className="social-media">
+            {media && (isVideo ? (
+              <video src={media} controls playsInline preload="metadata" />
+            ) : (
+              <img src={media} alt={post.title || "Sports Jedi social post"} />
+            ))}
           </div>
 
-          <div className="social-controls">
-            <button aria-label="Previous post" onClick={() => setIndex((i) => (i - 1 + posts.length) % posts.length)}><ArrowLeft size={17} /></button>
-            <button aria-label="Next post" onClick={() => setIndex((i) => (i + 1) % posts.length)}><ArrowRight size={17} /></button>
-            <span>{index % posts.length + 1} / {posts.length}</span>
+          <div className="social-copy">
+            <div>
+              <span className="eyebrow">{post.platform || "SPORTS JEDI SOCIAL"}</span>
+              <h3>{post.title || post.topic || "Latest Sports Jedi update"}</h3>
+              <p>{post.caption || post.text}</p>
+            </div>
+
+            <div className="social-controls">
+              <button aria-label="Previous post" onClick={() => setIndex((i) => (i - 1 + posts.length) % posts.length)}><ArrowLeft size={17} /></button>
+              <button aria-label="Next post" onClick={() => setIndex((i) => (i + 1) % posts.length)}><ArrowRight size={17} /></button>
+              <span>{index % posts.length + 1} / {posts.length}</span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="home-referral-banner">
         <div>
