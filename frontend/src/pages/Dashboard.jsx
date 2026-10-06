@@ -16,6 +16,7 @@ import {
 
 import { Link } from "react-router-dom";
 import GameCard from "../components/GameCard";
+import RecentSocialShowcase from "../components/RecentSocialShowcase";
 import { api } from "../lib/api";
 
 const leagues = ["ALL", "NFL", "NCAAF", "NBA", "MLB"];
@@ -167,6 +168,8 @@ export default function Dashboard() {
           </div>
         </div>
       </section>
+
+      <RecentSocialShowcase />
 
       <section className="stats-grid">
         <div className="stat">
