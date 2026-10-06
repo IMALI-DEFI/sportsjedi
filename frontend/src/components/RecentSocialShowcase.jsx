@@ -31,7 +31,8 @@ export default function RecentSocialShowcase() {
   }, [posts.length]);
 
   const post = posts[index % posts.length] || fallback[0];
-  const media = post.media_url || post.image_url || post.thumbnail_url;
+  const rawMedia = post.media_url || post.image_url || post.thumbnail_url;
+  const media = rawMedia?.startsWith("/api/") ? `${API}${rawMedia}` : rawMedia;
   const isVideo = /video/i.test(post.media_type || post.type || "") || /\.mp4(?:$|\?)/i.test(media || "");
 
   return (
