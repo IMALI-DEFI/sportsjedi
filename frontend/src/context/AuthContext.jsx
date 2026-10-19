@@ -116,7 +116,7 @@ export function AuthProvider({ children }) {
     return payload;
   }
 
-  async function signup(email, password) {
+  async function signup(email, password, acceptedTerms = false) {
     const response = await fetch(
       `${IMALI_API}/api/auth/signup`,
       {
@@ -131,6 +131,7 @@ export function AuthProvider({ children }) {
             password,
             tier: "starter",
             strategy: "ai_weighted",
+            accepted_terms: acceptedTerms === true,
             utm_source: a.utm_source || null,
             utm_medium: a.utm_medium || null,
             utm_campaign: a.utm_campaign || null,

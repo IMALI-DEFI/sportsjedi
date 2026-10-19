@@ -40,6 +40,9 @@ export default function Login() {
   const [password, setPassword] =
     useState("");
 
+  const [acceptedTerms, setAcceptedTerms] =
+    useState(false);
+
   const [working, setWorking] =
     useState(false);
 
@@ -68,9 +71,13 @@ export default function Login() {
           password
         );
       } else {
+        if (!acceptedTerms) {
+          throw new Error("Please accept the Terms of Service and Privacy Policy.");
+        }
         await signup(
           email,
-          password
+          password,
+          acceptedTerms
         );
       }
 
@@ -175,6 +182,24 @@ export default function Login() {
               }
             />
           </label>
+
+          {mode === "signup" && (
+            <label style={{ display: "flex", flexDirection: "row", alignItems: "flex-start", gap: 10, fontSize: 13, lineHeight: 1.55 }}>
+              <input
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                required
+                style={{ width: 18, height: 18, flexShrink: 0, marginTop: 2 }}
+              />
+              <span>
+                I agree to the{" "}
+                <a href="/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>
+                {" "}and acknowledge the{" "}
+                <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+              </span>
+            </label>
+          )}
 
           <button
             type="submit"
