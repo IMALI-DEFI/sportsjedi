@@ -84,6 +84,16 @@ export default function Dashboard() {
 
   return (
     <main className="shell">
+      <section aria-label="Try Sports Jedi" style={{padding:"24px", margin:"24px 0", background:"linear-gradient(120deg,#14345c,#10243c)", border:"1px solid rgba(127,203,255,.36)", borderRadius:20}}>
+        <p style={{letterSpacing:2,fontWeight:800,margin:"0 0 10px"}}>NEW TO SPORTS JEDI?</p>
+        <h2 style={{fontSize:"clamp(1.6rem,4vw,2.6rem)",margin:"0 0 12px"}}>Your next practice parlay starts here.</h2>
+        <p style={{maxWidth:720}}>Choose a sport, tap Add This Pick on two example games, and review a practice parlay. No account or real money needed.</p>
+        <div style={{display:"flex",gap:12,flexWrap:"wrap",marginTop:18}}>
+          <a className="primary-btn" href="https://api.sportsjedi.com/api/demo?utm_source=website&amp;utm_medium=homepage&amp;utm_campaign=free_demo">Build a Practice Parlay</a>
+          <Link to="/login?mode=signup&amp;next=%2Fpicks">Create Free Account</Link>
+        </div>
+        <small style={{display:"block",marginTop:12,opacity:.76}}>Demo games, odds and picks are simulated. Every leg must win for a parlay to win.</small>
+      </section>
       <section className="hero">
         <div className="hero-copy">
           <span className="eyebrow">

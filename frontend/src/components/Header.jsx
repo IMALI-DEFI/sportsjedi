@@ -52,6 +52,8 @@ export default function Header() {
             Dashboard
           </NavLink>
 
+          <a href="https://api.sportsjedi.com/api/demo?utm_source=site&utm_medium=navigation&utm_campaign=demo" target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}>Try Free Demo</a>
+
           <NavLink
             to="/picks"
             onClick={() => setOpen(false)}
