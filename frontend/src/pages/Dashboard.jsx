@@ -84,6 +84,22 @@ export default function Dashboard() {
 
   return (
     <main className="shell">
+      <section aria-label="Sports Jedi skill missions" style={{padding:"20px",margin:"18px 0",border:"1px solid rgba(120,206,255,.4)",borderRadius:18,background:"linear-gradient(120deg,#172a48,#18213c)"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
+          <h2 style={{margin:0}}>🎮 Jedi Training Missions</h2>
+          <span style={{fontSize:12,opacity:.85}}>Learn first · Practice only · No wager required</span>
+        </div>
+        <p style={{opacity:.84}}>Build your sports-analysis skills. These are learning missions—not verified wins or redeemable rewards.</p>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",gap:12}}>
+          {[{title:"Explore today's matchups",detail:"Compare teams and available markets",route:"/picks",action:"Explore picks"},{title:"Practice a parlay",detail:"Build a practice slip without real money",route:"/parlay",action:"Try practice"},{title:"Learn how scores work",detail:"Understand model limits and odds",route:"/methodology",action:"Read methodology"}].map((mission,i)=>(
+            <div key={mission.route} style={{padding:14,borderRadius:12,background:"rgba(255,255,255,.06)"}}>
+              <div style={{fontWeight:800}}>Mission {i+1}: {mission.title}</div>
+              <p style={{fontSize:13,opacity:.8,minHeight:38}}>{mission.detail}</p>
+              <Link className="primary-btn" to={mission.route}>{mission.action} →</Link>
+            </div>
+          ))}
+        </div>
+      </section>
       <section aria-label="Try Sports Jedi" style={{padding:"24px", margin:"24px 0", background:"linear-gradient(120deg,#14345c,#10243c)", border:"1px solid rgba(127,203,255,.36)", borderRadius:20}}>
         <p style={{letterSpacing:2,fontWeight:800,margin:"0 0 10px"}}>NEW TO SPORTS JEDI?</p>
         <h2 style={{fontSize:"clamp(1.6rem,4vw,2.6rem)",margin:"0 0 12px"}}>Your next practice parlay starts here.</h2>
