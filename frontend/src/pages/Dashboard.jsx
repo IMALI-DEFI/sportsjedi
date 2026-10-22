@@ -1,3 +1,4 @@
+import LearningProgress from "../components/LearningProgress";
 import {
   useEffect,
   useMemo,
@@ -110,6 +111,7 @@ export default function Dashboard() {
         </div>
         <small style={{display:"block",marginTop:12,opacity:.76}}>Demo games, odds and picks are simulated. Every leg must win for a parlay to win.</small>
       </section>
+      <LearningProgress />
       <section className="hero">
         <div className="hero-copy">
           <span className="eyebrow">
