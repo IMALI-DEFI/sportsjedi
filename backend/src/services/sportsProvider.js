@@ -7,6 +7,15 @@ import {
   teams as mockTeams,
   playerProps as mockPlayerProps,
 } from "../data/mockSports.js";
+import {
+  EspnProvider,
+  findEspnMatch,
+} from "./providers/espn.js";
+import {
+  recordError,
+  recordFetch,
+  recordFallback,
+} from "./sourceStatus.js";
 
 const SPORT_KEYS = {
   NFL: "americanfootball_nfl",
@@ -242,15 +251,27 @@ function normalizeGame(event) {
 }
 
 async function fetchJson(url) {
-  const response = await fetch(url);
+  let response;
+
+  try {
+    response = await fetch(url);
+  } catch (error) {
+    recordError("oddsApi", error);
+    throw error;
+  }
 
   if (!response.ok) {
     const body = await response.text();
 
-    throw new Error(
-      `Sports API ${response.status}: ${body}`
+    const error = new Error(
+      `Sports API ${response.status}: ${body.slice(0, 200)}`
     );
+    error.upstreamStatus = response.status;
+    recordError("oddsApi", error);
+    throw error;
   }
+
+  recordFetch("oddsApi", response.headers);
 
   return response.json();
 }
@@ -819,11 +840,157 @@ class MockSportsProvider {
   }
 }
 
+/*
+ * Hybrid: The Odds API stays the wagering source, free ESPN data fills in
+ * live status, scores, records and venues, and takes over a league
+ * entirely when the Odds API fails (quota, outage, missing key).
+ */
+const LIVE_FIELDS = ["status", "period", "clock", "detailedStatus"];
+
+function enrichWithEspn(game, espnGames) {
+  const match = findEspnMatch(game, espnGames);
+  if (!match) return game;
+
+  const merged = {
+    ...game,
+    venue: game.venue || match.venue,
+    espnEventId: match.espnEventId,
+    away: {
+      ...game.away,
+      record: game.away?.record || match.away.record,
+      score: match.away.score,
+      logo: game.away?.logo || match.away.logo,
+    },
+    home: {
+      ...game.home,
+      record: game.home?.record || match.home.record,
+      score: match.home.score,
+      logo: game.home?.logo || match.home.logo,
+    },
+  };
+
+  // MLB Stats API data (gamePk present) is authoritative for MLB state.
+  if (!game.gamePk) {
+    for (const field of LIVE_FIELDS) {
+      if (match[field] !== undefined && match[field] !== null) {
+        merged[field] = match[field];
+      }
+    }
+  } else {
+    merged.away.score = game.away?.score ?? match.away.score;
+    merged.home.score = game.home?.score ?? match.home.score;
+  }
+
+  // Fill missing lines from ESPN, never overwrite Odds API lines.
+  if (!merged.spread && match.spread) merged.spread = match.spread;
+  if ((merged.total === null || merged.total === undefined) && match.total !== null) merged.total = match.total;
+  if (!merged.moneyline?.length && match.moneyline.length) merged.moneyline = match.moneyline;
+
+  return merged;
+}
+
+class HybridSportsProvider {
+  constructor() {
+    this.odds = API_KEY ? new TheOddsApiProvider() : null;
+    this.espn = new EspnProvider();
+  }
+
+  async getLeague(league) {
+    const espnGames = await this.espn
+      .getGames({ league })
+      .catch(() => []);
+
+    if (!this.odds) return espnGames;
+
+    try {
+      const oddsGames = await fetchOddsForLeague(league);
+      return oddsGames.map((game) => enrichWithEspn(game, espnGames));
+    } catch (error) {
+      recordFallback();
+      console.error(
+        `Odds API failed for ${league}, serving ESPN data:`,
+        String(error.message).slice(0, 200)
+      );
+      return espnGames;
+    }
+  }
+
+  async getGames({ league } = {}) {
+    if (league) {
+      const upper = String(league).toUpperCase();
+      return SPORT_KEYS[upper] ? this.getLeague(upper) : [];
+    }
+
+    const results = await Promise.allSettled(
+      Object.keys(SPORT_KEYS).map((key) => this.getLeague(key))
+    );
+
+    return results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+  }
+
+  async getGame(id) {
+    if (String(id).startsWith("espn-")) return this.espn.getGame(id);
+    const games = await this.getGames();
+    return games.find((game) => game.id === id) || null;
+  }
+
+  async getLiveGame(id) {
+    if (String(id).startsWith("espn-") || !this.odds) {
+      return this.espn.getLiveGame(id);
+    }
+
+    const game = await this.odds.getLiveGame(id);
+    if (!game) return this.getGame(id);
+
+    const espnGames = await this.espn
+      .getGames({ league: game.league })
+      .catch(() => []);
+
+    return enrichWithEspn(game, espnGames);
+  }
+
+  async getTeams({ league } = {}) {
+    const map = new Map();
+    for (const game of await this.getGames({ league })) {
+      for (const team of [game.home, game.away]) {
+        if (!map.has(team.name)) {
+          map.set(team.name, {
+            id: String(team.abbr || "").toLowerCase(),
+            league: game.league,
+            name: team.name,
+            abbr: team.abbr,
+            city: "",
+            rating: null,
+            record: team.record || "",
+          });
+        }
+      }
+    }
+    return [...map.values()];
+  }
+
+  async getPlayerProps(options = {}) {
+    if (!this.odds) return [];
+    try {
+      return await this.odds.getPlayerProps(options);
+    } catch (error) {
+      recordFallback();
+      return [];
+    }
+  }
+}
+
+/*
+ * SPORTS_PROVIDER:
+ *   theoddsapi - The Odds API only (unchanged behaviour)
+ *   hybrid     - Odds API + free ESPN data and automatic fallback
+ *   espn       - free ESPN data only, no key or quota
+ *   mock       - offline sample data (default)
+ */
 export function getSportsProvider() {
-  if (
-    process.env.SPORTS_PROVIDER ===
-    "theoddsapi"
-  ) {
+  const mode = String(process.env.SPORTS_PROVIDER || "mock").toLowerCase();
+
+  if (mode === "theoddsapi") {
     if (!API_KEY) {
       throw new Error(
         "SPORTS_API_KEY is missing"
@@ -833,5 +1000,18 @@ export function getSportsProvider() {
     return new TheOddsApiProvider();
   }
 
+  if (mode === "hybrid") return new HybridSportsProvider();
+  if (mode === "espn") return new EspnProvider();
+
   return new MockSportsProvider();
+}
+
+// Direct access for the source comparison report.
+export function getComparisonSources() {
+  return {
+    oddsApiConfigured: Boolean(API_KEY),
+    fetchOdds: fetchOddsForLeague,
+    espn: new EspnProvider(),
+    leagues: Object.keys(SPORT_KEYS),
+  };
 }

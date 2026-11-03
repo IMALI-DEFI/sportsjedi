@@ -17,6 +17,7 @@ async function startServer() {
       STRIPE_SECRET_KEY: "",
       STRIPE_PRICE_PRO_MONTHLY: "",
       STRIPE_PRICE_PRO_ANNUAL: "",
+      SOURCES_ADMIN_TOKEN: "test-admin-token-0123456789",
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -103,6 +104,16 @@ test("Sports Jedi API (mock provider)", async (t) => {
     });
     assert.equal(res.status, 503);
     assert.equal((await get("/api/billing/session/not-a-session")).status, 400);
+  });
+
+  await t.test("source admin endpoints require the token", async () => {
+    assert.equal((await get("/api/sources/status")).status, 401);
+    const ok = await get("/api/sources/status", {
+      headers: { Authorization: "Bearer test-admin-token-0123456789" },
+    });
+    assert.equal(ok.status, 200);
+    assert.equal(ok.body.data.provider, "mock");
+    assert.equal(JSON.stringify(ok.body).includes("apiKey"), false);
   });
 
   await t.test("unknown origin is rejected with 403", async () => {

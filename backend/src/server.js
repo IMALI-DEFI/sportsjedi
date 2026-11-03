@@ -11,6 +11,7 @@ import teamRoutes from "./routes/teams.js";
 import picksRoutes from "./routes/picks.js";
 import parlayRoutes from "./routes/parlays.js";
 import billingRoutes from "./routes/billing.js";
+import sourceRoutes from "./routes/sources.js";
 
 import {
   notFound,
@@ -115,6 +116,11 @@ app.use(
 app.use(
   "/api/billing",
   billingRoutes
+);
+
+app.use(
+  "/api/sources",
+  sourceRoutes
 );
 
 app.use(notFound);
