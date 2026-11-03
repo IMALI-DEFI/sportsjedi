@@ -2,6 +2,11 @@
 import {
   matchMlbGame,
 } from "./gamecast/mlb.js";
+import {
+  games as mockGames,
+  teams as mockTeams,
+  playerProps as mockPlayerProps,
+} from "../data/mockSports.js";
 
 const SPORT_KEYS = {
   NFL: "americanfootball_nfl",
@@ -779,21 +784,38 @@ class TheOddsApiProvider {
   }
 }
 
+/*
+ * Offline provider for local development and tests (SPORTS_PROVIDER=mock).
+ * Same method surface as TheOddsApiProvider, backed by data/mockSports.js.
+ */
+function byLeague(items, league) {
+  if (!league) return items;
+  const wanted = String(league).toUpperCase();
+  return items.filter(
+    (item) => String(item.league || "").toUpperCase() === wanted
+  );
+}
+
 class MockSportsProvider {
-  async getGames() {
-    return [];
+  async getGames({ league } = {}) {
+    return structuredClone(byLeague(mockGames, league));
   }
 
-  async getGame() {
-    return null;
+  async getGame(id) {
+    const game = mockGames.find((g) => g.id === id);
+    return game ? structuredClone(game) : null;
   }
 
-  async getTeams() {
-    return [];
+  async getLiveGame(id) {
+    return this.getGame(id);
   }
 
-  async getPlayerProps() {
-    return [];
+  async getTeams({ league } = {}) {
+    return structuredClone(byLeague(mockTeams, league));
+  }
+
+  async getPlayerProps({ league } = {}) {
+    return structuredClone(byLeague(mockPlayerProps, league));
   }
 }
 

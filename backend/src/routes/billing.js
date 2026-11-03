@@ -3,9 +3,25 @@ import Stripe from "stripe";
 
 const router = Router();
 
-const stripe = new Stripe(
-  process.env.STRIPE_SECRET_KEY
-);
+/*
+ * Created on first use so the API still boots (games, picks, health)
+ * when Stripe isn't configured; billing routes then answer 503.
+ */
+let stripeClient = null;
+
+function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    const error = new Error("Billing is not configured");
+    error.status = 503;
+    throw error;
+  }
+
+  if (!stripeClient) {
+    stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY);
+  }
+
+  return stripeClient;
+}
 
 const SITE_URL =
   process.env.SPORTS_JEDI_URL ||
@@ -29,14 +45,14 @@ router.post("/checkout", async (req, res, next) => {
     const attribution = req.body?.attribution || {};
 
     if (!price) {
-      return res.status(500).json({
+      return res.status(503).json({
         success: false,
         error: `Stripe ${plan} price is not configured`,
       });
     }
 
     const session =
-      await stripe.checkout.sessions.create({
+      await getStripe().checkout.sessions.create({
         mode: "subscription",
 
         line_items: [
@@ -78,8 +94,15 @@ router.post("/checkout", async (req, res, next) => {
 
 router.get("/session/:id", async (req, res, next) => {
   try {
+    if (!/^cs_(test|live)_[A-Za-z0-9]{10,200}$/.test(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid checkout session id",
+      });
+    }
+
     const session =
-      await stripe.checkout.sessions.retrieve(
+      await getStripe().checkout.sessions.retrieve(
         req.params.id,
         {
           expand: [
