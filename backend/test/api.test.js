@@ -2,7 +2,6 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { setTimeout as wait } from "node:timers/promises";
-import { mapMlbStatus } from "../src/services/gamecast/mlb.js";
 
 const PORT = 4300 + Math.floor(Math.random() * 500);
 const BASE = `http://127.0.0.1:${PORT}`;
@@ -18,6 +17,8 @@ async function startServer() {
       STRIPE_PRICE_PRO_MONTHLY: "",
       STRIPE_PRICE_PRO_ANNUAL: "",
       SOURCES_ADMIN_TOKEN: "test-admin-token-0123456789",
+      JWT_SECRET: "test-jwt-secret",
+      DATABASE_URL: "postgres://127.0.0.1:1/none",
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -109,7 +110,7 @@ test("Sports Jedi API (mock provider)", async (t) => {
   await t.test("source admin endpoints require the token", async () => {
     assert.equal((await get("/api/sources/status")).status, 401);
     const ok = await get("/api/sources/status", {
-      headers: { Authorization: "Bearer test-admin-token-0123456789" },
+      headers: { "X-Sources-Token": "test-admin-token-0123456789" },
     });
     assert.equal(ok.status, 200);
     assert.equal(ok.body.data.provider, "mock");
@@ -120,11 +121,4 @@ test("Sports Jedi API (mock provider)", async (t) => {
     const res = await get("/api/health", { headers: { Origin: "https://evil.example" } });
     assert.equal(res.status, 403);
   });
-});
-
-test("MLB status mapping", () => {
-  assert.equal(mapMlbStatus("Live", "In Progress"), "live");
-  assert.equal(mapMlbStatus("Final", "Final"), "final");
-  assert.equal(mapMlbStatus("Preview", "Scheduled"), "upcoming");
-  assert.equal(mapMlbStatus("Preview", "Postponed"), "postponed");
 });

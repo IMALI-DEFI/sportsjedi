@@ -28,8 +28,8 @@ Rollback is setting the variable back and restarting.
 Set `SOURCES_ADMIN_TOKEN` (16+ characters) and call:
 
 ```bash
-curl -H "Authorization: Bearer $SOURCES_ADMIN_TOKEN" https://api.sportsjedi.com/api/sources/compare
-curl -H "Authorization: Bearer $SOURCES_ADMIN_TOKEN" https://api.sportsjedi.com/api/sources/status
+curl -H "X-Sources-Token: $SOURCES_ADMIN_TOKEN" https://api.sportsjedi.com/api/sources/compare
+curl -H "X-Sources-Token: $SOURCES_ADMIN_TOKEN" https://api.sportsjedi.com/api/sources/status
 ```
 
 `compare` lines ESPN up against The Odds API per league (same sportsbook where

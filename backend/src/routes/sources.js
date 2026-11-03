@@ -1,5 +1,6 @@
 /*
- * Data-source admin endpoints (require SOURCES_ADMIN_TOKEN):
+ * Data-source admin endpoints. Send the SOURCES_ADMIN_TOKEN value in an
+ * X-Sources-Token header (kept separate from user logins in Authorization):
  *
  *   GET /api/sources/status            which provider is live, Odds API quota, last errors
  *   GET /api/sources/compare?league=   free ESPN lines vs The Odds API, per league,
@@ -23,7 +24,7 @@ function requireAdmin(req, res, next) {
   if (expected.length < 16) {
     return res.status(503).json({ success: false, error: "Set SOURCES_ADMIN_TOKEN (16+ chars) to use this endpoint" });
   }
-  const supplied = Buffer.from(String(req.get("authorization") || "").replace(/^Bearer /i, ""));
+  const supplied = Buffer.from(String(req.get("x-sources-token") || ""));
   const wanted = Buffer.from(expected);
   if (supplied.length !== wanted.length || !timingSafeEqual(supplied, wanted)) {
     return res.status(401).json({ success: false, error: "Unauthorized" });
