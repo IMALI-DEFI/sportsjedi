@@ -84,9 +84,9 @@ export default function Pricing() {
           </h1>
 
           <p>
-            Start free with limited daily access.
-            Upgrade for unlimited picks, player props,
-            advanced parlays and automatic builders.
+            Create a free account for daily Jedi Picks,
+            live matchups and basic prediction tools.
+            Upgrade for advanced builders.
           </p>
         </div>
 
@@ -100,7 +100,7 @@ export default function Pricing() {
           </span>
 
           <h2>$0</h2>
-          <p>Limited daily access</p>
+          <p>Free account · No credit card required · Eligible new members get a one-time 3-day Pro preview</p>
 
           <ul>
             <li>
@@ -142,9 +142,9 @@ export default function Pricing() {
 
           <a
             className="secondary-btn price-button"
-            href="/"
+            href="/login?mode=signup&next=%2Fpicks"
           >
-            Use Sports Jedi Free
+            Create Free Account
           </a>
         </article>
 
@@ -185,6 +185,10 @@ export default function Pricing() {
             </li>
 
             <li>
+              <Check /> Full Parlay Grader: which leg to cut and why
+            </li>
+
+            <li>
               <Check /> Auto Parlay Generator
             </li>
 
@@ -209,15 +213,15 @@ export default function Pricing() {
             </li>
 
             <li>
-              <Check /> Full sportsbook consensus
+              <Check /> See what 10+ sportsbooks agree on
             </li>
 
             <li>
-              <Check /> No-vig probabilities
+              <Check /> True odds with the sportsbook's cut removed
             </li>
 
             <li>
-              <Check /> Future Pro alerts + saved parlays
+              <Check /> Saved parlays (alerts coming soon)
             </li>
           </ul>
 
@@ -247,7 +251,7 @@ export default function Pricing() {
           </h2>
 
           <p>
-            Full Pro access for less
+            $12.42 a month. Save $90 vs monthly.
           </p>
 
           <div className="builder-badge">
@@ -285,7 +289,7 @@ export default function Pricing() {
             </li>
 
             <li>
-              <Check /> Best annual value
+              <Check /> Save $90 a year (38% off)
             </li>
           </ul>
 

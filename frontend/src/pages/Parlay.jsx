@@ -1,6 +1,7 @@
 import { useSearchParams } from "react-router-dom";
 
 import { api } from "../lib/api";
+import { GoProNudge } from "../components/GoPro";
 import {
   useEffect,
   useMemo,
@@ -278,14 +279,33 @@ function formatOdds(price) {
     : String(number);
 }
 
-export default function Parlay() {
+export default function Parlay({ embeddedEventId = "", embeddedLeague = "" }) {
+  const [wizardStep, setWizardStep] = useState(embeddedEventId ? 2 : 0);
+  const [selectedStyle, setSelectedStyle] = useState("balanced");
   const [searchParams] = useSearchParams();
+  const [tourStep, setTourStep] = useState(-1);
+  useEffect(() => {
+    try {
+      if (!embeddedEventId && !localStorage.getItem("sportsjedi-parlay-tour-v1")) setTourStep(0);
+    } catch {}
+  }, []);
+  const tourSteps = [
+    ["Welcome to your Jedi Parlay!", "Pick a sport, then choose how bold you want your picks. We'll do the hard work."],
+    ["Choose your sport", "Tap NFL, NBA, MLB, or college football. Only games for that sport will appear."],
+    ["Build with one tap", "Careful = fewer risky picks. Balanced = a mix. Long Shot = harder to win."],
+    ["Make it your own", "Scroll down to choose players yourself. Every pick has to win for the parlay to win."],
+    ["Check before you play", "Review your picks and odds. Sports Jedi analyzes selections; it does not place bets for you."]
+  ];
+  function closeTour() {
+    setTourStep(-1);
+    try { localStorage.setItem("sportsjedi-parlay-tour-v1", "done"); } catch {}
+  }
 
   const scopedEventId =
-    searchParams.get("eventId") || "";
+    embeddedEventId || searchParams.get("eventId") || "";
 
   const scopedLeague =
-    searchParams.get("league") || "";
+    embeddedLeague || searchParams.get("league") || "";
 
   const scopedGameMode =
     searchParams.get("gameMode") || "";
@@ -300,7 +320,7 @@ export default function Parlay() {
   const [league, setLeague] =
     useState(initialLeague);
   const [props, setProps] = useState([]);
-  const [selectedGame, setSelectedGame] = useState("ALL");
+  const [selectedGame, setSelectedGame] = useState(embeddedEventId || "ALL");
   const [legs, setLegs] = useState([]);
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -340,11 +360,17 @@ export default function Parlay() {
     setProps([]);
     setLegs([]);
     setAnalysis(null);
-    setSelectedGame("ALL");
+    setSelectedGame(scopedEventId || "ALL");
     setError("");
 
+    const controller = new AbortController();
     fetch(
-      `${API}/api/picks/props?league=${league}`
+      `${API}/api/picks/props?league=${league}`,
+      {signal: controller.signal,
+       headers: (() => {
+         const token = localStorage.getItem("sports_jedi_token");
+         return token ? {Authorization: `Bearer ${token}`} : {};
+       })()}
     )
       .then(async (response) => {
         const result = await response.json();
@@ -357,7 +383,8 @@ export default function Parlay() {
 
         setProps(result.data || []);
       })
-      .catch((err) => setError(err.message));
+      .catch((err) => {if(err.name !== "AbortError") setError(err.message)});
+    return () => controller.abort();
   }, [league]);
 
   const games = useMemo(() => {
@@ -381,7 +408,7 @@ export default function Parlay() {
 
   const visibleProps = useMemo(() => {
     const filtered =
-      selectedGame === "ALL"
+      scopedEventId ? props.filter(prop => String(prop.eventId) === String(scopedEventId)) : selectedGame === "ALL"
         ? props
         : props.filter(
             (prop) =>
@@ -410,7 +437,7 @@ export default function Parlay() {
     }
 
     return [...unique.values()].slice(0, 100);
-  }, [props, selectedGame]);
+  }, [props, selectedGame, scopedEventId]);
 
   function legKey(leg) {
     return (
@@ -427,19 +454,42 @@ export default function Parlay() {
 
   function isSelected(prop) {
     return legs.some(
-      (leg) => leg.id === prop.id
+      (leg) => legKey(leg) === legKey(prop)
     );
   }
 
   function addLeg(prop) {
+    if (prop.group) {
+      setLegs((current) => {
+        if (current.some(leg => legKey(leg) === legKey(prop))) {
+          return current.filter(leg => legKey(leg) !== legKey(prop));
+        }
+        let next = current.filter(leg => leg.group !== prop.group);
+        if (["moneyline", "spread"].includes(prop.market)) {
+          next = next.filter(leg => !(leg.type === "game_line" && String(leg.eventId) === String(prop.eventId) &&
+            ["moneyline", "spread"].includes(leg.market) && leg.pick !== prop.pick));
+        }
+        return [...next, prop];
+      });
+      setAnalysis(null);
+      return;
+    }
+
     if (isSelected(prop)) {
       return;
     }
 
-    setLegs((current) => [
-      ...current,
-      prop,
-    ]);
+    setLegs((current) => {
+      const conflicts = current.some(leg =>
+        String(leg.eventId) === String(prop.eventId) &&
+        String(leg.player).toLowerCase() === String(prop.player).toLowerCase() &&
+        String(leg.market).toLowerCase() === String(prop.market).toLowerCase() &&
+        String(leg.line) === String(prop.line) &&
+        String(leg.pick).toLowerCase() !== String(prop.pick).toLowerCase()
+      );
+      if (conflicts || current.some(leg => legKey(leg) === legKey(prop))) return current;
+      return [...current, prop];
+    });
 
     setAnalysis(null);
   }
@@ -468,6 +518,21 @@ export default function Parlay() {
         : [...current, market]
     );
   }
+
+  const [gameOptions, setGameOptions] = useState(null);
+  const [buildMode, setBuildMode] = useState("");
+  const [gate, setGate] = useState(null);
+  const [accessNote, setAccessNote] = useState("");
+
+  useEffect(() => {
+    if (!scopedEventId) return;
+    let live = true;
+    setGameOptions(null);
+    api.gameOptions(league, scopedEventId)
+      .then(data => { if (live) setGameOptions(data.options || []); })
+      .catch(() => { if (live) setGameOptions([]); });
+    return () => { live = false; };
+  }, [scopedEventId, league]);
 
   async function generateAdvancedParlay() {
     try {
@@ -523,6 +588,9 @@ export default function Parlay() {
     try {
       setLoading(true);
       setError("");
+      setGate(null);
+      setLegs([]);
+      setAnalysis(null);
 
       const result =
         await api.autoParlay(
@@ -532,6 +600,8 @@ export default function Parlay() {
         );
 
       setLegs(result.selections || []);
+      setGate(null);
+      setAccessNote(result.access?.plan === "free" ? "That was your free auto parlay for today. Go Pro for unlimited." : "");
 
       setAnalysis({
         impliedProbability: result.impliedProbability,
@@ -547,7 +617,12 @@ export default function Parlay() {
               : [],
       });
     } catch (err) {
-      setError(err.message);
+      if (["AUTH_REQUIRED", "FREE_LIMIT_REACHED", "PRO_REQUIRED"].includes(err.code)) {
+        setGate({ code: err.code, text: err.message });
+        setError("");
+      } else {
+        setError(err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -556,7 +631,7 @@ export default function Parlay() {
   async function analyze() {
     if (legs.length < 2) {
       setError(
-        "Add at least two player props."
+        "Add at least 2 picks."
       );
       return;
     }
@@ -572,6 +647,11 @@ export default function Parlay() {
 
       setAnalysis(result);
     } catch (err) {
+      if (err.code === "AUTH_REQUIRED") {
+        setGate({ code: err.code, text: "Make a free account to check your parlay. It only takes a minute." });
+        setError("");
+        return;
+      }
       setError(err.message);
     } finally {
       setLoading(false);
@@ -579,8 +659,23 @@ export default function Parlay() {
   }
 
   return (
-    <main className="shell parlay-page">
-      <section className="page-banner">
+    <main className={`shell parlay-page sj-friendly ${embeddedEventId ? "sj-game-only" : ""}`}>
+      {tourStep >= 0 && <div className="sj-tour-backdrop" role="presentation">
+        <section className="sj-tour-panel" role="dialog" aria-modal="true" aria-label="Sports Jedi guided tour">
+          <div className="sj-tour-top"><img src="/sports-jedi-logo.webp" alt="Sports Jedi mascot" /><span>JEDI GUIDE · {tourStep+1} OF {tourSteps.length}</span></div>
+          <h2>{tourSteps[tourStep][0]}</h2><p>{tourSteps[tourStep][1]}</p>
+          <div className="sj-tour-actions"><button type="button" onClick={closeTour}>Skip tour</button><button type="button" onClick={() => tourStep === tourSteps.length-1 ? closeTour() : setTourStep(tourStep+1)}>{tourStep === tourSteps.length-1 ? "Let's go!" : "Next →"}</button></div>
+        </section>
+      </div>}
+      {!embeddedEventId && <div className="sj-intro"><div><span className="eyebrow">⚡ YOUR SPORTS SIDEKICK</span><h2>Build a parlay in 3 easy steps</h2><p>1. Pick a sport &nbsp; 2. Choose your style &nbsp; 3. Check your picks</p></div><button type="button" onClick={() => setTourStep(0)}>❔ Show me how</button></div>}
+      {!embeddedEventId && <div className="sj-wizard-progress" aria-label="Parlay builder steps">
+        {["Choose sport", "Pick your style", "Your picks"].map((label, index) => (
+          <button key={label} type="button" className={wizardStep === index ? "current" : ""}
+            onClick={() => setWizardStep(index)}><span>{index+1}</span>{label}</button>
+        ))}
+      </div>}
+      {embeddedEventId && <div className="sj-inline-parlay-context"><strong>Same-game parlay</strong><span>Sports Jedi checks this game for recommended picks. You can review available player picks below.</span></div>}
+      <section className="page-banner" style={{display:"none"}}>
         <div>
           <span className="eyebrow">
             <WandSparkles size={14} />
@@ -592,17 +687,25 @@ export default function Parlay() {
           </h1>
 
           <p>
-            Select individual player props,
-            build a same-game or multi-game
-            card, and let Sports Jedi analyze
-            the combined market risk.
+            Pick your favorite sport. Choose players yourself, or let the Jedi suggest a parlay.
           </p>
         </div>
 
         <Users size={64} />
       </section>
 
-      <div className="league-tabs standalone">
+      {wizardStep === 0 && <section className="sj-wizard-card sj-wizard-stage-one">
+        <h1>🏟️ What sport are we playing?</h1>
+        <p>Choose your favorite. We'll find the picks.</p>
+        <div className="sj-sport-grid">
+          {[["NFL","🏈","Pro Football"],["NCAAF","🏟️","College Football"],["NBA","🏀","Basketball"],["MLB","⚾","Baseball"]].map(([code,emoji,name]) =>
+            <button type="button" key={code} className={league === code ? "selected" : ""}
+              onClick={() => {setLeague(code);setWizardStep(1);}}>
+              <span className="sj-sport-emoji">{emoji}</span><strong>{name}</strong><small>{code}</small>
+            </button>)}
+        </div>
+      </section>}
+      <div style={{display:"none"}} className="league-tabs standalone">
         {leagues.map((item) => (
           <button
             key={item}
@@ -620,7 +723,20 @@ export default function Parlay() {
         ))}
       </div>
 
-      <section className="auto-parlay-card">
+      {wizardStep === 1 && <section className="sj-wizard-card sj-wizard-stage-two">
+        <h1>✨ How bold are you feeling?</h1>
+        <p>Pick a style. We'll show you the picks before you decide.</p>
+        <div className="sj-style-grid">
+          {[["safe","🛡️","Careful Jedi","Focus on less risky picks"],["balanced","⚡","Balanced Jedi","A little of both"],["longshot","🚀","Long Shot Jedi","Harder to win, bigger potential odds"]].map(([mode,emoji,title,description]) =>
+            <button type="button" key={mode} disabled={loading} className={selectedStyle === mode ? "selected" : ""}
+              onClick={() => {setSelectedStyle(mode);generateAutoParlay(mode);setWizardStep(2);}}>
+              <span className="sj-sport-emoji">{emoji}</span><strong>{title}</strong><small>{description}</small>
+            </button>)}
+        </div>
+        <button type="button" className="sj-manual-btn" onClick={() => setWizardStep(2)}>Or choose my own players →</button>
+        <GoProNudge title="Free: 1 auto parlay a day" text="Pro builds unlimited Careful, Balanced and Long Shot parlays, plus advanced player and multi-game builders. Fewer slips busted by one leg." />
+      </section>}
+      <div style={{display:"none"}}><section className="auto-parlay-card">
         <div>
           <span className="eyebrow">
             Auto Parlay Generator
@@ -629,8 +745,7 @@ export default function Parlay() {
           <h2>Build me a parlay</h2>
 
           <p>
-            Use a quick Jedi preset or customize
-            exactly how Sports Jedi builds your card.
+            Tap a style below. We will find available picks and show you what they mean.
           </p>
         </div>
 
@@ -640,7 +755,7 @@ export default function Parlay() {
               generateAutoParlay("safe")
             }
           >
-            Safer
+            🛡️ Careful Jedi
           </button>
 
           <button
@@ -649,7 +764,7 @@ export default function Parlay() {
               generateAutoParlay("balanced")
             }
           >
-            Balanced
+            ⚡ Balanced Jedi
           </button>
 
           <button
@@ -657,7 +772,7 @@ export default function Parlay() {
               generateAutoParlay("longshot")
             }
           >
-            Long Shot
+            🚀 Long Shot Jedi
           </button>
         </div>
 
@@ -672,7 +787,7 @@ export default function Parlay() {
         >
           {advancedOpen
             ? "Hide Advanced Builder"
-            : "Advanced Builder"}
+            : "More options (experienced users)"}
         </button>
 
         {advancedOpen && (
@@ -925,20 +1040,92 @@ export default function Parlay() {
           </div>
         )}
       </section>
-      <div className="parlay-layout">
-        <section className="prop-browser">
+      </div>
+      {embeddedEventId && wizardStep === 2 && <section className="sj-game-builder">
+        <h2>How do you want to build it?</h2>
+        <div className="sj-gb-choices">
+          <button type="button" className={buildMode === "auto" ? "on" : ""} onClick={() => { setBuildMode("auto"); setError(""); }}>
+            <b aria-hidden="true">⚡</b><strong>Make it for me</strong><small>The Jedi picks for you</small>
+          </button>
+          <button type="button" className={buildMode === "manual" ? "on" : ""} onClick={() => { setBuildMode("manual"); setError(""); setGate(null); }}>
+            <b aria-hidden="true">✋</b><strong>I'll pick myself</strong><small>Tap the picks you want</small>
+          </button>
+        </div>
+        {buildMode === "auto" && <div className="sj-gb-styles">
+          {[["safe", "🛡️", "Careful", "Safer picks, smaller payout"], ["balanced", "⚡", "Balanced", "A little of both"], ["longshot", "🚀", "Long Shot", "Riskier, bigger payout"]].map(([mode, emoji, title, text]) =>
+            <button type="button" key={mode} disabled={loading} onClick={() => generateAutoParlay(mode)}>
+              <b aria-hidden="true">{emoji}</b><strong>{title}</strong><small>{text}</small>
+            </button>)}
+        </div>}
+        {buildMode === "auto" && <p className="sj-gb-note">{loading ? "Finding your picks…" : accessNote || "Free account: 1 auto parlay a day. Pro: unlimited."}</p>}
+        {buildMode === "manual" && <div className="sj-gb-lines">
+          {gameOptions === null ? <p className="sj-gb-note">Loading this game's picks…</p>
+            : gameOptions.length ? [["moneyline", "🏆 Who wins?"], ["spread", "📏 Point spread"], ["total", "🔢 Total points"]].map(([market, title]) => {
+                const opts = gameOptions.filter(o => o.market === market);
+                if (!opts.length) return null;
+                return <div key={market} className="sj-gb-market">
+                  <h3>{title}</h3>
+                  <div>{opts.map(o =>
+                    <button type="button" key={o.id} className={isSelected(o) ? "on" : ""} onClick={() => addLeg(o)}>
+                      <strong>{o.label}</strong><span>{formatOdds(o.price)}</span>
+                    </button>)}</div>
+                </div>;
+              })
+            : <p className="sj-gb-note">No picks are posted for this game yet. Check back closer to game time.</p>}
+          {!!gameOptions?.length && <p className="sj-gb-note">Pick one side in each row. Tap it again to remove it.</p>}
+        </div>}
+        {gate && <div className="sj-gb-gate">
+          <p>{gate.text}</p>
+          <div>
+            {gate.code === "AUTH_REQUIRED"
+              ? <><a href={`/login?mode=signup&next=${encodeURIComponent(window.location.pathname)}`}>🎁 Join Free</a><a className="alt" href={`/login?next=${encodeURIComponent(window.location.pathname)}`}>Sign In</a></>
+              : <a href="/pricing">👑 Go Pro</a>}
+            {buildMode !== "manual" && <button type="button" onClick={() => { setGate(null); setBuildMode("manual"); }}>✋ Pick myself instead</button>}
+          </div>
+        </div>}
+        {error && <div className="sj-gb-error" role="status">{error}</div>}
+      </section>}
+      {wizardStep === 2 && !embeddedEventId && <section className="sj-wizard-card sj-picks-heading">
+        <h1>🎯 Your Jedi Picks</h1>
+        <p>{embeddedEventId ? "Tap the picks you like for this game. Every pick has to win for the parlay to win." : "Choose players below or let Jedi suggest a card. Every pick must win for the parlay to win."}</p>
+        <button type="button" className="sj-manual-btn" disabled={loading}
+          onClick={() => generateAutoParlay(selectedStyle)}>
+          {loading ? "Finding picks…" : "✨ Find Jedi Picks"}
+        </button>
+        {!embeddedEventId && <div className="sj-wizard-actions">
+          <button type="button" onClick={() => setWizardStep(0)}>Change sport</button>
+          <button type="button" onClick={() => setWizardStep(1)}>Change style</button>
+        </div>}
+      </section>}
+      {wizardStep === 2 && <section className="sj-wizard-card" aria-live="polite">
+        {loading && <p role="status">Finding available picks for your parlay…</p>}
+        {gate && <div className="sj-gb-gate">
+          <p>{gate.text}</p>
+          <div>
+            {gate.code === "AUTH_REQUIRED" ? <>
+              <a href={`/login?mode=signup&next=${encodeURIComponent(window.location.pathname + window.location.search)}`}>Join Free</a>
+              <a className="alt" href={`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`}>Sign In</a>
+            </> : <a href="/pricing">See Pro Plans</a>}
+            <button type="button" onClick={() => {setGate(null);setBuildMode("manual");}}>Choose picks myself</button>
+          </div>
+        </div>}
+        {error && <div className="sj-gb-error" role="alert">{error}</div>}
+        {!loading && !gate && !error && legs.length > 0 && <p role="status">Your parlay is ready. Review the picks below.</p>}
+      </section>}
+      {wizardStep === 2 && <div className="parlay-layout">
+        {(!embeddedEventId || (buildMode === "manual" && visibleProps.length > 0)) && <section className="prop-browser">
           <div className="section-head">
             <div>
               <span className="eyebrow">
                 Player Props
               </span>
               <h2>
-                Choose your legs
+                {embeddedEventId ? "Player picks" : "Or pick players yourself"}
               </h2>
             </div>
           </div>
 
-          <div className="event-filter">
+          {!embeddedEventId && <div className="event-filter">
             <button
               className={
                 selectedGame === "ALL"
@@ -969,14 +1156,23 @@ export default function Parlay() {
                 </button>
               )
             )}
-          </div>
+          </div>}
 
-          {error && (
-            <div className="error">
-              {error}
+          {error && !embeddedEventId && (
+            <div className={embeddedEventId && visibleProps.length ? "sj-parlay-info" : "error"} role="status">
+              {embeddedEventId && visibleProps.length && /no qualifying|no eligible|no.*legs.*available/i.test(error)
+                ? "No picks passed Jedi’s checks for an automatic parlay yet. You can still review the available player picks below. These are not Jedi recommendations."
+                : error}
             </div>
           )}
 
+          {!visibleProps.length && <div className="sj-empty-props" role="status">
+            <h3>{embeddedEventId ? "No player picks available for this game" : "🔒 Unlock player picks"}</h3>
+            <p>{embeddedEventId ? "No player picks are available for this game right now. Close this panel to return to the matchup." : "Player props are available to signed-in members. Create a free account to see your starter picks, or sign in if you already have one. Some sports may have no available props."}</p>
+            {!embeddedEventId && <a className="sj-unlock-link" href="/login?mode=signup&next=%2Fparlay">🎁 Join Free</a>}
+            {!embeddedEventId && <a className="sj-unlock-link secondary" href="/login?next=%2Fparlay">Sign In</a>}
+            {!embeddedEventId && selectedGame !== "ALL" && <button type="button" onClick={() => setSelectedGame("ALL")}>Show all games</button>}
+          </div>}
           <div className="player-prop-grid">
             {visibleProps.map((prop) => (
               <article
@@ -1025,19 +1221,25 @@ export default function Parlay() {
                     addLeg(prop)
                   }
                   disabled={
-                    isSelected(prop)
+                    isSelected(prop) || legs.some(leg =>
+                      String(leg.eventId) === String(prop.eventId) &&
+                      String(leg.player).toLowerCase() === String(prop.player).toLowerCase() &&
+                      String(leg.market).toLowerCase() === String(prop.market).toLowerCase() &&
+                      String(leg.line) === String(prop.line) &&
+                      String(leg.pick).toLowerCase() !== String(prop.pick).toLowerCase()
+                    )
                   }
                 >
                   <Plus size={16} />
 
                   {isSelected(prop)
                     ? "Added"
-                    : "Add leg"}
+                    : "Add pick"}
                 </button>
               </article>
             ))}
           </div>
-        </section>
+        </section>}
 
         <aside className="parlay-slip">
           <div className="slip-head">
@@ -1047,7 +1249,7 @@ export default function Parlay() {
               </span>
 
               <h2>
-                {legs.length} Leg
+                {legs.length} Pick
                 {legs.length === 1
                   ? ""
                   : "s"}
@@ -1069,8 +1271,8 @@ export default function Parlay() {
               <WandSparkles />
 
               <p>
-                Add player props to build
-                your parlay.
+                Tap a pick above to add it.
+                You need at least 2 picks.
               </p>
             </div>
           ) : (
@@ -1085,17 +1287,16 @@ export default function Parlay() {
                       {leg.matchup || leg.league}
                     </small>
 
-                    <b>{leg.player}</b>
+                    <b>{leg.player || leg.label || leg.pick}</b>
 
                     <span>
-                      {formatMarket(
-                        leg.market
-                      )}
+                      {leg.type === "game_line"
+                        ? ({ moneyline: "Who wins", spread: "Point spread", total: "Total points" }[leg.market] || leg.market)
+                        : formatMarket(leg.market)}
                     </span>
 
                     <strong>
-                      {leg.pick}{" "}
-                      {leg.line ?? ""} ·{" "}
+                      {leg.label ? "" : `${leg.pick} ${leg.line ?? ""} · `}
                       {formatOdds(
                         leg.price
                       )}
@@ -1128,7 +1329,7 @@ export default function Parlay() {
 
             {loading
               ? "Analyzing…"
-              : "Analyze Parlay"}
+              : "Check My Parlay"}
           </button>
 
           {analysis && (
@@ -1246,7 +1447,7 @@ export default function Parlay() {
             because of correlation.
           </p>
         </aside>
-      </div>
+      </div>}
     </main>
   );
 }

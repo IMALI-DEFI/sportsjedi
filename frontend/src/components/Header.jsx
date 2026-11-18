@@ -49,42 +49,51 @@ export default function Header() {
             end
             onClick={() => setOpen(false)}
           >
-            Dashboard
+            Home
           </NavLink>
+
+
 
           <NavLink
             to="/picks"
             onClick={() => setOpen(false)}
           >
-            Jedi Picks
+            Today's Picks
           </NavLink>
 
           <NavLink
             to="/parlay"
             onClick={() => setOpen(false)}
           >
-            Parlay Lab
+            Build a Parlay
+          </NavLink>
+
+          <NavLink
+            to="/parlay-grader"
+            onClick={() => setOpen(false)}
+          >
+            Grade My Parlay
           </NavLink>
 
           <NavLink
             to="/methodology"
             onClick={() => setOpen(false)}
           >
-            Methodology
+            Learn
           </NavLink>
 
           <NavLink
             to="/blog"
             onClick={() => setOpen(false)}
           >
-            Insights
+            Game Previews
           </NavLink>
 
           <NavLink
             to="/pricing"
             onClick={() => setOpen(false)}
           >
-            Pricing
+            Go Pro
           </NavLink>
 
           {user ? (
@@ -109,10 +118,7 @@ export default function Header() {
         </nav>
 
         <div className="nav-actions">
-          <span className="engine-pill">
-            <Sparkles size={14} />
-            Live Markets
-          </span>
+
 
           <button
             className="menu-btn"

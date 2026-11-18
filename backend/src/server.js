@@ -6,6 +6,8 @@ import helmet from "helmet";
 import morgan from "morgan";
 
 import healthRoutes from "./routes/health.js";
+import developerRoutes from "./routes/developer.js";
+import jediStatsRoutes from "./routes/jediStats.js";
 import gameRoutes from "./routes/games.js";
 import teamRoutes from "./routes/teams.js";
 import picksRoutes from "./routes/picks.js";
@@ -116,6 +118,9 @@ app.use(
   "/api/billing",
   billingRoutes
 );
+
+app.use("/api/v1", jediStatsRoutes);
+app.use("/api/developer/v1", developerRoutes);
 
 app.use(notFound);
 

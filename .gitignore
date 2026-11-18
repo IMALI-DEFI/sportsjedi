@@ -7,3 +7,9 @@ frontend/dist/
 .env.*
 !.env.example
 .DS_Store
+
+# Local model tracking state (do not deploy or commit)
+backend/data/
+
+# Local Netlify folder
+.netlify

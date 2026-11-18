@@ -1,3 +1,4 @@
+import { teamShort } from "../lib/plain";
 function Base({ active, className, label }) {
   return (
     <div
@@ -63,13 +64,15 @@ function Scoreboard({
   subtext,
 }) {
   const score = gamecast.score || {};
-
+  const league = String(gamecast.league || gamecast.sport || "").toUpperCase();
+  const asset = (name) => {
+    const slug = String(name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    return league === "NFL" ? `/artwork/helmets3d/nfl/${slug}.webp` : league === "NCAAF" ? `/artwork/library/helmets/ncaaf/${slug}.svg` : league === "NBA" ? `/artwork/library/teams/nba/${slug}.svg` : "";
+  };
   return (
     <div className="gamecast-scoreboard">
       <div>
-        <span>
-          {gamecast.teams?.away || "AWAY"}
-        </span>
+        <img className="sj-score-art" src={asset(gamecast.teams?.away)} alt="" onError={e => { const i = e.currentTarget; if (i.src.includes("/helmets3d/")) { i.src = i.src.replace("/artwork/helmets3d/nfl/", "/artwork/library/helmets/nfl/").replace(".webp", ".svg"); } else { i.style.display="none"; } }} /><span>{gamecast.teams?.away ? teamShort(gamecast.teams.away) : "AWAY"}</span>
         <strong>
           {valueOrDash(score.away)}
         </strong>
@@ -81,9 +84,7 @@ function Scoreboard({
       </div>
 
       <div>
-        <span>
-          {gamecast.teams?.home || "HOME"}
-        </span>
+        <img className="sj-score-art" src={asset(gamecast.teams?.home)} alt="" data-side="home" onError={e => { const i = e.currentTarget; if (i.src.includes("/helmets3d/")) { i.src = i.src.replace("/artwork/helmets3d/nfl/", "/artwork/library/helmets/nfl/").replace(".webp", ".svg"); } else { i.style.display="none"; } }} /><span>{gamecast.teams?.home ? teamShort(gamecast.teams.home) : "HOME"}</span>
         <strong>
           {valueOrDash(score.home)}
         </strong>
@@ -237,9 +238,9 @@ function NflGamecast({
           <div>
             <span>POSSESSION</span>
             <strong>
-              {valueOrDash(
-                gamecast.possession
-              )}
+              {gamecast.possession
+                ? teamShort(gamecast.possession)
+                : "—"}
             </strong>
           </div>
 
@@ -320,9 +321,9 @@ function NbaGamecast({
           <div>
             <span>POSSESSION</span>
             <strong>
-              {valueOrDash(
-                gamecast.possession
-              )}
+              {gamecast.possession
+                ? teamShort(gamecast.possession)
+                : "—"}
             </strong>
           </div>
         </div>

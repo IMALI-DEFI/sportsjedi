@@ -12,6 +12,8 @@ import {
 
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
+import { GoProNudge } from "../components/GoPro";
+import { teamShort, pickName, friendlyTime, plainSummary, plainFactor, propLabel } from "../lib/plain";
 
 const leagues = ["ALL", "NFL", "NCAAF", "NBA", "MLB"];
 
@@ -50,11 +52,11 @@ export default function Picks() {
             Jedi Picks
           </span>
 
-          <h1>Strongest market signals</h1>
+          <h1>Today's top picks</h1>
 
           <p>
-            Ranked using no-vig probabilities,
-            sportsbook agreement and market depth.
+            Ranked by how strongly the sportsbooks agree. The higher the
+            confidence, the more the market leans that way.
           </p>
         </div>
 
@@ -62,9 +64,19 @@ export default function Picks() {
       </section>
 
       <div className="disclosure-strip">
-        Consensus strength is not guaranteed profit.
-        Always review the underlying market.
+        No pick is ever a sure thing. Have fun and bet responsibly (21+).
       </div>
+
+      <details className="sj-pick-guide" style={{margin:"14px 0",padding:"14px 18px",border:"1px solid rgba(150,170,210,.35)",borderRadius:14}} open>
+        <summary style={{cursor:"pointer",fontWeight:700}}>ⓘ What do Strong, Play, Lean and Pass mean?</summary>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:12,marginTop:12,fontSize:"0.92rem"}}>
+          <span><b>Strong:</b> Higher-confidence model pick, not a guarantee.</span>
+          <span><b>Play:</b> A pick the model considers worth considering.</span>
+          <span><b>Lean:</b> Slight preference, with less confidence.</span>
+          <span><b>Pass:</b> Not enough advantage to recommend a bet.</span>
+        </div>
+        <small style={{display:"block",marginTop:10,opacity:0.8}}>These are model ratings, not guaranteed results or betting instructions.</small>
+      </details>
 
       <div className="league-tabs standalone">
         {leagues.map((item) => (
@@ -96,7 +108,7 @@ export default function Picks() {
                 <span className="eyebrow">
                   Ranked Board
                 </span>
-                <h2>Top Jedi signals</h2>
+                <h2>Strongest leans right now</h2>
               </div>
             </div>
 
@@ -114,13 +126,12 @@ export default function Picks() {
 
                     <div className="pick-main">
                       <span>
-                        {game.league} ·{" "}
-                        {game.away.abbr} @{" "}
-                        {game.home.abbr}
+                        {game.league} · {teamShort(game.away)} at{" "}
+                        {teamShort(game.home)} · {friendlyTime(game.startTime)}
                       </span>
 
                       <div className="pick-title-row">
-                        <h3>{analysis.pick}</h3>
+                        <h3>{pickName(game, analysis.pick)}</h3>
 
                         <span
                           className={`grade grade-${(
@@ -131,22 +142,21 @@ export default function Picks() {
                         </span>
                       </div>
 
-                      <p>{analysis.summary}</p>
+                      <p>{plainSummary(game, analysis)}</p>
 
                       <div className="pick-metrics">
                         <span>
                           {analysis.consensusBooks || 1}
-                          {" "}books
+                          {" "}sportsbooks
                         </span>
 
                         <span>
                           {analysis.marketAgreement ?? "—"}%
-                          {" "}agreement
+                          {" "}agree
                         </span>
 
                         <span>
-                          {analysis.edge ?? "—"}%
-                          {" "}market strength
+                          lean strength {analysis.edge ?? "—"}%
                         </span>
                       </div>
                     </div>
@@ -163,6 +173,7 @@ export default function Picks() {
                 )
               )}
             </div>
+            <GoProNudge title="Want every pick on the board?" text="Free shows 3 Jedi Picks a day. Pro unlocks unlimited picks and player props for every game." />
           </section>
 
           <section className="props-section">
@@ -171,7 +182,7 @@ export default function Picks() {
                 <span className="eyebrow">
                   Player Props
                 </span>
-                <h2>Live prop markets</h2>
+                <h2>Player props</h2>
               </div>
             </div>
 
@@ -195,8 +206,7 @@ export default function Picks() {
                   <h3>{prop.player}</h3>
 
                   <p>
-                    {String(prop.market)
-                      .replaceAll("_", " ")}
+                    {propLabel(prop.market)}
                   </p>
 
                   <div className="prop-line">
@@ -214,6 +224,14 @@ export default function Picks() {
                 </article>
               ))}
             </div>
+            {props.length > 0 && (
+              <GoProNudge title="More props on Pro" text="Free shows 5 player props a day. Pro shows them all, plus our own long-shot props." />
+            )}
+            {!props.length && (
+              <div className="sj-empty-note">
+                🏀 Player props show up on game day, usually a few hours before tip-off. Check back then!
+              </div>
+            )}
           </section>
         </>
       )}

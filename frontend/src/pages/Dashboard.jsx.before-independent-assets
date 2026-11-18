@@ -1,0 +1,163 @@
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  BarChart3,
+  BrainCircuit,
+  Radio,
+  ShieldCheck,
+  Sparkles,
+  Trophy,
+  Zap,
+} from "lucide-react";
+
+import { Link } from "react-router-dom";
+import GameCard from "../components/GameCard";
+import RecentSocialShowcase from "../components/RecentSocialShowcase";
+import { api } from "../lib/api";
+
+const leagues = ["ALL", "NFL", "NCAAF", "NBA", "MLB"];
+
+export default function Dashboard() {
+  const [games, setGames] = useState([]);
+  const [picks, setPicks] = useState([]);
+  const [league, setLeague] = useState("ALL");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const selected =
+      league === "ALL" ? "" : league;
+
+    setLoading(true);
+    setError("");
+
+    Promise.all([
+      api.games(selected),
+      api.picks(selected),
+    ])
+      .then(([gameData, pickData]) => {
+        setGames(gameData);
+        setPicks(pickData);
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, [league]);
+
+  const sortedGames = useMemo(
+    () =>
+      [...games].sort(
+        (a, b) =>
+          new Date(a.startTime) -
+          new Date(b.startTime)
+      ),
+    [games]
+  );
+
+  const visibleGames = league === "ALL"
+    ? ["NFL", "NBA", "MLB", "NCAAF"].map((sport) =>
+        sortedGames.find((game) => game.league === sport)
+      ).filter(Boolean)
+    : sortedGames.slice(0, 4);
+
+  const live =
+    games.filter(
+      (game) => game.status === "live"
+    ).length;
+
+  const maxConfidence =
+    picks.length
+      ? Math.max(
+          ...picks.map(
+            (p) => p.analysis?.confidence || 0
+          )
+        )
+      : 0;
+
+  const books = new Set(
+    games.flatMap((game) =>
+      (game.bookmakers || []).map(
+        (book) => book.key
+      )
+    )
+  ).size;
+
+  return (
+    <main className="shell">
+      <section className="sj-home-hero">
+        <div className="sj-home-copy">
+          <span className="sj-home-kicker">SPORTS PICKS • PARLAYS • PREDICTIONS</span>
+          <h1>Your Sports Sidekick <em>for Picks, Parlays &amp; More!</em></h1>
+
+          <div className="sj-home-buttons">
+            <Link to="/picks" className="sj-home-cta"><span className="sj-cta-symbol">ϟ</span><span>Get Jedi Picks<small>Today's Best Plays</small></span></Link>
+            <Link to="/parlay" className="sj-home-cta secondary"><span className="sj-cta-symbol">◇</span><span>Build My Parlay<small>Pick Players • Combine • Win</small></span></Link>
+          </div>
+
+        </div>
+        <div className="sj-hero-visual" aria-label="Sports Jedi sports artwork">
+          <div className="sj-hero-athlete sj-hero-athlete-football"><img src="/artwork/matchups/ravens-chiefs.png" alt="Ravens and Chiefs matchup artwork" /></div>
+          <div className="sj-hero-athlete sj-hero-athlete-basketball"><img src="/artwork/matchups/lakers-celtics.png" alt="Lakers and Celtics matchup artwork" /></div>
+          <div className="sj-hero-athlete sj-hero-athlete-college"><img src="/artwork/matchups/michigan-ohio-state.png" alt="Michigan and Ohio State matchup artwork" /></div>
+        </div>
+      </section>
+      <section className="sj-home-sports" aria-label="Choose your sport">
+        <h2>Choose a Sport <span aria-hidden="true">➜</span></h2>
+        <div className="sj-home-sport-grid">
+          {[["NFL","🏈","NFL"],["NBA","🏀","NBA"],["MLB","⚾","MLB"],["NCAAF","🏈","CFB"]].map(([code,emoji,label]) =>
+            <button type="button" key={code} className={league === code ? "active" : ""}
+              onClick={() => setLeague(code)}><span>{emoji}</span><strong>{label}</strong></button>
+          )}
+          <button type="button" className={league === "ALL" ? "active" : ""} onClick={() => setLeague("ALL")}><span>•••</span><strong>More Sports</strong></button>
+          <Link className="sj-boxing-sport" to="/picks"><span>🥊</span><strong>BOXING</strong></Link>
+        </div>
+      </section>
+      <section className="games-section">
+        <div className="section-head">
+          <div>
+            <span className="eyebrow">
+              LIVE SPORTS
+            </span>
+            <h2>🔥 Today's Featured Matchups</h2>
+
+          </div>
+
+          <Link to="/picks" className="sj-full-schedule">▦ Full Schedule →</Link>
+        </div>
+
+        {error && (
+          <div className="error">
+            Unable to load the live board: {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="loading">
+            Scanning sportsbook markets…
+          </div>
+        ) : (
+          <div className="game-grid">
+            {visibleGames.map((game) => (
+              <GameCard
+                key={game.id}
+                game={game}
+              />
+            ))}
+          </div>
+        )}
+        <div className="sj-home-more"><Link to="/picks">See more games and picks →</Link></div>
+      </section>
+      <section className="sj-home-feature-links">
+        <Link to="/methodology" className="sj-feature-purple"><span>▶</span><strong>How It Works</strong><small>A 60-Second Tour 🚀</small></Link>
+        <Link to="/methodology" className="sj-feature-blue"><span>🎯</span><strong>Jedi Academy</strong><small>Learn Picks, Parlays & Strategy</small></Link>
+        <Link to="/login?mode=signup&next=%2Fpicks" className="sj-feature-green"><span>♟</span><strong>Join Free</strong><small>Get Daily Picks & Updates</small></Link>
+        <Link to="/pricing" className="sj-feature-gold"><span>♛</span><strong>VIP Picks</strong><small>Pro Plays, Alerts & More</small></Link>
+      </section>
+      <section className="sj-home-legal"><p>Sports Jedi provides informational sports analysis. Picks are not guaranteed. Game information and market availability may change.</p>
+      </section>
+    </main>
+  );
+}

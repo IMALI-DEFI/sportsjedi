@@ -11,7 +11,7 @@ const goodPosts = (rows = []) => {
     const caption = String(post?.caption || post?.text || "").trim();
     const platform = String(post?.platform || "").toLowerCase();
     if (!media || !post?.public_url || caption.length < 40 || !approvedPlatforms.has(platform)) return false;
-    if (/logo|fallback|placeholder/i.test(media) || !/APPROVED_|premium_/i.test(media) || seen.has(media)) return false;
+    if (/logo|fallback|placeholder/i.test(media) || !/APPROVED_/i.test(media) || seen.has(media)) return false;
     seen.add(media);
     return true;
   }).slice(0, 6);
@@ -69,6 +69,7 @@ export default function RecentSocialShowcase() {
               <span className="eyebrow">{post.platform || "SPORTS JEDI SOCIAL"}</span>
               <h3>{post.title || post.topic || "Latest Sports Jedi update"}</h3>
               <p>{post.caption || post.text}</p>
+              <a href={post.public_url} target="_blank" rel="noopener noreferrer" style={{display:"inline-block",marginTop:16,fontWeight:700,textDecoration:"underline"}}>View this post on Instagram →</a>
             </div>
 
             <div className="social-controls">

@@ -1,0 +1,174 @@
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+
+const SITE = "https://sportsjedi.com";
+
+const ROUTE_META = {
+  "/": {
+    title: "Sports Jedi — AI Sports Picks, Matchup Analysis & Parlays",
+    description:
+      "Sports Jedi delivers AI-powered sports picks, matchup analysis, confidence scores, player props and parlay insights to help you make more informed decisions.",
+    robots: "index,follow",
+  },
+  "/picks": {
+    title: "Sports Picks & Confidence Scores | Sports Jedi",
+    description:
+      "Review Sports Jedi picks, matchup signals and confidence scores across supported sports.",
+    robots: "index,follow",
+  },
+  "/parlay": {
+    title: "AI Parlay Analysis | Sports Jedi",
+    description:
+      "Build and review parlays with Sports Jedi matchup analysis, confidence scoring and probability insights.",
+    robots: "index,follow",
+  },
+  "/parlay-grader": {
+    title: "Free Parlay Grader: Grade Your Parlay A–F | Sports Jedi",
+    description:
+      "Enter your parlay and get an instant A–F grade, your real chance to cash, and which leg is most likely to bust you.",
+    robots: "index,follow",
+  },
+  "/lost-by-one-leg": {
+    title: "Lost Your Parlay by One Leg? | Sports Jedi",
+    description: "Spot the shaky leg before you lock in your parlay. Free Jedi Picks, true odds and the Safer Builder from Sports Jedi.",
+    robots: "index,follow",
+  },
+  "/too-many-tabs": {
+    title: "Stop Checking 10 Sportsbook Apps | Sports Jedi",
+    description: "Odds, picks and matchups on one screen. See what 10+ sportsbooks agree on with Sports Jedi.",
+    robots: "index,follow",
+  },
+  "/real-odds": {
+    title: "See the Real Odds Without the Sportsbook's Cut | Sports Jedi",
+    description: "Sports Jedi removes the vig so you see the true chance of a win. Start free.",
+    robots: "index,follow",
+  },
+  "/methodology": {
+    title: "How Sports Jedi Works | Methodology",
+    description:
+      "Learn how Sports Jedi evaluates matchups, probabilities and confidence scores.",
+    robots: "index,follow",
+  },
+  "/pricing": {
+    title: "Sports Jedi Pricing",
+    description:
+      "Compare Sports Jedi plans for AI sports analysis, picks, confidence scores and parlay tools.",
+    robots: "index,follow",
+  },
+  "/blog": {
+    title: "Sports Jedi Insights",
+    description:
+      "Sports analysis, matchup breakdowns and educational insights from Sports Jedi.",
+    robots: "index,follow",
+  },
+  "/referrals": {
+    title: "Sports Jedi Partner Program",
+    description:
+      "Earn commissions by referring new members to Sports Jedi.",
+    robots: "index,follow",
+  },
+  "/ai-sports-picks": {
+    title: "AI Sports Picks & Predictions | Sports Jedi",
+    description:
+      "AI sports picks with matchup analysis, probability estimates and confidence scores from Sports Jedi.",
+    robots: "index,follow",
+  },
+  "/sports-betting-analytics": {
+    title: "Sports Betting Analytics & Matchup Research | Sports Jedi",
+    description:
+      "Sports betting analytics with matchup research, probability estimates, trends and confidence scoring.",
+    robots: "index,follow",
+  },
+  "/parlay-analysis": {
+    title: "AI Parlay Analysis & Confidence Insights | Sports Jedi",
+    description:
+      "Analyze parlay legs with AI-assisted matchup research, probability context and confidence insights.",
+    robots: "index,follow",
+  },
+  "/player-prop-analysis": {
+    title: "AI Player Prop Analysis | Sports Jedi",
+    description:
+      "AI-assisted player prop analysis with matchup context, probability estimates and confidence scoring.",
+    robots: "index,follow",
+  },
+  "/compare/oddsjam": {
+    title: "Sports Jedi vs OddsJam | AI Picks vs +EV Betting Tools",
+    description:
+      "Compare Sports Jedi and OddsJam for AI sports picks, matchup analysis, confidence scoring, odds research and +EV betting workflows.",
+    robots: "index,follow",
+  },
+  "/compare/rithmm": {
+    title: "Sports Jedi vs Rithmm | AI Sports Betting Tools Compared",
+    description:
+      "Compare Sports Jedi and Rithmm for AI sports picks, predictive modeling, matchup analysis, confidence scoring and parlay research.",
+    robots: "index,follow",
+  },
+  "/compare/action-network": {
+    title: "Sports Jedi vs Action Network | Sports Picks & Analytics",
+    description:
+      "Compare Sports Jedi and Action Network for AI-assisted sports analysis, expert picks, live odds, confidence scoring and betting research.",
+    robots: "index,follow",
+  },
+  "/terms": { title: "Terms of Use | Sports Jedi", description: "Sports Jedi terms of use.", robots: "noindex,follow" },
+  "/privacy": { title: "Privacy Policy | Sports Jedi", description: "Sports Jedi privacy policy.", robots: "noindex,follow" },
+  "/login": { title: "Sign In | Sports Jedi", description: "Sign in to Sports Jedi.", robots: "noindex,nofollow" },
+  "/account": { title: "Account | Sports Jedi", description: "Sports Jedi account.", robots: "noindex,nofollow" },
+  "/success": { title: "Welcome to Sports Jedi", description: "Sports Jedi account confirmation.", robots: "noindex,nofollow" },
+};
+
+function setMeta(name, content) {
+  let tag = document.head.querySelector(`meta[name="${name}"]`);
+  if (!tag) {
+    tag = document.createElement("meta");
+    tag.setAttribute("name", name);
+    document.head.appendChild(tag);
+  }
+  tag.setAttribute("content", content);
+}
+
+function setProperty(property, content) {
+  let tag = document.head.querySelector(`meta[property="${property}"]`);
+  if (!tag) {
+    tag = document.createElement("meta");
+    tag.setAttribute("property", property);
+    document.head.appendChild(tag);
+  }
+  tag.setAttribute("content", content);
+}
+
+export default function SEO() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const path = location.pathname;
+    const basePath = path.startsWith("/blog/") ? "/blog" : path.startsWith("/game/") ? "/picks" : path;
+    const meta = ROUTE_META[basePath] || ROUTE_META["/"];
+    const canonicalUrl = `${SITE}${path === "/" ? "/" : path}`;
+
+    document.title = meta.title;
+    setMeta("description", meta.description);
+    setMeta("robots", meta.robots);
+
+    let canonical = document.head.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.setAttribute("rel", "canonical");
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute("href", canonicalUrl);
+
+    setProperty("og:site_name", "Sports Jedi");
+    setProperty("og:title", meta.title);
+    setProperty("og:description", meta.description);
+    setProperty("og:url", canonicalUrl);
+    setProperty("og:type", path.startsWith("/blog/") ? "article" : "website");
+    setProperty("og:image", `${SITE}/sports-jedi-logo.webp`);
+
+    setMeta("twitter:card", "summary_large_image");
+    setMeta("twitter:title", meta.title);
+    setMeta("twitter:description", meta.description);
+    setMeta("twitter:image", `${SITE}/sports-jedi-logo.webp`);
+  }, [location.pathname]);
+
+  return null;
+}

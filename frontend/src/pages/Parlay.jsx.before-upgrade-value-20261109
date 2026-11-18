@@ -1,0 +1,1451 @@
+import { useSearchParams } from "react-router-dom";
+
+import { api } from "../lib/api";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  AlertTriangle,
+  Plus,
+  Trash2,
+  Users,
+  WandSparkles,
+} from "lucide-react";
+
+const API =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://api.sportsjedi.com";
+
+const leagues = ["NFL", "NCAAF", "NBA", "MLB"];
+
+const advancedMarkets = {
+  NFL: [
+    ["player_pass_yds", "Passing Yards"],
+    ["player_rush_yds", "Rushing Yards"],
+    ["player_reception_yds", "Receiving Yards"],
+  ],
+
+  NCAAF: [
+    ["player_pass_yds", "Passing Yards"],
+    ["player_rush_yds", "Rushing Yards"],
+    ["player_reception_yds", "Receiving Yards"],
+  ],
+
+  NBA: [
+    ["player_points", "Points"],
+    ["player_rebounds", "Rebounds"],
+    ["player_assists", "Assists"],
+    ["player_threes", "3-Pointers"],
+  ],
+
+  MLB: [
+    ["batter_hits", "Hits"],
+    ["batter_total_bases", "Total Bases"],
+    ["batter_home_runs", "Home Runs"],
+  ],
+};
+
+
+const SPORTSBOOK_DIRECTORY = [
+  {
+    key: "betmgm",
+    name: "BetMGM",
+    fallbackUrl: "https://sports.betmgm.com/",
+    direct: true,
+  },
+  {
+    key: "draftkings",
+    name: "DraftKings",
+    fallbackUrl: "https://sportsbook.draftkings.com/",
+    direct: true,
+  },
+  {
+    key: "fanduel",
+    name: "FanDuel",
+    fallbackUrl: "https://sportsbook.fanduel.com/",
+  },
+  {
+    key: "caesars",
+    name: "Caesars Sportsbook",
+    fallbackUrl: "https://sportsbook.caesars.com/",
+  },
+  {
+    key: "fanatics",
+    name: "Fanatics Sportsbook",
+    fallbackUrl: "https://sportsbook.fanatics.com/",
+  },
+  {
+    key: "bet365",
+    name: "bet365",
+    fallbackUrl: "https://www.bet365.com/",
+  },
+];
+
+function findLegSportsbook(
+  leg,
+  sportsbookKey
+) {
+  return (leg?.sportsbookLinks || []).find(
+    (book) =>
+      String(book?.key || "").toLowerCase() ===
+      sportsbookKey
+  );
+}
+
+function querySelectionIds(
+  rawUrl,
+  parameter
+) {
+  if (!rawUrl) return [];
+
+  try {
+    const url = new URL(rawUrl);
+
+    const value =
+      url.searchParams.get(parameter);
+
+    if (!value) return [];
+
+    return value
+      .split(/[,\s+]+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function buildBetMgmParlayUrl(legs) {
+  const ids = [];
+
+  for (const leg of legs) {
+    const book =
+      findLegSportsbook(
+        leg,
+        "betmgm"
+      );
+
+    const selections =
+      querySelectionIds(
+        book?.deeplink,
+        "options"
+      );
+
+    /*
+     * We only claim full-parlay handoff
+     * when this exact leg supplies one
+     * identifiable BetMGM selection.
+     */
+    if (selections.length !== 1) {
+      return null;
+    }
+
+    ids.push(selections[0]);
+  }
+
+  if (
+    ids.length !== legs.length ||
+    new Set(ids).size !== ids.length
+  ) {
+    return null;
+  }
+
+  const options =
+    ids
+      .map(encodeURIComponent)
+      .join(",");
+
+  return (
+    "https://sports.betmgm.com/en/sports" +
+    `?options=${options}&type=combo`
+  );
+}
+
+function buildDraftKingsParlayUrl(legs) {
+  const ids = [];
+
+  for (const leg of legs) {
+    const book =
+      findLegSportsbook(
+        leg,
+        "draftkings"
+      );
+
+    const selections =
+      querySelectionIds(
+        book?.deeplink,
+        "outcomes"
+      );
+
+    /*
+     * Only advertise one-click when
+     * every leg has one DraftKings
+     * outcome identifier.
+     */
+    if (selections.length !== 1) {
+      return null;
+    }
+
+    ids.push(selections[0]);
+  }
+
+  if (
+    ids.length !== legs.length ||
+    new Set(ids).size !== ids.length
+  ) {
+    return null;
+  }
+
+  const outcomes =
+    ids
+      .map(encodeURIComponent)
+      .join("+");
+
+  return (
+    "https://sportsbook.draftkings.com/" +
+    `?outcomes=${outcomes}`
+  );
+}
+
+function sportsbookHandoffs(legs) {
+  return SPORTSBOOK_DIRECTORY.map(
+    (sportsbook) => {
+      let directUrl = null;
+
+      if (
+        sportsbook.key === "betmgm"
+      ) {
+        directUrl =
+          buildBetMgmParlayUrl(legs);
+      }
+
+      if (
+        sportsbook.key === "draftkings"
+      ) {
+        directUrl =
+          buildDraftKingsParlayUrl(legs);
+      }
+
+      /*
+       * Use the backend's normal book
+       * URL where available. Never use
+       * a single-leg deeplink as though
+       * it represented the whole card.
+       */
+      const backendBook =
+        legs
+          .map((leg) =>
+            findLegSportsbook(
+              leg,
+              sportsbook.key
+            )
+          )
+          .find(Boolean);
+
+      const fallbackUrl =
+        backendBook?.fallbackUrl ||
+        sportsbook.fallbackUrl;
+
+      return {
+        ...sportsbook,
+        url: directUrl || fallbackUrl,
+        oneClick: Boolean(directUrl),
+      };
+    }
+  ).filter((book) => book.url);
+}
+
+function formatMarket(value = "") {
+  return value
+    .replace(/^player_/, "")
+    .replace(/^batter_/, "")
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function formatOdds(price) {
+  const number = Number(price);
+
+  if (!Number.isFinite(number)) {
+    return "—";
+  }
+
+  return number > 0
+    ? `+${number}`
+    : String(number);
+}
+
+export default function Parlay({ embeddedEventId = "", embeddedLeague = "" }) {
+  const [wizardStep, setWizardStep] = useState(embeddedEventId ? 2 : 0);
+  const [selectedStyle, setSelectedStyle] = useState("balanced");
+  const [searchParams] = useSearchParams();
+  const [tourStep, setTourStep] = useState(-1);
+  useEffect(() => {
+    try {
+      if (!embeddedEventId && !localStorage.getItem("sportsjedi-parlay-tour-v1")) setTourStep(0);
+    } catch {}
+  }, []);
+  const tourSteps = [
+    ["Welcome to your Jedi Parlay!", "Pick a sport, then choose how bold you want your picks. We'll do the hard work."],
+    ["Choose your sport", "Tap NFL, NBA, MLB, or college football. Only games for that sport will appear."],
+    ["Build with one tap", "Careful = fewer risky picks. Balanced = a mix. Long Shot = harder to win."],
+    ["Make it your own", "Scroll down to choose players yourself. Every pick has to win for the parlay to win."],
+    ["Check before you play", "Review your picks and odds. Sports Jedi analyzes selections; it does not place bets for you."]
+  ];
+  function closeTour() {
+    setTourStep(-1);
+    try { localStorage.setItem("sportsjedi-parlay-tour-v1", "done"); } catch {}
+  }
+
+  const scopedEventId =
+    embeddedEventId || searchParams.get("eventId") || "";
+
+  const scopedLeague =
+    embeddedLeague || searchParams.get("league") || "";
+
+  const scopedGameMode =
+    searchParams.get("gameMode") || "";
+
+  const initialLeague =
+    ["NFL", "NCAAF", "NBA", "MLB"].includes(
+      scopedLeague.toUpperCase()
+    )
+      ? scopedLeague.toUpperCase()
+      : "NFL";
+
+  const [league, setLeague] =
+    useState(initialLeague);
+  const [props, setProps] = useState([]);
+  const [selectedGame, setSelectedGame] = useState(embeddedEventId || "ALL");
+  const [legs, setLegs] = useState([]);
+  const [analysis, setAnalysis] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const [advancedOpen, setAdvancedOpen] =
+    useState(false);
+
+  const [builderType, setBuilderType] =
+    useState("player_props");
+
+  const [builderLegs, setBuilderLegs] =
+    useState(4);
+
+  const [gameMode, setGameMode] =
+    useState("diversified");
+
+  const [minConfidence, setMinConfidence] =
+    useState(70);
+
+  const [minPrice, setMinPrice] =
+    useState(-300);
+
+  const [direction, setDirection] =
+    useState("any");
+
+  const [uniquePlayers, setUniquePlayers] =
+    useState(true);
+
+  const [maxSameGame, setMaxSameGame] =
+    useState(1);
+
+  const [selectedMarkets, setSelectedMarkets] =
+    useState([]);
+
+  useEffect(() => {
+    setProps([]);
+    setLegs([]);
+    setAnalysis(null);
+    setSelectedGame(scopedEventId || "ALL");
+    setError("");
+
+    const controller = new AbortController();
+    fetch(
+      `${API}/api/picks/props?league=${league}`,
+      {signal: controller.signal,
+       headers: (() => {
+         const token = localStorage.getItem("sports_jedi_token");
+         return token ? {Authorization: `Bearer ${token}`} : {};
+       })()}
+    )
+      .then(async (response) => {
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            result.error || "Unable to load props"
+          );
+        }
+
+        setProps(result.data || []);
+      })
+      .catch((err) => {if(err.name !== "AbortError") setError(err.message)});
+    return () => controller.abort();
+  }, [league]);
+
+  const games = useMemo(() => {
+    const ids = new Map();
+
+    for (const prop of props) {
+      if (
+        prop.eventId &&
+        !ids.has(prop.eventId)
+      ) {
+        ids.set(
+          prop.eventId,
+          prop.matchup ||
+            prop.eventId.slice(0, 8)
+        );
+      }
+    }
+
+    return [...ids.entries()];
+  }, [props]);
+
+  const visibleProps = useMemo(() => {
+    const filtered =
+      scopedEventId ? props.filter(prop => String(prop.eventId) === String(scopedEventId)) : selectedGame === "ALL"
+        ? props
+        : props.filter(
+            (prop) =>
+              prop.eventId === selectedGame
+          );
+
+    /*
+     * Odds providers frequently return the same prop
+     * from multiple books. Show one version per
+     * player/market/side/line for the initial UI.
+     */
+    const unique = new Map();
+
+    for (const prop of filtered) {
+      const key = [
+        prop.eventId,
+        prop.player,
+        prop.market,
+        prop.pick,
+        prop.line,
+      ].join("|");
+
+      if (!unique.has(key)) {
+        unique.set(key, prop);
+      }
+    }
+
+    return [...unique.values()].slice(0, 100);
+  }, [props, selectedGame, scopedEventId]);
+
+  function legKey(leg) {
+    return (
+      leg.id ||
+      [
+        leg.eventId,
+        leg.player,
+        leg.market,
+        leg.pick,
+        leg.line,
+      ].join("|")
+    );
+  }
+
+  function isSelected(prop) {
+    return legs.some(
+      (leg) => legKey(leg) === legKey(prop)
+    );
+  }
+
+  function addLeg(prop) {
+    if (prop.group) {
+      setLegs((current) => {
+        if (current.some(leg => legKey(leg) === legKey(prop))) {
+          return current.filter(leg => legKey(leg) !== legKey(prop));
+        }
+        let next = current.filter(leg => leg.group !== prop.group);
+        if (["moneyline", "spread"].includes(prop.market)) {
+          next = next.filter(leg => !(leg.type === "game_line" && String(leg.eventId) === String(prop.eventId) &&
+            ["moneyline", "spread"].includes(leg.market) && leg.pick !== prop.pick));
+        }
+        return [...next, prop];
+      });
+      setAnalysis(null);
+      return;
+    }
+
+    if (isSelected(prop)) {
+      return;
+    }
+
+    setLegs((current) => {
+      const conflicts = current.some(leg =>
+        String(leg.eventId) === String(prop.eventId) &&
+        String(leg.player).toLowerCase() === String(prop.player).toLowerCase() &&
+        String(leg.market).toLowerCase() === String(prop.market).toLowerCase() &&
+        String(leg.line) === String(prop.line) &&
+        String(leg.pick).toLowerCase() !== String(prop.pick).toLowerCase()
+      );
+      if (conflicts || current.some(leg => legKey(leg) === legKey(prop))) return current;
+      return [...current, prop];
+    });
+
+    setAnalysis(null);
+  }
+
+  function removeLeg(targetKey) {
+    setLegs((current) =>
+      current.filter(
+        (leg) => legKey(leg) !== targetKey
+      )
+    );
+
+    setAnalysis(null);
+  }
+
+  function clearSlip() {
+    setLegs([]);
+    setAnalysis(null);
+  }
+
+  function toggleMarket(market) {
+    setSelectedMarkets((current) =>
+      current.includes(market)
+        ? current.filter(
+            (item) => item !== market
+          )
+        : [...current, market]
+    );
+  }
+
+  const [gameOptions, setGameOptions] = useState(null);
+  const [buildMode, setBuildMode] = useState("");
+  const [gate, setGate] = useState(null);
+  const [accessNote, setAccessNote] = useState("");
+
+  useEffect(() => {
+    if (!scopedEventId) return;
+    let live = true;
+    setGameOptions(null);
+    api.gameOptions(league, scopedEventId)
+      .then(data => { if (live) setGameOptions(data.options || []); })
+      .catch(() => { if (live) setGameOptions([]); });
+    return () => { live = false; };
+  }, [scopedEventId, league]);
+
+  async function generateAdvancedParlay() {
+    try {
+      setLoading(true);
+      setError("");
+
+      const result =
+        await api.autoParlayAdvanced({
+          league,
+          type: builderType,
+          legs: builderLegs,
+          gameMode:
+            scopedEventId
+              ? "same_game"
+              : gameMode,
+          minConfidence,
+          minPrice,
+          direction,
+          uniquePlayers,
+          maxSameGame,
+          markets: selectedMarkets,
+          eventId: scopedEventId,
+        });
+
+      setLegs(result.selections || []);
+
+      setAnalysis({
+        impliedProbability:
+          result.impliedProbability,
+        combinedAmerican:
+          result.combinedAmerican,
+        combinedDecimal:
+          result.combinedDecimal,
+        risk:
+          result.risk,
+        sameGame:
+          result.sameGame,
+        warnings:
+          result.warnings?.length
+            ? result.warnings
+            : result.warning
+              ? [result.warning]
+              : [],
+      });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function generateAutoParlay(mode) {
+    try {
+      setLoading(true);
+      setError("");
+      setGate(null);
+      setLegs([]);
+      setAnalysis(null);
+
+      const result =
+        await api.autoParlay(
+          league,
+          mode,
+          scopedEventId
+        );
+
+      setLegs(result.selections || []);
+      setGate(null);
+      setAccessNote(result.access?.plan === "free" ? "That was your free auto parlay for today. Go Pro for unlimited." : "");
+
+      setAnalysis({
+        impliedProbability: result.impliedProbability,
+        combinedAmerican: result.combinedAmerican,
+        combinedDecimal: result.combinedDecimal,
+        risk: result.risk,
+        sameGame: result.sameGame,
+        warnings:
+          result.warnings?.length
+            ? result.warnings
+            : result.warning
+              ? [result.warning]
+              : [],
+      });
+    } catch (err) {
+      if (["AUTH_REQUIRED", "FREE_LIMIT_REACHED", "PRO_REQUIRED"].includes(err.code)) {
+        setGate({ code: err.code, text: err.message });
+        setError("");
+      } else {
+        setError(err.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function analyze() {
+    if (legs.length < 2) {
+      setError(
+        "Add at least 2 picks."
+      );
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const result =
+        await api.playerParlay(
+          legs
+        );
+
+      setAnalysis(result);
+    } catch (err) {
+      if (err.code === "AUTH_REQUIRED") {
+        setGate({ code: err.code, text: "Make a free account to check your parlay. It only takes a minute." });
+        setError("");
+        return;
+      }
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <main className={`shell parlay-page sj-friendly ${embeddedEventId ? "sj-game-only" : ""}`}>
+      {tourStep >= 0 && <div className="sj-tour-backdrop" role="presentation">
+        <section className="sj-tour-panel" role="dialog" aria-modal="true" aria-label="Sports Jedi guided tour">
+          <div className="sj-tour-top"><img src="/sports-jedi-logo.webp" alt="Sports Jedi mascot" /><span>JEDI GUIDE · {tourStep+1} OF {tourSteps.length}</span></div>
+          <h2>{tourSteps[tourStep][0]}</h2><p>{tourSteps[tourStep][1]}</p>
+          <div className="sj-tour-actions"><button type="button" onClick={closeTour}>Skip tour</button><button type="button" onClick={() => tourStep === tourSteps.length-1 ? closeTour() : setTourStep(tourStep+1)}>{tourStep === tourSteps.length-1 ? "Let's go!" : "Next →"}</button></div>
+        </section>
+      </div>}
+      {!embeddedEventId && <div className="sj-intro"><div><span className="eyebrow">⚡ YOUR SPORTS SIDEKICK</span><h2>Build a parlay in 3 easy steps</h2><p>1. Pick a sport &nbsp; 2. Choose your style &nbsp; 3. Check your picks</p></div><button type="button" onClick={() => setTourStep(0)}>❔ Show me how</button></div>}
+      {!embeddedEventId && <div className="sj-wizard-progress" aria-label="Parlay builder steps">
+        {["Choose sport", "Pick your style", "Your picks"].map((label, index) => (
+          <button key={label} type="button" className={wizardStep === index ? "current" : ""}
+            onClick={() => setWizardStep(index)}><span>{index+1}</span>{label}</button>
+        ))}
+      </div>}
+      {embeddedEventId && <div className="sj-inline-parlay-context"><strong>Same-game parlay</strong><span>Sports Jedi checks this game for recommended picks. You can review available player picks below.</span></div>}
+      <section className="page-banner" style={{display:"none"}}>
+        <div>
+          <span className="eyebrow">
+            <WandSparkles size={14} />
+            Parlay Lab
+          </span>
+
+          <h1>
+            Build your player parlay
+          </h1>
+
+          <p>
+            Pick your favorite sport. Choose players yourself, or let the Jedi suggest a parlay.
+          </p>
+        </div>
+
+        <Users size={64} />
+      </section>
+
+      {wizardStep === 0 && <section className="sj-wizard-card sj-wizard-stage-one">
+        <h1>🏟️ What sport are we playing?</h1>
+        <p>Choose your favorite. We'll find the picks.</p>
+        <div className="sj-sport-grid">
+          {[["NFL","🏈","Pro Football"],["NCAAF","🏟️","College Football"],["NBA","🏀","Basketball"],["MLB","⚾","Baseball"]].map(([code,emoji,name]) =>
+            <button type="button" key={code} className={league === code ? "selected" : ""}
+              onClick={() => {setLeague(code);setWizardStep(1);}}>
+              <span className="sj-sport-emoji">{emoji}</span><strong>{name}</strong><small>{code}</small>
+            </button>)}
+        </div>
+      </section>}
+      <div style={{display:"none"}} className="league-tabs standalone">
+        {leagues.map((item) => (
+          <button
+            key={item}
+            className={
+              league === item
+                ? "active"
+                : ""
+            }
+            onClick={() =>
+              setLeague(item)
+            }
+          >
+            {item}
+          </button>
+        ))}
+      </div>
+
+      {wizardStep === 1 && <section className="sj-wizard-card sj-wizard-stage-two">
+        <h1>✨ How bold are you feeling?</h1>
+        <p>Pick a style. We'll show you the picks before you decide.</p>
+        <div className="sj-style-grid">
+          {[["safe","🛡️","Careful Jedi","Focus on less risky picks"],["balanced","⚡","Balanced Jedi","A little of both"],["longshot","🚀","Long Shot Jedi","Harder to win, bigger potential odds"]].map(([mode,emoji,title,description]) =>
+            <button type="button" key={mode} disabled={loading} className={selectedStyle === mode ? "selected" : ""}
+              onClick={() => {setSelectedStyle(mode);generateAutoParlay(mode);setWizardStep(2);}}>
+              <span className="sj-sport-emoji">{emoji}</span><strong>{title}</strong><small>{description}</small>
+            </button>)}
+        </div>
+        <button type="button" className="sj-manual-btn" onClick={() => setWizardStep(2)}>Or choose my own players →</button>
+      </section>}
+      <div style={{display:"none"}}><section className="auto-parlay-card">
+        <div>
+          <span className="eyebrow">
+            Auto Parlay Generator
+          </span>
+
+          <h2>Build me a parlay</h2>
+
+          <p>
+            Tap a style below. We will find available picks and show you what they mean.
+          </p>
+        </div>
+
+        <div className="auto-parlay-buttons">
+          <button
+            onClick={() =>
+              generateAutoParlay("safe")
+            }
+          >
+            🛡️ Careful Jedi
+          </button>
+
+          <button
+            className="active"
+            onClick={() =>
+              generateAutoParlay("balanced")
+            }
+          >
+            ⚡ Balanced Jedi
+          </button>
+
+          <button
+            onClick={() =>
+              generateAutoParlay("longshot")
+            }
+          >
+            🚀 Long Shot Jedi
+          </button>
+        </div>
+
+        <button
+          type="button"
+          className="advanced-toggle"
+          onClick={() =>
+            setAdvancedOpen(
+              (value) => !value
+            )
+          }
+        >
+          {advancedOpen
+            ? "Hide Advanced Builder"
+            : "More options (experienced users)"}
+        </button>
+
+        {advancedOpen && (
+          <div className="advanced-builder">
+            <div className="advanced-field">
+              <label>Bet Type</label>
+
+              <div className="advanced-options">
+                {[
+                  ["mixed", "Mixed"],
+                  [
+                    "player_props",
+                    "Player Props Only",
+                  ],
+                  [
+                    "game_lines",
+                    "Game Lines Only",
+                  ],
+                ].map(([value, label]) => (
+                  <button
+                    type="button"
+                    key={value}
+                    className={
+                      builderType === value
+                        ? "active"
+                        : ""
+                    }
+                    onClick={() =>
+                      setBuilderType(value)
+                    }
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="advanced-grid">
+              <div className="advanced-field">
+                <label>Legs</label>
+
+                <select
+                  value={builderLegs}
+                  onChange={(e) =>
+                    setBuilderLegs(
+                      Number(e.target.value)
+                    )
+                  }
+                >
+                  {[2,3,4,5,6,7,8].map(
+                    (count) => (
+                      <option
+                        key={count}
+                        value={count}
+                      >
+                        {count} legs
+                      </option>
+                    )
+                  )}
+                </select>
+              </div>
+
+              <div className="advanced-field">
+                <label>
+                  Game Strategy
+                </label>
+
+                <select
+                  value={gameMode}
+                  onChange={(e) =>
+                    setGameMode(
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="diversified">
+                    Diversified
+                  </option>
+
+                  <option value="same_game">
+                    Same Game
+                  </option>
+
+                  <option value="either">
+                    Either
+                  </option>
+                </select>
+              </div>
+
+              <div className="advanced-field">
+                <label>
+                  Minimum Confidence
+                </label>
+
+                <select
+                  value={minConfidence}
+                  onChange={(e) =>
+                    setMinConfidence(
+                      Number(e.target.value)
+                    )
+                  }
+                >
+                  {[60,65,70,72,75,80,85,90]
+                    .map((value) => (
+                      <option
+                        key={value}
+                        value={value}
+                      >
+                        {value}%+
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div className="advanced-field">
+                <label>
+                  Minimum Odds
+                </label>
+
+                <select
+                  value={minPrice}
+                  onChange={(e) =>
+                    setMinPrice(
+                      Number(e.target.value)
+                    )
+                  }
+                >
+                  {[-400,-350,-300,-250,-200,-150,-110]
+                    .map((value) => (
+                      <option
+                        key={value}
+                        value={value}
+                      >
+                        {value}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div className="advanced-field">
+                <label>Direction</label>
+
+                <select
+                  value={direction}
+                  onChange={(e) =>
+                    setDirection(
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="any">
+                    Any
+                  </option>
+
+                  <option value="over">
+                    Overs Only
+                  </option>
+
+                  <option value="under">
+                    Unders Only
+                  </option>
+                </select>
+              </div>
+
+              <div className="advanced-field">
+                <label>
+                  Max Legs Per Game
+                </label>
+
+                <select
+                  value={maxSameGame}
+                  onChange={(e) =>
+                    setMaxSameGame(
+                      Number(e.target.value)
+                    )
+                  }
+                >
+                  {[1,2,3].map(
+                    (value) => (
+                      <option
+                        key={value}
+                        value={value}
+                      >
+                        {value}
+                      </option>
+                    )
+                  )}
+                </select>
+              </div>
+            </div>
+
+            <label className="advanced-check">
+              <input
+                type="checkbox"
+                checked={uniquePlayers}
+                onChange={(e) =>
+                  setUniquePlayers(
+                    e.target.checked
+                  )
+                }
+              />
+
+              Unique players only
+            </label>
+
+            {builderType !== "game_lines" && (
+              <div className="advanced-field">
+                <label>
+                  Player Markets
+                </label>
+
+                <div className="market-selector">
+                  {(advancedMarkets[league] || [])
+                    .map(
+                      ([value, label]) => (
+                        <button
+                          type="button"
+                          key={value}
+                          className={
+                            selectedMarkets.includes(
+                              value
+                            )
+                              ? "active"
+                              : ""
+                          }
+                          onClick={() =>
+                            toggleMarket(value)
+                          }
+                        >
+                          {label}
+                        </button>
+                      )
+                    )}
+                </div>
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="generate-advanced-btn"
+              onClick={generateAdvancedParlay}
+              disabled={loading}
+            >
+              <WandSparkles size={17} />
+
+              {loading
+                ? "Building..."
+                : "Generate Jedi Parlay"}
+            </button>
+          </div>
+        )}
+      </section>
+      </div>
+      {embeddedEventId && wizardStep === 2 && <section className="sj-game-builder">
+        <h2>How do you want to build it?</h2>
+        <div className="sj-gb-choices">
+          <button type="button" className={buildMode === "auto" ? "on" : ""} onClick={() => { setBuildMode("auto"); setError(""); }}>
+            <b aria-hidden="true">⚡</b><strong>Make it for me</strong><small>The Jedi picks for you</small>
+          </button>
+          <button type="button" className={buildMode === "manual" ? "on" : ""} onClick={() => { setBuildMode("manual"); setError(""); setGate(null); }}>
+            <b aria-hidden="true">✋</b><strong>I'll pick myself</strong><small>Tap the picks you want</small>
+          </button>
+        </div>
+        {buildMode === "auto" && <div className="sj-gb-styles">
+          {[["safe", "🛡️", "Careful", "Safer picks, smaller payout"], ["balanced", "⚡", "Balanced", "A little of both"], ["longshot", "🚀", "Long Shot", "Riskier, bigger payout"]].map(([mode, emoji, title, text]) =>
+            <button type="button" key={mode} disabled={loading} onClick={() => generateAutoParlay(mode)}>
+              <b aria-hidden="true">{emoji}</b><strong>{title}</strong><small>{text}</small>
+            </button>)}
+        </div>}
+        {buildMode === "auto" && <p className="sj-gb-note">{loading ? "Finding your picks…" : accessNote || "Free account: 1 auto parlay a day. Pro: unlimited."}</p>}
+        {buildMode === "manual" && <div className="sj-gb-lines">
+          {gameOptions === null ? <p className="sj-gb-note">Loading this game's picks…</p>
+            : gameOptions.length ? [["moneyline", "🏆 Who wins?"], ["spread", "📏 Point spread"], ["total", "🔢 Total points"]].map(([market, title]) => {
+                const opts = gameOptions.filter(o => o.market === market);
+                if (!opts.length) return null;
+                return <div key={market} className="sj-gb-market">
+                  <h3>{title}</h3>
+                  <div>{opts.map(o =>
+                    <button type="button" key={o.id} className={isSelected(o) ? "on" : ""} onClick={() => addLeg(o)}>
+                      <strong>{o.label}</strong><span>{formatOdds(o.price)}</span>
+                    </button>)}</div>
+                </div>;
+              })
+            : <p className="sj-gb-note">No picks are posted for this game yet. Check back closer to game time.</p>}
+          {!!gameOptions?.length && <p className="sj-gb-note">Pick one side in each row. Tap it again to remove it.</p>}
+        </div>}
+        {gate && <div className="sj-gb-gate">
+          <p>{gate.text}</p>
+          <div>
+            {gate.code === "AUTH_REQUIRED"
+              ? <><a href={`/login?mode=signup&next=${encodeURIComponent(window.location.pathname)}`}>🎁 Join Free</a><a className="alt" href={`/login?next=${encodeURIComponent(window.location.pathname)}`}>Sign In</a></>
+              : <a href="/pricing">👑 Go Pro</a>}
+            {buildMode !== "manual" && <button type="button" onClick={() => { setGate(null); setBuildMode("manual"); }}>✋ Pick myself instead</button>}
+          </div>
+        </div>}
+        {error && <div className="sj-gb-error" role="status">{error}</div>}
+      </section>}
+      {wizardStep === 2 && !embeddedEventId && <section className="sj-wizard-card sj-picks-heading">
+        <h1>🎯 Your Jedi Picks</h1>
+        <p>{embeddedEventId ? "Tap the picks you like for this game. Every pick has to win for the parlay to win." : "Choose players below or let Jedi suggest a card. Every pick must win for the parlay to win."}</p>
+        <button type="button" className="sj-manual-btn" disabled={loading}
+          onClick={() => generateAutoParlay(selectedStyle)}>
+          {loading ? "Finding picks…" : "✨ Find Jedi Picks"}
+        </button>
+        {!embeddedEventId && <div className="sj-wizard-actions">
+          <button type="button" onClick={() => setWizardStep(0)}>Change sport</button>
+          <button type="button" onClick={() => setWizardStep(1)}>Change style</button>
+        </div>}
+      </section>}
+      {wizardStep === 2 && <section className="sj-wizard-card" aria-live="polite">
+        {loading && <p role="status">Finding available picks for your parlay…</p>}
+        {gate && <div className="sj-gb-gate">
+          <p>{gate.text}</p>
+          <div>
+            {gate.code === "AUTH_REQUIRED" ? <>
+              <a href={`/login?mode=signup&next=${encodeURIComponent(window.location.pathname + window.location.search)}`}>Join Free</a>
+              <a className="alt" href={`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`}>Sign In</a>
+            </> : <a href="/pricing">See Pro Plans</a>}
+            <button type="button" onClick={() => {setGate(null);setBuildMode("manual");}}>Choose picks myself</button>
+          </div>
+        </div>}
+        {error && <div className="sj-gb-error" role="alert">{error}</div>}
+        {!loading && !gate && !error && legs.length > 0 && <p role="status">Your parlay is ready. Review the picks below.</p>}
+      </section>}
+      {wizardStep === 2 && <div className="parlay-layout">
+        {(!embeddedEventId || (buildMode === "manual" && visibleProps.length > 0)) && <section className="prop-browser">
+          <div className="section-head">
+            <div>
+              <span className="eyebrow">
+                Player Props
+              </span>
+              <h2>
+                {embeddedEventId ? "Player picks" : "Or pick players yourself"}
+              </h2>
+            </div>
+          </div>
+
+          {!embeddedEventId && <div className="event-filter">
+            <button
+              className={
+                selectedGame === "ALL"
+                  ? "active"
+                  : ""
+              }
+              onClick={() =>
+                setSelectedGame("ALL")
+              }
+            >
+              All Games
+            </button>
+
+            {games.map(
+              ([id, label], index) => (
+                <button
+                  key={id}
+                  className={
+                    selectedGame === id
+                      ? "active"
+                      : ""
+                  }
+                  onClick={() =>
+                    setSelectedGame(id)
+                  }
+                >
+                  {label}
+                </button>
+              )
+            )}
+          </div>}
+
+          {error && !embeddedEventId && (
+            <div className={embeddedEventId && visibleProps.length ? "sj-parlay-info" : "error"} role="status">
+              {embeddedEventId && visibleProps.length && /no qualifying|no eligible|no.*legs.*available/i.test(error)
+                ? "No picks passed Jedi’s checks for an automatic parlay yet. You can still review the available player picks below. These are not Jedi recommendations."
+                : error}
+            </div>
+          )}
+
+          {!visibleProps.length && <div className="sj-empty-props" role="status">
+            <h3>{embeddedEventId ? "No player picks available for this game" : "🔒 Unlock player picks"}</h3>
+            <p>{embeddedEventId ? "No player picks are available for this game right now. Close this panel to return to the matchup." : "Player props are available to signed-in members. Create a free account to see your starter picks, or sign in if you already have one. Some sports may have no available props."}</p>
+            {!embeddedEventId && <a className="sj-unlock-link" href="/login?mode=signup&next=%2Fparlay">🎁 Join Free</a>}
+            {!embeddedEventId && <a className="sj-unlock-link secondary" href="/login?next=%2Fparlay">Sign In</a>}
+            {!embeddedEventId && selectedGame !== "ALL" && <button type="button" onClick={() => setSelectedGame("ALL")}>Show all games</button>}
+          </div>}
+          <div className="player-prop-grid">
+            {visibleProps.map((prop) => (
+              <article
+                className={
+                  isSelected(prop)
+                    ? "player-prop-option selected"
+                    : "player-prop-option"
+                }
+                key={prop.id}
+              >
+                <div>
+                  <small>
+                    {prop.matchup || league}
+                  </small>
+
+                  <h3>
+                    {prop.player}
+                  </h3>
+
+                  <span className="prop-book">
+                    {prop.bookmaker || ""}
+                  </span>
+
+                  <p>
+                    {formatMarket(
+                      prop.market
+                    )}
+                  </p>
+                </div>
+
+                <div className="prop-choice">
+                  <strong>
+                    {prop.pick}{" "}
+                    {prop.line ?? ""}
+                  </strong>
+
+                  <span>
+                    {formatOdds(
+                      prop.price
+                    )}
+                  </span>
+                </div>
+
+                <button
+                  onClick={() =>
+                    addLeg(prop)
+                  }
+                  disabled={
+                    isSelected(prop) || legs.some(leg =>
+                      String(leg.eventId) === String(prop.eventId) &&
+                      String(leg.player).toLowerCase() === String(prop.player).toLowerCase() &&
+                      String(leg.market).toLowerCase() === String(prop.market).toLowerCase() &&
+                      String(leg.line) === String(prop.line) &&
+                      String(leg.pick).toLowerCase() !== String(prop.pick).toLowerCase()
+                    )
+                  }
+                >
+                  <Plus size={16} />
+
+                  {isSelected(prop)
+                    ? "Added"
+                    : "Add pick"}
+                </button>
+              </article>
+            ))}
+          </div>
+        </section>}
+
+        <aside className="parlay-slip">
+          <div className="slip-head">
+            <div>
+              <span className="eyebrow">
+                Your Card
+              </span>
+
+              <h2>
+                {legs.length} Pick
+                {legs.length === 1
+                  ? ""
+                  : "s"}
+              </h2>
+            </div>
+
+            {!!legs.length && (
+              <button
+                className="clear-slip"
+                onClick={clearSlip}
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
+          {!legs.length ? (
+            <div className="empty-slip">
+              <WandSparkles />
+
+              <p>
+                Tap a pick above to add it.
+                You need at least 2 picks.
+              </p>
+            </div>
+          ) : (
+            <div className="slip-legs">
+              {legs.map((leg) => (
+                <div
+                  className="slip-leg"
+                  key={legKey(leg)}
+                >
+                  <div className="slip-leg-main">
+                    <small>
+                      {leg.matchup || leg.league}
+                    </small>
+
+                    <b>{leg.player || leg.label || leg.pick}</b>
+
+                    <span>
+                      {leg.type === "game_line"
+                        ? ({ moneyline: "Who wins", spread: "Point spread", total: "Total points" }[leg.market] || leg.market)
+                        : formatMarket(leg.market)}
+                    </span>
+
+                    <strong>
+                      {leg.label ? "" : `${leg.pick} ${leg.line ?? ""} · `}
+                      {formatOdds(
+                        leg.price
+                      )}
+                    </strong>
+
+                  </div>
+
+                  <button
+                    onClick={() =>
+                      removeLeg(legKey(leg))
+                    }
+                    aria-label="Remove leg"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button
+            className="primary-btn analyze-parlay"
+            disabled={
+              loading ||
+              legs.length < 2
+            }
+            onClick={analyze}
+          >
+            <WandSparkles size={18} />
+
+            {loading
+              ? "Analyzing…"
+              : "Check My Parlay"}
+          </button>
+
+          {analysis && (
+            <div className="parlay-analysis">
+              <span className="eyebrow">
+                Jedi Analysis
+              </span>
+
+              <div className="parlay-score">
+                <strong>
+                  {analysis.impliedProbability}%
+                </strong>
+                <span>
+                  combined implied probability
+                </span>
+              </div>
+
+              <div className="parlay-metrics">
+                <div>
+                  <span>
+                    Estimated odds
+                  </span>
+
+                  <b>
+                    {analysis.combinedAmerican >
+                    0
+                      ? "+"
+                      : ""}
+                    {
+                      analysis.combinedAmerican
+                    }
+                  </b>
+                </div>
+
+                <div>
+                  <span>Risk</span>
+                  <b>{analysis.risk}</b>
+                </div>
+
+                <div>
+                  <span>Same game</span>
+                  <b>
+                    {analysis.sameGame
+                      ? "Yes"
+                      : "No"}
+                  </b>
+                </div>
+              </div>
+
+              {analysis.warnings?.map(
+                (warning) => (
+                  <div
+                    className="parlay-warning"
+                    key={warning}
+                  >
+                    <AlertTriangle
+                      size={17}
+                    />
+                    {warning}
+                  </div>
+                )
+              )}
+            </div>
+          )}
+
+          {!!legs.length && (() => {
+            const books =
+              sportsbookHandoffs(legs);
+
+            if (!books.length) {
+              return null;
+            }
+
+            return (
+              <div className="parlay-sportsbooks">
+                <span className="eyebrow">
+                  Sportsbook Handoff
+                </span>
+
+                <p className="sportsbook-helper">
+                  One-click betslip is shown only when
+                  Sports Jedi has a selection ID for
+                  every leg. Other buttons open the
+                  sportsbook normally.
+                </p>
+
+                <div className="parlay-sportsbook-buttons">
+                  {books.map((book) => (
+                    <a
+                      key={book.key}
+                      className={
+                        book.oneClick
+                          ? "sportsbook-link sportsbook-link-direct"
+                          : "sportsbook-link"
+                      }
+                      href={book.url}
+                      target="_blank"
+                      rel="noopener noreferrer sponsored"
+                    >
+                      {book.oneClick
+                        ? `Add Entire Parlay to ${book.name}`
+                        : `Open ${book.name}`}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
+          <p className="slip-disclaimer">
+            Estimated combined odds and
+            probabilities are analytical
+            approximations. Sportsbooks may
+            price same-game parlays differently
+            because of correlation.
+          </p>
+        </aside>
+      </div>}
+    </main>
+  );
+}

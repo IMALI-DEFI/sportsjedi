@@ -1,0 +1,53 @@
+.pg-page { max-width: 760px; }
+.pg-page .page-banner h1 em { font-style: normal; background: linear-gradient(90deg, #fff, var(--cyan)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.pg-form { margin-top: 22px; display: grid; gap: 12px; }
+.pg-leg { border: 1px solid var(--line); background: rgba(255,255,255,.03); border-radius: 18px; padding: 16px; display: grid; gap: 10px; }
+.pg-leg-head { display: flex; justify-content: space-between; align-items: center; }
+.pg-leg-head strong { font-size: 16px; color: #fff; }
+.pg-remove { display: inline-flex; gap: 6px; align-items: center; background: none; border: 0; color: #ff9bac; cursor: pointer; font-size: 14px; }
+.pg-leg label { display: grid; gap: 5px; }
+.pg-leg label span { font-size: 13px; font-weight: 800; color: #b9c6d8; }
+.pg-leg input, .pg-leg select { width: 100%; padding: 13px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,.14); background: #070b12; color: #f3f7ff; font-size: 16px; }
+.pg-leg input:focus, .pg-leg select:focus { outline: 2px solid var(--cyan); outline-offset: 1px; }
+.pg-row { display: flex; gap: 10px; }
+.pg-grow { flex: 1; }
+.pg-odds { width: 110px; }
+.pg-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.pg-actions .primary-btn { flex: 1; min-width: 200px; font-size: 16px; }
+.pg-error { color: #ff9bac; font-weight: 700; }
+.pg-result { margin-top: 26px; border: 1px solid var(--line); border-radius: 22px; padding: 20px; background: linear-gradient(145deg, rgba(36,156,255,.08), rgba(255,255,255,.02)); scroll-margin-top: 100px; }
+.pg-grade-row { display: flex; gap: 18px; align-items: center; }
+.pg-badge { width: 84px; height: 84px; border-radius: 20px; display: grid; place-items: center; font-size: 48px; font-weight: 900; color: #05070d; flex-shrink: 0; }
+.pg-grade-A { background: #3ee08a; } .pg-grade-B { background: #a3e635; } .pg-grade-C { background: #facc15; } .pg-grade-D { background: #fb923c; } .pg-grade-F { background: #f87171; }
+.pg-score { font-size: 26px; font-weight: 900; color: #fff; }
+.pg-meta { color: #b9c6d8; font-size: 15px; line-height: 1.6; }
+.pg-meta b { color: #fff; }
+.pg-breakdown { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 18px; }
+.pg-breakdown div { background: rgba(0,0,0,.25); border-radius: 12px; padding: 10px; display: grid; gap: 2px; text-align: center; }
+.pg-breakdown span { font-size: 12px; color: #9fb0c6; }
+.pg-breakdown b { color: #fff; font-size: 16px; }
+.pg-h2 { font-size: 20px; margin: 22px 0 10px; color: #fff; }
+.pg-tip { border-left: 3px solid var(--cyan); background: rgba(255,255,255,.03); border-radius: 0 12px 12px 0; padding: 10px 14px; margin-bottom: 10px; }
+.pg-tip strong { color: #fff; font-size: 15px; }
+.pg-tip p { margin: 4px 0 0; color: #b9c6d8; font-size: 14px; line-height: 1.5; }
+.pg-tip-contradiction { border-left-color: #f87171; }
+.pg-tip-cut_leg { border-left-color: #3ee08a; }
+.pg-tip-value { border-left-color: #facc15; }
+.pg-locked { margin-top: 18px; padding: 16px; border-radius: 16px; background: rgba(0,0,0,.28); border: 1px solid rgba(101,231,255,.2); display: grid; gap: 8px; }
+.pg-locked strong { display: flex; gap: 8px; align-items: center; color: #fff; font-size: 16px; }
+.pg-locked p { margin: 0; color: #b9c6d8; font-size: 14px; }
+.pg-blur { filter: blur(5px); user-select: none; }
+.pg-small { color: #9fb0c6; font-size: 13px; }
+.pg-small a, .pg-partner a { color: var(--cyan); font-weight: 800; }
+.pg-share { display: flex; gap: 12px; align-items: center; margin-top: 18px; flex-wrap: wrap; }
+.pg-partner { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; color: #b9c6d8; font-size: 14px; }
+.pg-partner svg { color: var(--cyan); flex-shrink: 0; margin-top: 2px; }
+.pg-partner p { margin: 0; }
+.pg-fine { color: #7c8aa0; font-size: 12px; margin-top: 26px; line-height: 1.5; }
+@media (max-width: 520px) {
+  .pg-breakdown { grid-template-columns: repeat(2, 1fr); }
+  .pg-badge { width: 70px; height: 70px; font-size: 40px; }
+  .pg-actions > * { width: 100%; }
+}
+/* Referrals page add-on */
+.referral-grader-card { margin-top: 20px; }

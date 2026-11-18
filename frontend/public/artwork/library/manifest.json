@@ -1,0 +1,733 @@
+{
+  "version": 1,
+  "purpose": "Sports Jedi independent premium visual assets",
+  "rules": [
+    "Use exact team/player ID matching",
+    "Never represent synthetic athlete images as authentic player photographs",
+    "Only ingest team/player imagery with authorized commercial use",
+    "Prefer isolated transparent assets over posters"
+  ],
+  "assetTypes": {
+    "stadiums": "Original Sports Jedi backgrounds",
+    "teams": "Licensed team marks",
+    "helmets": "Licensed helmet art or clearly fictional original artwork",
+    "players": "Licensed athlete portraits"
+  },
+  "assets": [
+    {
+      "name": "Arizona Cardinals",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/arizona-cardinals.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Atlanta Falcons",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/atlanta-falcons.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Baltimore Ravens",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/baltimore-ravens.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Buffalo Bills",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/buffalo-bills.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Carolina Panthers",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/carolina-panthers.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Chicago Bears",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/chicago-bears.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Cincinnati Bengals",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/cincinnati-bengals.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Cleveland Browns",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/cleveland-browns.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Dallas Cowboys",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/dallas-cowboys.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Denver Broncos",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/denver-broncos.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Detroit Lions",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/detroit-lions.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Green Bay Packers",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/green-bay-packers.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Houston Texans",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/houston-texans.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Indianapolis Colts",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/indianapolis-colts.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Jacksonville Jaguars",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/jacksonville-jaguars.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Kansas City Chiefs",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/kansas-city-chiefs.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Las Vegas Raiders",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/las-vegas-raiders.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Los Angeles Chargers",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/los-angeles-chargers.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Los Angeles Rams",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/los-angeles-rams.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Miami Dolphins",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/miami-dolphins.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Minnesota Vikings",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/minnesota-vikings.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "New England Patriots",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/new-england-patriots.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "New Orleans Saints",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/new-orleans-saints.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "New York Giants",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/new-york-giants.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "New York Jets",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/new-york-jets.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Philadelphia Eagles",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/philadelphia-eagles.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Pittsburgh Steelers",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/pittsburgh-steelers.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "San Francisco 49ers",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/san-francisco-49ers.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Seattle Seahawks",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/seattle-seahawks.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Tampa Bay Buccaneers",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/tampa-bay-buccaneers.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Tennessee Titans",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/tennessee-titans.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Washington Commanders",
+      "league": "NFL",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/nfl/washington-commanders.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Atlanta Hawks",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/atlanta-hawks.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Boston Celtics",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/boston-celtics.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Brooklyn Nets",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/brooklyn-nets.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Charlotte Hornets",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/charlotte-hornets.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Chicago Bulls",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/chicago-bulls.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Cleveland Cavaliers",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/cleveland-cavaliers.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Dallas Mavericks",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/dallas-mavericks.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Denver Nuggets",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/denver-nuggets.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Detroit Pistons",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/detroit-pistons.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Golden State Warriors",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/golden-state-warriors.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Houston Rockets",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/houston-rockets.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Indiana Pacers",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/indiana-pacers.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Los Angeles Clippers",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/los-angeles-clippers.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Los Angeles Lakers",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/los-angeles-lakers.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Memphis Grizzlies",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/memphis-grizzlies.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Miami Heat",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/miami-heat.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Milwaukee Bucks",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/milwaukee-bucks.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Minnesota Timberwolves",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/minnesota-timberwolves.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "New Orleans Pelicans",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/new-orleans-pelicans.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "New York Knicks",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/new-york-knicks.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Oklahoma City Thunder",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/oklahoma-city-thunder.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Orlando Magic",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/orlando-magic.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Philadelphia 76ers",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/philadelphia-76ers.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Phoenix Suns",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/phoenix-suns.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Portland Trail Blazers",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/portland-trail-blazers.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Sacramento Kings",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/sacramento-kings.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "San Antonio Spurs",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/san-antonio-spurs.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Toronto Raptors",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/toronto-raptors.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Utah Jazz",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/utah-jazz.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Washington Wizards",
+      "league": "NBA",
+      "type": "teams",
+      "path": "/artwork/library/teams/nba/washington-wizards.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "New York Yankees",
+      "league": "MLB",
+      "type": "teams",
+      "path": "/artwork/library/teams/mlb/new-york-yankees.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Los Angeles Dodgers",
+      "league": "MLB",
+      "type": "teams",
+      "path": "/artwork/library/teams/mlb/los-angeles-dodgers.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Boston Red Sox",
+      "league": "MLB",
+      "type": "teams",
+      "path": "/artwork/library/teams/mlb/boston-red-sox.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Chicago Cubs",
+      "league": "MLB",
+      "type": "teams",
+      "path": "/artwork/library/teams/mlb/chicago-cubs.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Philadelphia Phillies",
+      "league": "MLB",
+      "type": "teams",
+      "path": "/artwork/library/teams/mlb/philadelphia-phillies.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Atlanta Braves",
+      "league": "MLB",
+      "type": "teams",
+      "path": "/artwork/library/teams/mlb/atlanta-braves.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Houston Astros",
+      "league": "MLB",
+      "type": "teams",
+      "path": "/artwork/library/teams/mlb/houston-astros.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "New York Mets",
+      "league": "MLB",
+      "type": "teams",
+      "path": "/artwork/library/teams/mlb/new-york-mets.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Michigan Wolverines",
+      "league": "NCAAF",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/ncaaf/michigan-wolverines.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Ohio State Buckeyes",
+      "league": "NCAAF",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/ncaaf/ohio-state-buckeyes.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Texas Tech Red Raiders",
+      "league": "NCAAF",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/ncaaf/texas-tech-red-raiders.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Arizona Wildcats",
+      "league": "NCAAF",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/ncaaf/arizona-wildcats.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Alabama Crimson Tide",
+      "league": "NCAAF",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/ncaaf/alabama-crimson-tide.svg",
+      "originalArtwork": true,
+      "official": false
+    },
+    {
+      "name": "Georgia Bulldogs",
+      "league": "NCAAF",
+      "type": "helmets",
+      "path": "/artwork/library/helmets/ncaaf/georgia-bulldogs.svg",
+      "originalArtwork": true,
+      "official": false
+    }
+  ],
+  "teams": {
+    "arizona-cardinals": {
+      "name": "Arizona Cardinals",
+      "helmet": null,
+      "logo": null,
+      "player": null,
+      "status": "awaiting-approved-image"
+    },
+    "dallas-cowboys": {
+      "name": "Dallas Cowboys",
+      "helmet": null,
+      "logo": null,
+      "player": null,
+      "status": "awaiting-approved-image"
+    },
+    "portland-trail-blazers": {
+      "name": "Portland Trail Blazers",
+      "helmet": null,
+      "logo": null,
+      "player": null,
+      "status": "awaiting-approved-image"
+    },
+    "utah-jazz": {
+      "name": "Utah Jazz",
+      "helmet": null,
+      "logo": null,
+      "player": null,
+      "status": "awaiting-approved-image"
+    },
+    "arizona-wildcats": {
+      "name": "Arizona Wildcats",
+      "helmet": null,
+      "logo": null,
+      "player": null,
+      "status": "awaiting-approved-image"
+    },
+    "texas-tech-red-raiders": {
+      "name": "Texas Tech Red Raiders",
+      "helmet": null,
+      "logo": null,
+      "player": null,
+      "status": "awaiting-approved-image"
+    },
+    "kansas-city-chiefs": {
+      "name": "Kansas City Chiefs",
+      "helmet": null,
+      "logo": null,
+      "player": null,
+      "status": "awaiting-approved-image"
+    },
+    "buffalo-bills": {
+      "name": "Buffalo Bills",
+      "helmet": null,
+      "logo": null,
+      "player": null,
+      "status": "awaiting-approved-image"
+    },
+    "los-angeles-lakers": {
+      "name": "Los Angeles Lakers",
+      "helmet": null,
+      "logo": null,
+      "player": null,
+      "status": "awaiting-approved-image"
+    },
+    "boston-celtics": {
+      "name": "Boston Celtics",
+      "helmet": null,
+      "logo": null,
+      "player": null,
+      "status": "awaiting-approved-image"
+    },
+    "new-york-yankees": {
+      "name": "New York Yankees",
+      "helmet": null,
+      "logo": null,
+      "player": null,
+      "status": "awaiting-approved-image"
+    },
+    "los-angeles-dodgers": {
+      "name": "Los Angeles Dodgers",
+      "helmet": null,
+      "logo": null,
+      "player": null,
+      "status": "awaiting-approved-image"
+    },
+    "michigan-wolverines": {
+      "name": "Michigan Wolverines",
+      "helmet": null,
+      "logo": null,
+      "player": null,
+      "status": "awaiting-approved-image"
+    },
+    "ohio-state-buckeyes": {
+      "name": "Ohio State Buckeyes",
+      "helmet": null,
+      "logo": null,
+      "player": null,
+      "status": "awaiting-approved-image"
+    }
+  },
+  "backgrounds": {
+    "nfl": "/artwork/library/stadiums/nfl-arena.svg",
+    "nba": "/artwork/library/stadiums/nba-arena.svg",
+    "mlb": "/artwork/library/stadiums/mlb-arena.svg",
+    "ncaaf": "/artwork/library/stadiums/ncaaf-arena.svg"
+  },
+  "note": "Original stylized team-color illustrations, NOT official team logos or authentic player portraits. Team names are live-data labels."
+}

@@ -1,0 +1,114 @@
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+
+// A bright "what do I do here?" header for every page except home.
+// Words are kept simple on purpose. Display only: no data or routing changes.
+const GUIDES = {
+  picks: {
+    color: "gold", emoji: "🏆", title: "Today's Picks",
+    lead: "These are the games the Jedi likes most today.",
+    steps: [["🏈", "Pick a sport", "Tap NFL, NBA, College or MLB."], ["👆", "Tap a pick", "See why the Jedi likes it."], ["🎯", "Add it to a parlay", "Mix picks for a bigger payout."]],
+  },
+  parlay: {
+    color: "purple", emoji: "🎯", title: "Build a Parlay", compact: true, sparkle: true,
+    lead: "A parlay is 2 or more picks in one bet. Every pick has to win. The builder below walks you through it.",
+  },
+  game: {
+    color: "blue", emoji: "🔍", title: "How to read this game", compact: true,
+    lead: "Everything about this matchup, in one place.",
+    steps: [["🧠", "Who the Jedi likes", "Look for \"Jedi lean.\""], ["📊", "Win chance bar", "Longer bar = more likely to win."], ["🎯", "Build a parlay", "Use the big button below."]],
+  },
+  learn: {
+    color: "green", emoji: "🎓", title: "Learn the Basics",
+    lead: "Sports betting words, made simple. Tap through these and you're ready.",
+    words: [
+      ["💰", "Moneyline", "Just pick who wins. +210 means a $10 bet wins $21 if that team wins."],
+      ["📏", "Spread", "The favorite must win by more than the number. Seahawks -3 means they need to win by 4 or more."],
+      ["🔢", "Total", "Guess the combined score. Over 46.5 means both teams together score 47 or more."],
+      ["🔗", "Parlay", "2 or more picks in one bet. Bigger payout, but every pick has to win."],
+      ["🚀", "Long shot", "An underdog with big odds. Less likely to win, but it pays a lot more."],
+      ["✅", "Confidence", "How strongly the sportsbooks agree. Higher means a stronger lean. Never a sure thing."],
+    ],
+  },
+  pricing: {
+    color: "gold", emoji: "👑", title: "Go Pro",
+    lead: "Start free. Upgrade any time for more picks and tools.",
+    steps: [["🆓", "Start free", "No credit card needed."], ["⭐", "Try Pro", "Unlock the advanced builders."], ["📋", "Compare plans", "See every plan below."]],
+  },
+  blog: {
+    color: "blue", emoji: "📰", title: "Game Previews",
+    lead: "Quick breakdowns of upcoming games. Tap one to read it.",
+  },
+  login: {
+    color: "green", emoji: "👋", title: "Join Free",
+    lead: "Make a free account to get daily picks and save your favorites.", keepBanner: true,
+  },
+  account: {
+    color: "purple", emoji: "🙂", title: "Your Account",
+    lead: "Your plan, your picks and your settings.", keepBanner: true,
+  },
+};
+
+function guideKey(pathname) {
+  if (pathname.startsWith("/picks")) return "picks";
+  if (pathname.startsWith("/parlay")) return "parlay";
+  if (pathname.startsWith("/game/")) return "game";
+  if (pathname.startsWith("/methodology")) return "learn";
+  if (pathname.startsWith("/pricing")) return "pricing";
+  if (pathname === "/blog") return "blog";
+  if (pathname.startsWith("/login")) return "login";
+  if (pathname.startsWith("/account")) return "account";
+  return null;
+}
+
+export default function PageGuide() {
+  const { pathname } = useLocation();
+  const key = guideKey(pathname);
+  const g = key ? GUIDES[key] : null;
+
+  // Lets sj-simple.css hide the old plain page banner only where this guide replaces it.
+  useEffect(() => {
+    const b = document.body.classList;
+    b.toggle("sj-guided", !!g);
+    b.toggle("sj-guided-replace", !!g && !g.keepBanner);
+    return () => { b.remove("sj-guided", "sj-guided-replace"); };
+  }, [g]);
+
+  if (!g) return null;
+  return (
+    <div className="sj-guide-wrap">
+    <section className={`sj-guide sj-guide-${g.color}${g.compact ? " sj-guide-compact" : ""}${g.sparkle ? " sj-guide-sparkle" : ""}`}>
+      {g.sparkle && <div className="sj-sparkles" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>}
+      <div className="sj-guide-head">
+        <span className="sj-guide-emoji" aria-hidden="true">{g.emoji}</span>
+        <div>
+          <h1>{g.title}</h1>
+          <p>{g.lead}</p>
+        </div>
+      </div>
+      {g.steps && (
+        <ol className="sj-guide-steps">
+          {g.steps.map(([emoji, title, text], i) => (
+            <li key={title} className={`sj-step-${i + 1}`}>
+              <b aria-hidden="true">{emoji}</b>
+              <strong><span>{i + 1}</span>{title}</strong>
+              <small>{text}</small>
+            </li>
+          ))}
+        </ol>
+      )}
+      {g.words && (
+        <div className="sj-words">
+          {g.words.map(([emoji, word, text], i) => (
+            <article key={word} className={`sj-word sj-word-${i % 6}`}>
+              <b aria-hidden="true">{emoji}</b>
+              <strong>{word}</strong>
+              <p>{text}</p>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+    </div>
+  );
+}

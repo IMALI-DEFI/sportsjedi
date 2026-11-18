@@ -1,0 +1,19 @@
+import {Link} from "react-router-dom";
+import {Clock,ChevronRight} from "lucide-react";
+const when=s=>{const d=new Date(s);return Number.isNaN(d.getTime())?"Time TBA":d.toLocaleString("en-US",{weekday:"short",hour:"numeric",minute:"2-digit",timeZoneName:"short"})};
+function Team({team}) {const name=team?.name||team?.abbr||"Team";return <div className="sj-match-team"><div className="sj-team-mark" aria-hidden="true">{(team?.abbr||name.slice(0,3)).slice(0,4)}</div><strong>{name}</strong><small>{team?.record||""}</small></div>}
+const matchupArtwork=(game)=>{
+ const teams=[game?.away?.name||"",game?.home?.name||""].map(x=>x.toLowerCase());
+ const both=(a,b)=>teams.some(x=>x.includes(a))&&teams.some(x=>x.includes(b));
+ if(both("commander","eagle"))return "/artwork/matchups/commanders-eagles.png";
+ if(both("laker","celtic"))return "/artwork/matchups/lakers-celtics.png";
+ if(both("raven","chief"))return "/artwork/matchups/ravens-chiefs.png";
+ if(both("michigan","ohio state"))return "/artwork/matchups/michigan-ohio-state.png";
+ return null;
+};
+export default function GameCard({game}) {const art=matchupArtwork(game);return <Link className={`game-card sj-premium-match sj-match-${String(game.league||"").toLowerCase()}`} to={`/game/${encodeURIComponent(game.id)}`}>
+  <div className="sj-match-top"><span>{game.league}</span><span><Clock size={14}/>{when(game.startTime)}</span></div>
+  {art ? <div className="sj-match-photo"><img src={art} alt={`${game.away?.name} versus ${game.home?.name} matchup artwork`} loading="lazy" /></div> :
+  <div className="sj-match-arena"><div className="sj-match-arena-lights" aria-hidden="true"/><div className="sj-match-versus"><Team team={game.away}/><b>VS</b><Team team={game.home}/></div></div>}
+  <div className="sj-match-bottom"><span>{game.status==="live"?"🔴 LIVE":game.status==="upcoming"?"UPCOMING":game.status}</span><span>View matchup <ChevronRight size={17}/></span></div>
+</Link>}

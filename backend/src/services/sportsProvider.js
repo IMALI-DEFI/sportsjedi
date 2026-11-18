@@ -33,6 +33,7 @@ const CACHE_MS =
   Number(process.env.SPORTS_CACHE_MS || 3600000);
 
 const cache = new Map();
+const pendingRequests = new Map();
 
 function getCached(key, maxAge = CACHE_MS) {
   const item = cache.get(key);
@@ -236,8 +237,29 @@ function normalizeGame(event) {
   };
 }
 
+// Reserve a small pool of remaining provider credits for important games.
+const MIN_ODDS_CREDITS = Math.max(0, Number(process.env.SPORTS_MIN_CREDITS || 30));
+let remainingOddsCredits = null;
+
 async function fetchJson(url) {
+  if (pendingRequests.has(url)) return pendingRequests.get(url);
+  const request = fetchJsonUnshared(url).finally(() => pendingRequests.delete(url));
+  pendingRequests.set(url, request);
+  return request;
+}
+
+async function fetchJsonUnshared(url) {
+  if (url.startsWith(API_BASE) && remainingOddsCredits !== null &&
+      remainingOddsCredits <= MIN_ODDS_CREDITS) {
+    throw new Error("Odds API credit reserve reached; requests paused until the API service restarts or the quota is reset");
+  }
   const response = await fetch(url);
+  if (url.startsWith(API_BASE)) {
+    const remaining = Number(response.headers.get("x-requests-remaining"));
+    if (response.headers.has("x-requests-remaining") && Number.isFinite(remaining)) {
+      remainingOddsCredits = remaining;
+    }
+  }
 
   if (!response.ok) {
     const body = await response.text();
@@ -639,8 +661,10 @@ class TheOddsApiProvider {
         upper
       );
 
-    const firstGames =
-      games.slice(0, 12);
+    // Player-prop endpoints can consume many free-tier credits.
+    const maxPropGames = Math.max(0, Math.min(12,
+      Number(process.env.SPORTS_MAX_PROP_GAMES || 2)));
+    const firstGames = games.slice(0, maxPropGames);
 
     const propMarkets = {
       NFL:

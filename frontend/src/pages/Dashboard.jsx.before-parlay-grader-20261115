@@ -1,0 +1,182 @@
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  BarChart3,
+  BrainCircuit,
+  Radio,
+  ShieldCheck,
+  Sparkles,
+  Trophy,
+  Zap,
+} from "lucide-react";
+
+import { Link, useSearchParams } from "react-router-dom";
+import GameCard from "../components/GameCard";
+import RecentSocialShowcase from "../components/RecentSocialShowcase";
+import { api } from "../lib/api";
+import { PlanCompare } from "../components/GoPro";
+
+const leagues = ["ALL", "NFL", "NCAAF", "NBA", "MLB"];
+
+export default function Dashboard() {
+  const [searchParams] = useSearchParams();
+  const [games, setGames] = useState([]);
+  const [picks, setPicks] = useState([]);
+  const [league, setLeague] = useState(() => { const value = new URLSearchParams(window.location.search).get("league"); return ["NFL","NBA","MLB","NCAAF"].includes(value) ? value : "ALL"; });
+  useEffect(() => { const value = searchParams.get("league"); setLeague(["NFL","NBA","MLB","NCAAF"].includes(value) ? value : "ALL"); }, [searchParams]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    const selected =
+      league === "ALL" ? "" : league;
+
+    setLoading(true);
+    setError("");
+
+    const refresh = (initial = false) => {
+      if (initial) setLoading(true);
+      Promise.all([api.games(selected), api.picks(selected)])
+        .then(([gameData, pickData]) => {
+          if (cancelled) return;
+          setGames(gameData);
+          setPicks(pickData);
+          setError("");
+        })
+        .catch(err => { if (!cancelled) setError(err.message); })
+        .finally(() => { if (!cancelled) setLoading(false); });
+    };
+    refresh(true);
+    const timer = setInterval(() => { if (!document.hidden) refresh(false); }, 5 * 60 * 1000);
+    const onVisible = () => { if (!document.hidden) refresh(false); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { cancelled = true; clearInterval(timer); document.removeEventListener("visibilitychange", onVisible); };
+  }, [league]);
+
+  const sortedGames = useMemo(
+    () =>
+      [...games].sort(
+        (a, b) =>
+          new Date(a.startTime) -
+          new Date(b.startTime)
+      ),
+    [games]
+  );
+
+  // Keep the four sport slots independent. Use today's games first and
+  // advance automatically when the next day's schedule arrives.
+  const upcoming = sortedGames.filter(game => !["final","completed","cancelled","postponed"].includes(String(game.status).toLowerCase()) && new Date(game.startTime).getTime() > Date.now()-4*60*60*1000);
+  const visibleGames = league === "ALL"
+    ? (() => {
+        const firstBySport = ["NFL", "NBA", "MLB", "NCAAF"].map(sport =>
+          upcoming.find(game => game.league === sport) ||
+          sortedGames.find(game => game.league === sport)
+        ).filter(Boolean);
+        const remaining = upcoming.filter(game => !firstBySport.some(selected => selected.id === game.id));
+        return [...firstBySport, ...remaining].slice(0, 4);
+      })()
+    : (upcoming.length ? upcoming : sortedGames).slice(0, 4);
+
+  const live =
+    games.filter(
+      (game) => game.status === "live"
+    ).length;
+
+  const maxConfidence =
+    picks.length
+      ? Math.max(
+          ...picks.map(
+            (p) => p.analysis?.confidence || 0
+          )
+        )
+      : 0;
+
+  const books = new Set(
+    games.flatMap((game) =>
+      (game.bookmakers || []).map(
+        (book) => book.key
+      )
+    )
+  ).size;
+
+  return (
+    <main className="shell">
+      <section className="sj-hero2" aria-label="Sports Jedi">
+        <div className="sj-hero2-copy">
+          <span className="sj-hero2-tag">PICKS • PARLAYS • PREDICTIONS</span>
+          <h1>Your Sports Sidekick <em>for Picks, Parlays &amp; More!</em></h1>
+          <div className="sj-hero2-actions">
+            <Link to="/picks" className="sj-hero2-btn sj-hero2-gold"><b>⚡ Get Jedi Picks</b><small>Today's Best Plays</small></Link>
+            <Link to="/parlay" className="sj-hero2-btn sj-hero2-purple"><b>◈ Build My Parlay</b><small>Pick Players • Combine • Win</small></Link>
+          </div>
+        </div>
+      </section>
+
+      <section id="sport-selection" className="sj-home-sports" aria-label="Choose your sport">
+        <h2>Choose a Sport <span aria-hidden="true">➜</span></h2>
+        <div className="sj-home-sport-grid">
+          {[["NFL","🏈","NFL"],["NBA","🏀","NBA"],["MLB","⚾","MLB"],["NCAAF","🏈","CFB"]].map(([code,emoji,label]) =>
+            <button type="button" key={code} className={league === code ? "active" : ""}
+              onClick={() => setLeague(code)}><span>{emoji}</span><strong>{label}</strong></button>
+          )}
+          <button type="button" className={league === "ALL" ? "active" : ""} onClick={() => setLeague("ALL")}><span>•••</span><strong>More Sports</strong></button>
+          <Link className="sj-boxing-sport" to="/picks"><span>🥊</span><strong>BOXING</strong></Link>
+        </div>
+      </section>
+      <section id="featured-matchups" className="games-section">
+        <div className="section-head">
+          <div>
+            <span className="eyebrow">
+              LIVE SPORTS
+            </span>
+            <h2>🔥 Today's Featured Matchups</h2>
+
+          </div>
+
+          <Link to="/picks" className="sj-full-schedule">▦ Full Schedule →</Link>
+        </div>
+
+        {error && (
+          <div className="error" role="status">
+            Live matchups are temporarily unavailable. Please try again shortly.
+          </div>
+        )}
+
+        {loading ? (
+          <div className="loading">
+            Scanning sportsbook markets…
+          </div>
+        ) : (
+          visibleGames.length ? (
+            <div className="game-grid">
+              {visibleGames.map((game) => (
+                <GameCard key={game.id} game={game} />
+              ))}
+            </div>
+          ) : (
+            <div className="sj-empty-matchups" role="status">
+              <strong>Next matchups are being prepared</strong>
+              <span>Check the full schedule for more games and picks.</span>
+              <Link to="/picks">View full schedule</Link>
+            </div>
+          )
+        )}
+        <div className="sj-home-more"><Link to="/picks">See more games and picks →</Link></div>
+      </section>
+      <PlanCompare />
+      <section className="sj-home-feature-links">
+        <Link to="/methodology" className="sj-feature-purple"><span>▶</span><strong>How It Works</strong><small>A 60-Second Tour 🚀</small></Link>
+        <Link to="/methodology" className="sj-feature-blue"><span>🎯</span><strong>Jedi Academy</strong><small>Learn Picks, Parlays & Strategy</small></Link>
+        <Link to="/login?mode=signup&next=%2Fpicks" className="sj-feature-green"><span>♟</span><strong>Join Free</strong><small>Get Daily Picks & Updates</small></Link>
+        <Link to="/pricing" className="sj-feature-gold"><span>♛</span><strong>Go Pro</strong><small>Unlimited picks & parlays · $19.95/mo</small></Link>
+      </section>
+      <section className="sj-home-legal"><p>Sports Jedi provides informational sports analysis. Picks are not guaranteed. Game information and market availability may change.</p>
+      </section>
+    </main>
+  );
+}

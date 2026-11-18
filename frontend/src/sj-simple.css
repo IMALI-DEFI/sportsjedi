@@ -1,0 +1,688 @@
+/* ==========================================================
+   Sports Jedi: simple navigation + readability layer.
+   Loaded LAST (main.jsx) so it wins over styles.css overrides.
+   Delete the import in main.jsx to turn all of this off.
+   ========================================================== */
+
+:root { --sj-read: #c9d4e3; --sj-soft: #aab7c9; }
+
+/* ---------- Readable base ---------- */
+.shell p, .shell li { color: var(--sj-read); }
+.eyebrow { font-size: 12px !important; }
+.status, .league-pill, .sj-league-tag { font-size: 12px !important; }
+.game-meta, .market-strip, .matchup-meta { font-size: 13px !important; color: var(--sj-soft) !important; }
+.pick-main > span, .prop-card > span, .metric-card span { font-size: 12px !important; color: var(--sj-soft) !important; }
+.pick-main p, .prop-card p, .analysis-main p, .factor { font-size: 14px !important; color: var(--sj-read) !important; }
+.confidence-ring span { font-size: 11px !important; color: var(--sj-soft) !important; }
+.choice span, .slip-leg span, .slip-leg b { font-size: 13px !important; }
+.responsible-note, .parlay-result p { font-size: 13px !important; color: var(--sj-soft) !important; }
+.empty-slip { font-size: 14px !important; }
+.matchup-teams small, .matchup-teams em { font-size: 12px !important; color: var(--sj-soft) !important; }
+footer span, .footer-disclaimer { font-size: 13px !important; color: var(--sj-soft) !important; }
+.footer-links a { font-size: 14px; padding: 6px 4px; }
+.section-head p { font-size: 14px !important; color: var(--sj-soft) !important; }
+
+/* ---------- One navigation system ---------- */
+.sj-premium-subnav { display: none !important; }          /* old second tile menu */
+
+.sj-tabs, .sj-tabs-spacer { display: none; }
+@media (max-width: 760px) {
+  .sj-tabs-spacer { display: block; }
+  .sj-tabs {
+    display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+    justify-content: space-around; align-items: stretch;
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    background: rgba(4, 10, 26, .97); border-top: 1px solid #2a4f9a;
+    box-shadow: 0 -8px 30px #0009; backdrop-filter: blur(14px);
+  }
+  .sj-tabs a {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 6px 2px; border-radius: 12px; color: #9fb0c8; font-size: 12px; font-weight: 800;
+    min-height: 52px; justify-content: center;
+  }
+  .sj-tabs a.active { color: #fff; background: linear-gradient(145deg, #0b3a9c, #1561d6); }
+  .sj-tabs-spacer { height: calc(76px + env(safe-area-inset-bottom)); }
+  /* header on phones: just brand + menu for extras */
+  .nav-wrap { padding: 10px 14px !important; }
+  .brand-logo { width: 42px !important; height: 42px !important; }
+}
+
+/* ---------- Sport chips: one swipeable row ---------- */
+.sj-chip-row, .league-tabs.standalone {
+  display: flex !important; flex-wrap: nowrap !important; gap: 8px !important; overflow-x: auto;
+  padding: 4px 2px 10px !important; margin: 12px 0 18px !important; scrollbar-width: none;
+}
+.sj-chip-row::-webkit-scrollbar, .league-tabs.standalone::-webkit-scrollbar { display: none; }
+.sj-chip-row button, .league-tabs.standalone button {
+  flex: 0 0 auto !important; width: auto !important; min-height: 44px !important;
+  padding: 10px 18px !important; border-radius: 999px !important; font-size: 15px !important; font-weight: 800 !important;
+  background: #0d1d45 !important; border: 1px solid #2c58b8 !important; color: #dbe6ff !important;
+}
+.sj-chip-row button.active, .league-tabs.standalone button.active {
+  background: linear-gradient(135deg, #ffd45e, #f2a516) !important; color: #1b1300 !important; border-color: transparent !important;
+}
+
+/* ---------- Game page stats row ---------- */
+@media (max-width: 760px) {
+  .analysis-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
+  .analysis-main { grid-column: 1 / -1 !important; }
+  .metric-card { padding: 12px 10px !important; gap: 4px !important; text-align: center; align-items: center; }
+  .metric-card span { font-size: 11px !important; line-height: 1.25; }
+  .metric-card strong { font-size: 22px !important; }
+}
+
+/* ---------- Friendly empty states ---------- */
+.sj-empty-note { padding: 18px; border: 1px dashed #2c58b8; border-radius: 16px; color: var(--sj-read); font-size: 15px; background: #0b1636; }
+
+/* ---------- Footer on phones ---------- */
+@media (max-width: 760px) {
+  footer { flex-direction: column !important; align-items: flex-start !important; gap: 14px !important; }
+  .footer-links { display: flex !important; flex-wrap: wrap !important; gap: 4px 16px !important; }
+  .footer-disclaimer { max-width: none !important; }
+}
+
+/* ==========================================================
+   COLORFUL PAGES: the home page's candy-button look on every
+   other page. Scoped to body.sj-guided (never the home page).
+   ========================================================== */
+:root {
+  --c-red: linear-gradient(180deg, #ef4d54, #a40d1e 65%, #4b0a17);
+  --c-blue: linear-gradient(180deg, #1e75dd, #103c96 65%, #071d59);
+  --c-green: linear-gradient(180deg, #29bd70, #067c44 65%, #06412b);
+  --c-purple: linear-gradient(180deg, #8a4be0, #4b1fa3 65%, #241056);
+  --c-gold: linear-gradient(180deg, #f7c645, #c98a0b 60%, #6e4807);
+  --c-red-b: #ff7a80; --c-blue-b: #74b5ff; --c-green-b: #5ff0a0; --c-purple-b: #c59bff; --c-gold-b: #ffe07a;
+  /* deeper versions for big cards so text stays easy to read */
+  --d-red: linear-gradient(160deg, #7a1022, #2a0a1c);
+  --d-blue: linear-gradient(160deg, #10408f, #081a46);
+  --d-green: linear-gradient(160deg, #0a6b45, #062a22);
+  --d-purple: linear-gradient(160deg, #4a1f9c, #1a0d44);
+  --d-gold: linear-gradient(160deg, #7a5208, #2c1d05);
+}
+
+/* guide header wrapper sits inside the page width */
+.sj-guide-wrap { max-width: 1240px; margin: 0 auto; padding: 16px 14px 0; }
+body.sj-guided main.shell { padding-top: 14px !important; }
+body.sj-guided-replace .page-banner { display: none !important; }
+
+/* ---------- The guide header ---------- */
+.sj-guide {
+  border-radius: 22px; padding: 18px; border: 2px solid var(--c-blue-b);
+  background: var(--d-blue); box-shadow: inset 0 2px 14px #fff3, 0 0 18px #2774ff66, 0 5px 0 #04102e;
+}
+.sj-guide-gold   { background: var(--d-gold);   border-color: var(--c-gold-b);   box-shadow: inset 0 2px 14px #fff3, 0 0 18px #ffbc3c66, 0 5px 0 #2a1a03; }
+.sj-guide-purple { background: var(--d-purple); border-color: var(--c-purple-b); box-shadow: inset 0 2px 14px #fff3, 0 0 18px #9a43ff66, 0 5px 0 #13072c; }
+.sj-guide-green  { background: var(--d-green);  border-color: var(--c-green-b);  box-shadow: inset 0 2px 14px #fff3, 0 0 18px #0af08b55, 0 5px 0 #052019; }
+.sj-guide-head { display: flex; gap: 14px; align-items: center; }
+.sj-guide-emoji { font-size: 48px; line-height: 1; filter: drop-shadow(0 4px 8px #0008); }
+.sj-guide h1 { margin: 0; font-size: clamp(30px, 7vw, 46px); font-style: italic; font-weight: 950; letter-spacing: -.02em; line-height: 1.05; color: #fff; text-shadow: 0 3px 0 #0006; }
+.sj-guide p { margin: 6px 0 0; font-size: 17px; line-height: 1.4; color: #f1f5ff !important; }
+.sj-guide-compact .sj-guide-emoji { font-size: 36px; }
+.sj-guide-compact h1 { font-size: clamp(22px, 5vw, 30px); }
+
+.sj-guide-steps { list-style: none; padding: 0; margin: 16px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.sj-guide-steps li {
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px;
+  padding: 12px 8px; border-radius: 16px; border: 2px solid var(--c-red-b);
+  background: var(--c-red); box-shadow: inset 0 2px 10px #fff6, 0 4px 0 #3a0610;
+}
+.sj-guide-steps li.sj-step-2 { background: var(--c-blue); border-color: var(--c-blue-b); box-shadow: inset 0 2px 10px #fff6, 0 4px 0 #051640; }
+.sj-guide-steps li.sj-step-3 { background: var(--c-green); border-color: var(--c-green-b); box-shadow: inset 0 2px 10px #fff6, 0 4px 0 #053420; }
+.sj-guide-steps b { font-size: 30px; line-height: 1.1; }
+.sj-guide-steps strong { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 900; color: #fff; line-height: 1.15; }
+.sj-guide-steps strong span { display: inline-grid; place-items: center; min-width: 22px; height: 22px; border-radius: 50%; background: #fff; color: #10204d; font-size: 13px; font-weight: 950; }
+.sj-guide-steps small { font-size: 13px; line-height: 1.3; color: #fff; opacity: .95; }
+@media (max-width: 420px) {
+  .sj-guide-steps { gap: 7px; }
+  .sj-guide-steps li { padding: 10px 5px; }
+  .sj-guide-steps strong { flex-direction: column; gap: 3px; font-size: 14px; }
+  .sj-guide-steps small { font-size: 12px; }
+}
+
+/* ---------- Words to Know (Learn page) ---------- */
+.sj-words { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 16px; }
+.sj-word { border-radius: 18px; padding: 14px; border: 2px solid var(--c-blue-b); background: var(--c-blue); box-shadow: inset 0 2px 10px #fff5, 0 4px 0 #051640; }
+.sj-word b { font-size: 30px; }
+.sj-word strong { display: block; font-size: 22px; font-style: italic; font-weight: 950; color: #fff; margin: 4px 0; }
+.sj-word p { margin: 0 !important; font-size: 16px !important; color: #fff !important; }
+.sj-word-0 { background: var(--c-gold);   border-color: var(--c-gold-b);   box-shadow: inset 0 2px 10px #fff6, 0 4px 0 #3d2803; }
+.sj-word-0 strong, .sj-word-0 p { color: #1b1300 !important; }
+.sj-word-1 { background: var(--c-red);    border-color: var(--c-red-b);    box-shadow: inset 0 2px 10px #fff6, 0 4px 0 #3a0610; }
+.sj-word-2 { background: var(--c-blue);   border-color: var(--c-blue-b); }
+.sj-word-3 { background: var(--c-purple); border-color: var(--c-purple-b); box-shadow: inset 0 2px 10px #fff6, 0 4px 0 #13072c; }
+.sj-word-4 { background: var(--c-green);  border-color: var(--c-green-b);  box-shadow: inset 0 2px 10px #fff6, 0 4px 0 #053420; }
+.sj-word-5 { background: var(--c-red);    border-color: var(--c-red-b);    box-shadow: inset 0 2px 10px #fff6, 0 4px 0 #3a0610; }
+
+/* ---------- Big bold headings like the home page ---------- */
+body.sj-guided .section-head h2, body.sj-guided main h2 { font-style: italic; font-weight: 950 !important; letter-spacing: -.01em; }
+body.sj-guided .eyebrow { color: #ffd45e !important; }
+
+/* ---------- Colorful cards that cycle red/blue/purple/green/gold ---------- */
+body.sj-guided :is(.pick-card, .prop-card, .metric-card, .price-card, .blog-card, .account-card, .legal-card, .factor-card,
+  .analysis-main, .matchup-hero, .builder-panel, .slip, .auth-card, .disclosure-strip, .game-parlay-cta, .sj-wizard-card) {
+  border: 2px solid var(--c-blue-b) !important; border-radius: 20px !important; background: var(--d-blue) !important;
+  box-shadow: inset 0 2px 12px #fff2, 0 0 14px #2774ff44, 0 4px 0 #04102e !important;
+}
+body.sj-guided :is(.pick-card, .prop-card, .metric-card, .price-card, .blog-card, .account-card):nth-child(5n+1) { background: var(--d-purple) !important; border-color: var(--c-purple-b) !important; box-shadow: inset 0 2px 12px #fff2, 0 0 14px #9a43ff55, 0 4px 0 #13072c !important; }
+body.sj-guided :is(.pick-card, .prop-card, .metric-card, .price-card, .blog-card, .account-card):nth-child(5n+2) { background: var(--d-blue) !important; border-color: var(--c-blue-b) !important; }
+body.sj-guided :is(.pick-card, .prop-card, .metric-card, .price-card, .blog-card, .account-card):nth-child(5n+3) { background: var(--d-green) !important; border-color: var(--c-green-b) !important; box-shadow: inset 0 2px 12px #fff2, 0 0 14px #0af08b44, 0 4px 0 #052019 !important; }
+body.sj-guided :is(.pick-card, .prop-card, .metric-card, .price-card, .blog-card, .account-card):nth-child(5n+4) { background: var(--d-red) !important; border-color: var(--c-red-b) !important; box-shadow: inset 0 2px 12px #fff2, 0 0 14px #ff3b5044, 0 4px 0 #2a0610 !important; }
+body.sj-guided :is(.pick-card, .prop-card, .metric-card, .price-card, .blog-card, .account-card):nth-child(5n) { background: var(--d-gold) !important; border-color: var(--c-gold-b) !important; box-shadow: inset 0 2px 12px #fff2, 0 0 14px #ffbc3c44, 0 4px 0 #2a1a03 !important; }
+body.sj-guided .game-parlay-cta, body.sj-guided .disclosure-strip { background: var(--d-gold) !important; border-color: var(--c-gold-b) !important; }
+body.sj-guided .factor-card, body.sj-guided .legal-card { background: var(--d-green) !important; border-color: var(--c-green-b) !important; }
+body.sj-guided .slip { background: var(--d-purple) !important; border-color: var(--c-purple-b) !important; }
+body.sj-guided :is(.pick-card, .prop-card, .blog-card, .price-card, .account-card) :is(p, span, small) { color: #eef3ff !important; }
+
+/* confidence badge: a glossy green circle, easy to spot */
+body.sj-guided .confidence-ring {
+  background: var(--c-green) !important; border: 2px solid var(--c-green-b) !important; border-radius: 18px !important;
+  box-shadow: inset 0 2px 10px #fff6, 0 4px 0 #053420 !important; padding: 8px 12px !important; width: auto !important; height: auto !important;
+}
+body.sj-guided .confidence-ring strong { color: #fff !important; font-size: 26px !important; }
+body.sj-guided .confidence-ring span { color: #fff !important; font-weight: 900; }
+
+/* pills inside pick cards */
+body.sj-guided .pick-metrics span { background: #ffffff1f !important; border: 1px solid #ffffff40 !important; color: #fff !important; border-radius: 999px; padding: 4px 10px; }
+body.sj-guided .grade { background: #ffd45e !important; color: #1b1300 !important; font-weight: 950 !important; }
+
+/* ---------- Sport chips in home-page colors ---------- */
+body.sj-guided .league-tabs.standalone button { border: 2px solid var(--c-blue-b) !important; background: var(--c-blue) !important; color: #fff !important; box-shadow: inset 0 2px 8px #fff5, 0 3px 0 #051640 !important; }
+body.sj-guided .league-tabs.standalone button:nth-child(1) { background: var(--c-gold) !important; border-color: var(--c-gold-b) !important; color: #1b1300 !important; }
+body.sj-guided .league-tabs.standalone button:nth-child(2) { background: var(--c-red) !important; border-color: var(--c-red-b) !important; }
+body.sj-guided .league-tabs.standalone button:nth-child(3) { background: var(--c-green) !important; border-color: var(--c-green-b) !important; }
+body.sj-guided .league-tabs.standalone button:nth-child(4) { background: var(--c-purple) !important; border-color: var(--c-purple-b) !important; }
+body.sj-guided .league-tabs.standalone button.active { outline: 3px solid #fff !important; outline-offset: 2px; transform: translateY(-2px); }
+
+/* ---------- Buttons: big, glossy, obvious ---------- */
+body.sj-guided :is(.primary-btn, .primary-button, .game-parlay-button) {
+  background: var(--c-gold) !important; color: #1b1300 !important; border: 2px solid var(--c-gold-b) !important;
+  border-radius: 16px !important; font-size: 17px !important; font-weight: 950 !important; min-height: 50px;
+  box-shadow: inset 0 2px 10px #fff8, 0 4px 0 #5a3a05 !important;
+}
+body.sj-guided .secondary-btn { background: var(--c-blue) !important; color: #fff !important; border: 2px solid var(--c-blue-b) !important; border-radius: 16px !important; min-height: 48px; font-weight: 900 !important; box-shadow: inset 0 2px 10px #fff5, 0 4px 0 #051640 !important; }
+body.sj-guided :is(.primary-btn, .secondary-btn, .primary-button):active { transform: translateY(3px); box-shadow: none !important; }
+
+/* confidence label fit */
+body.sj-guided .confidence-ring { min-width: 96px; text-align: center; align-items: center !important; }
+body.sj-guided .confidence-ring span { font-size: 10px !important; letter-spacing: .05em; }
+
+/* ==========================================================
+   PARLAY STANDS OUT: chip-row clipping fix + sparkle/glow
+   ========================================================== */
+
+/* Chip row: room for the 3D shadow and the selected ring so nothing is cut off */
+body.sj-guided .league-tabs.standalone { padding: 10px 10px 14px !important; margin: 6px -4px 14px !important; }
+body.sj-guided .league-tabs.standalone button.active {
+  outline: none !important; transform: none !important;
+  box-shadow: 0 0 0 3px #fff, 0 0 16px #ffffffaa, inset 0 2px 8px #fff5 !important;
+}
+/* Parlay page has no "All" button, so color by sport there: NFL red, College green, NBA purple, MLB blue */
+body.sj-guided .parlay-page .league-tabs.standalone button:nth-child(1) { background: var(--c-red) !important; border-color: var(--c-red-b) !important; color: #fff !important; }
+body.sj-guided .parlay-page .league-tabs.standalone button:nth-child(2) { background: var(--c-green) !important; border-color: var(--c-green-b) !important; color: #fff !important; }
+body.sj-guided .parlay-page .league-tabs.standalone button:nth-child(3) { background: var(--c-purple) !important; border-color: var(--c-purple-b) !important; color: #fff !important; }
+body.sj-guided .parlay-page .league-tabs.standalone button:nth-child(4) { background: var(--c-blue) !important; border-color: var(--c-blue-b) !important; color: #fff !important; }
+
+/* ---------- Sparkling "Build a Parlay" header ---------- */
+.sj-guide-sparkle { position: relative; overflow: hidden; isolation: isolate; animation: sjGlow 2.6s ease-in-out infinite; }
+.sj-guide-sparkle::after {
+  content: ""; position: absolute; inset: -40% auto -40% -60%; width: 45%; z-index: -1; pointer-events: none;
+  background: linear-gradient(100deg, transparent, #ffffff40 45%, #ffe9a088 50%, #ffffff40 55%, transparent);
+  transform: skewX(-18deg); animation: sjShimmer 3.2s ease-in-out infinite;
+}
+.sj-guide-sparkle h1 {
+  background: linear-gradient(90deg, #fff 0%, #ffe07a 25%, #fff 50%, #ff9de2 75%, #fff 100%);
+  background-size: 250% 100%; -webkit-background-clip: text; background-clip: text; color: transparent !important;
+  text-shadow: none !important; filter: drop-shadow(0 3px 0 #0007) drop-shadow(0 0 12px #ffd45e88);
+  animation: sjTextShine 3.5s linear infinite;
+}
+.sj-guide-sparkle .sj-guide-emoji { animation: sjBounce 1.8s ease-in-out infinite; display: inline-block; }
+.sj-sparkles { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.sj-sparkles i {
+  position: absolute; width: 14px; height: 14px; font-style: normal; opacity: 0;
+  background: radial-gradient(circle, #fff 0 18%, transparent 20%),
+              conic-gradient(from 0deg, transparent 0 40deg, #fff6c2 45deg, transparent 50deg 130deg, #fff6c2 135deg, transparent 140deg 220deg, #fff6c2 225deg, transparent 230deg 310deg, #fff6c2 315deg, transparent 320deg);
+  filter: drop-shadow(0 0 6px #ffe07a); animation: sjTwinkle 2.4s ease-in-out infinite;
+}
+.sj-sparkles i:nth-child(1) { top: 14%; left: 62%; animation-delay: 0s; }
+.sj-sparkles i:nth-child(2) { top: 58%; left: 88%; animation-delay: .5s; width: 18px; height: 18px; }
+.sj-sparkles i:nth-child(3) { top: 22%; left: 92%; animation-delay: 1s; width: 10px; height: 10px; }
+.sj-sparkles i:nth-child(4) { top: 70%; left: 48%; animation-delay: 1.5s; }
+.sj-sparkles i:nth-child(5) { top: 10%; left: 30%; animation-delay: 1.9s; width: 10px; height: 10px; }
+.sj-sparkles i:nth-child(6) { top: 76%; left: 8%; animation-delay: .8s; width: 12px; height: 12px; }
+
+@keyframes sjGlow {
+  0%, 100% { box-shadow: inset 0 2px 14px #fff3, 0 0 16px #9a43ff88, 0 0 0 0 #ffd45e00, 0 5px 0 #13072c; border-color: #c59bff; }
+  50%      { box-shadow: inset 0 2px 18px #fff5, 0 0 34px #c05bffcc, 0 0 0 3px #ffd45e99, 0 5px 0 #13072c; border-color: #ffe07a; }
+}
+@keyframes sjShimmer { 0% { left: -60%; } 55%, 100% { left: 130%; } }
+@keyframes sjTextShine { from { background-position: 0% 0; } to { background-position: 250% 0; } }
+@keyframes sjTwinkle { 0%, 100% { opacity: 0; transform: scale(.3) rotate(0deg); } 50% { opacity: 1; transform: scale(1) rotate(45deg); } }
+@keyframes sjBounce { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-5px) rotate(-8deg); } }
+
+/* ---------- "Build a Parlay" glows in the menus on every page ---------- */
+.nav-links a[href="/parlay"], .sj-tabs a[href="/parlay"] { position: relative; animation: sjNavGlow 2.6s ease-in-out infinite; }
+.nav-links a[href="/parlay"] { border: 2px solid #ffd45e !important; color: #fff !important; }
+.sj-tabs a[href="/parlay"]:not(.active) { color: #ffe07a !important; }
+@keyframes sjNavGlow { 0%, 100% { box-shadow: 0 0 6px #ffd45e55; } 50% { box-shadow: 0 0 18px #ffd45ecc, 0 0 2px #fff inset; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .sj-guide-sparkle, .sj-guide-sparkle::after, .sj-guide-sparkle h1, .sj-guide-sparkle .sj-guide-emoji,
+  .sj-sparkles i, .nav-links a[href="/parlay"], .sj-tabs a[href="/parlay"] { animation: none !important; }
+  .sj-sparkles i { opacity: .8; }
+}
+
+/* ==========================================================
+   SPORT CARDS (parlay "What sport are we playing?")
+   Each sport gets its own color, field pattern and animated icon.
+   ========================================================== */
+body.sj-guided .sj-sport-grid { gap: 12px !important; }
+body.sj-guided .sj-sport-grid button {
+  position: relative; overflow: hidden; isolation: isolate;
+  min-height: 170px !important; border-radius: 22px !important; padding: 16px 10px !important;
+  display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  color: #fff !important; cursor: pointer; transition: transform .18s ease, filter .18s ease;
+  border: 3px solid #ffffff99 !important;
+}
+/* glossy top shine on every card */
+body.sj-guided .sj-sport-grid button::before {
+  content: ""; position: absolute; inset: 0 0 55% 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(180deg, #ffffff40, #ffffff00); border-radius: 20px 20px 50% 50% / 20px 20px 22px 22px;
+}
+
+/* Pro Football: red with yard lines */
+body.sj-guided .sj-sport-grid button:nth-child(1) {
+  background: repeating-linear-gradient(90deg, transparent 0 26px, #ffffff26 26px 29px), linear-gradient(180deg, #ff5a61, #b0101f 60%, #4f0a17) !important;
+  border-color: #ff9aa0 !important; box-shadow: inset 0 2px 12px #fff6, 0 0 22px #ff3b5066, 0 6px 0 #3a0610 !important;
+}
+/* College Football: green turf with yard lines + hash marks */
+body.sj-guided .sj-sport-grid button:nth-child(2) {
+  background:
+    repeating-linear-gradient(90deg, transparent 0 26px, #ffffff38 26px 29px),
+    repeating-linear-gradient(0deg, transparent 0 14px, #ffffff14 14px 15px),
+    linear-gradient(180deg, #34d27e, #0a8a48 60%, #06452c) !important;
+  border-color: #8dffc4 !important; box-shadow: inset 0 2px 12px #fff6, 0 0 22px #0af08b66, 0 6px 0 #053420 !important;
+}
+/* Basketball: orange court with 3-point arc + center circle */
+body.sj-guided .sj-sport-grid button:nth-child(3) {
+  background:
+    radial-gradient(circle at 50% 118%, transparent 0 40%, #ffffff55 40.6% 42.2%, transparent 42.8%),
+    radial-gradient(circle at 50% 118%, transparent 0 16%, #ffffff55 16.6% 18.4%, transparent 19%),
+    repeating-linear-gradient(90deg, #ffffff0d 0 18px, transparent 18px 36px),
+    linear-gradient(180deg, #ff9a3d, #d0590d 60%, #642506) !important;
+  border-color: #ffc58a !important; box-shadow: inset 0 2px 12px #fff6, 0 0 22px #ff8a2a77, 0 6px 0 #3e1704 !important;
+}
+/* Baseball: blue with infield dirt diamond */
+body.sj-guided .sj-sport-grid button:nth-child(4) {
+  background:
+    conic-gradient(from 135deg at 50% 102%, #e2a462aa 0 90deg, transparent 90deg),
+    radial-gradient(circle at 50% 102%, #ffffff30 0 6%, transparent 6.5%),
+    linear-gradient(180deg, #2f86ec, #1145a8 60%, #071d59) !important;
+  border-color: #9fd0ff !important; box-shadow: inset 0 2px 12px #fff6, 0 0 22px #2c8cff77, 0 6px 0 #051640 !important;
+}
+
+/* big glowing floating icons */
+body.sj-guided .sj-sport-grid .sj-sport-emoji {
+  font-size: 64px !important; line-height: 1; display: inline-block;
+  filter: drop-shadow(0 6px 6px #0009) drop-shadow(0 0 14px #ffffffaa);
+  animation: sjFloat 2.8s ease-in-out infinite;
+}
+body.sj-guided .sj-sport-grid button:nth-child(2) .sj-sport-emoji { animation-delay: .35s; }
+body.sj-guided .sj-sport-grid button:nth-child(3) .sj-sport-emoji { animation-delay: .7s; }
+body.sj-guided .sj-sport-grid button:nth-child(4) .sj-sport-emoji { animation-delay: 1.05s; }
+body.sj-guided .sj-sport-grid strong { font-size: 19px !important; font-weight: 950 !important; font-style: italic; color: #fff !important; text-shadow: 0 2px 0 #0007; line-height: 1.1; }
+body.sj-guided .sj-sport-grid small {
+  font-size: 12px !important; font-weight: 900 !important; letter-spacing: .08em; color: #fff !important;
+  background: #00000040; border: 1px solid #ffffff55; border-radius: 999px; padding: 3px 10px;
+}
+
+/* hover / tap: each sport does its own move */
+body.sj-guided .sj-sport-grid button:hover, body.sj-guided .sj-sport-grid button:focus-visible { transform: translateY(-4px) scale(1.02); filter: brightness(1.12); }
+body.sj-guided .sj-sport-grid button:active { transform: translateY(3px); }
+body.sj-guided .sj-sport-grid button:nth-child(-n+2):hover .sj-sport-emoji { animation: sjWobble .6s ease-in-out infinite; }
+body.sj-guided .sj-sport-grid button:nth-child(n+3):hover .sj-sport-emoji { animation: sjSpin .9s linear infinite; }
+body.sj-guided .sj-sport-grid button.selected { box-shadow: 0 0 0 4px #fff, 0 0 26px #ffffffcc, inset 0 2px 12px #fff6 !important; }
+
+@keyframes sjFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+@keyframes sjWobble { 0%, 100% { transform: rotate(-14deg) scale(1.1); } 50% { transform: rotate(14deg) scale(1.1); } }
+@keyframes sjSpin { from { transform: rotate(0deg) scale(1.1); } to { transform: rotate(360deg) scale(1.1); } }
+
+@media (max-width: 560px) {
+  body.sj-guided .sj-sport-grid { grid-template-columns: 1fr 1fr !important; }
+  body.sj-guided .sj-sport-grid button { min-height: 150px !important; }
+  body.sj-guided .sj-sport-grid .sj-sport-emoji { font-size: 54px !important; }
+  body.sj-guided .sj-sport-grid strong { font-size: 17px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.sj-guided .sj-sport-grid .sj-sport-emoji { animation: none !important; }
+}
+
+/* ==========================================================
+   HOME "Choose a Sport" tiles: same sport looks as the parlay cards.
+   Order on home: NFL, NBA, MLB, CFB, More Sports, Boxing.
+   ========================================================== */
+main .sj-home-sport-grid > button, main .sj-home-sport-grid > .sj-boxing-sport {
+  position: relative; overflow: hidden; isolation: isolate;
+  min-height: 92px !important; border-width: 3px !important; color: #fff !important;
+  transition: transform .18s ease, filter .18s ease;
+}
+main .sj-home-sport-grid > button::before, main .sj-home-sport-grid > .sj-boxing-sport::before {
+  content: ""; position: absolute; inset: 0 0 55% 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(180deg, #ffffff40, #ffffff00);
+}
+/* NFL: red + yard lines */
+main .sj-home-sport-grid > button:nth-child(1) {
+  background: repeating-linear-gradient(90deg, transparent 0 20px, #ffffff26 20px 23px), linear-gradient(180deg, #ff5a61, #b0101f 60%, #4f0a17) !important;
+  border-color: #ff9aa0 !important; box-shadow: inset 0 2px 10px #fff6, 0 0 16px #ff3b5066, 0 4px 0 #3a0610 !important;
+}
+/* NBA: orange court */
+main .sj-home-sport-grid > button:nth-child(2) {
+  background:
+    radial-gradient(circle at 50% 125%, transparent 0 42%, #ffffff55 42.8% 45%, transparent 45.8%),
+    radial-gradient(circle at 50% 125%, transparent 0 18%, #ffffff55 18.8% 21%, transparent 21.8%),
+    linear-gradient(180deg, #ff9a3d, #d0590d 60%, #642506) !important;
+  border-color: #ffc58a !important; box-shadow: inset 0 2px 10px #fff6, 0 0 16px #ff8a2a77, 0 4px 0 #3e1704 !important;
+}
+/* MLB: blue + infield dirt */
+main .sj-home-sport-grid > button:nth-child(3) {
+  background:
+    conic-gradient(from 135deg at 50% 104%, #e2a462aa 0 90deg, transparent 90deg),
+    linear-gradient(180deg, #2f86ec, #1145a8 60%, #071d59) !important;
+  border-color: #9fd0ff !important; box-shadow: inset 0 2px 10px #fff6, 0 0 16px #2c8cff77, 0 4px 0 #051640 !important;
+}
+/* CFB: green turf */
+main .sj-home-sport-grid > button:nth-child(4) {
+  background:
+    repeating-linear-gradient(90deg, transparent 0 20px, #ffffff38 20px 23px),
+    repeating-linear-gradient(0deg, transparent 0 12px, #ffffff14 12px 13px),
+    linear-gradient(180deg, #34d27e, #0a8a48 60%, #06452c) !important;
+  border-color: #8dffc4 !important; box-shadow: inset 0 2px 10px #fff6, 0 0 16px #0af08b66, 0 4px 0 #053420 !important;
+}
+/* More Sports: purple with confetti dots */
+main .sj-home-sport-grid > button:nth-child(5) {
+  background:
+    radial-gradient(circle at 18% 30%, #ffe07a 0 3px, transparent 4px), radial-gradient(circle at 80% 25%, #8dffc4 0 3px, transparent 4px),
+    radial-gradient(circle at 30% 80%, #ff9aa0 0 3px, transparent 4px), radial-gradient(circle at 75% 75%, #9fd0ff 0 3px, transparent 4px),
+    linear-gradient(180deg, #9a5cf0, #5523b0 60%, #26105c) !important;
+  border-color: #d2b2ff !important; box-shadow: inset 0 2px 10px #fff6, 0 0 16px #9a43ff77, 0 4px 0 #13072c !important;
+}
+/* Boxing: red ring with ropes */
+main .sj-home-sport-grid > .sj-boxing-sport {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 16px, #ffffff38 16px 18px),
+    linear-gradient(180deg, #e8384a, #8e0b22 60%, #3d0716) !important;
+  border-color: #ff9aa0 !important; box-shadow: inset 0 2px 10px #fff6, 0 0 16px #ff3b5066, 0 4px 0 #3a0610 !important;
+}
+
+/* big glowing floating icons */
+main .sj-home-sport-grid > button > span:first-child, main .sj-home-sport-grid > .sj-boxing-sport > span:first-child {
+  font-size: 2.3rem !important; line-height: 1; display: inline-block;
+  filter: drop-shadow(0 4px 4px #0009) drop-shadow(0 0 10px #ffffffaa);
+  animation: sjFloat 2.8s ease-in-out infinite;
+}
+main .sj-home-sport-grid > :nth-child(2) > span:first-child { animation-delay: .3s; }
+main .sj-home-sport-grid > :nth-child(3) > span:first-child { animation-delay: .6s; }
+main .sj-home-sport-grid > :nth-child(4) > span:first-child { animation-delay: .9s; }
+main .sj-home-sport-grid > :nth-child(5) > span:first-child { animation-delay: 1.2s; }
+main .sj-home-sport-grid > :nth-child(6) > span:first-child { animation-delay: 1.5s; }
+main .sj-home-sport-grid strong { font-size: .95rem !important; font-weight: 950 !important; font-style: italic; text-shadow: 0 2px 0 #0007; }
+
+main .sj-home-sport-grid > button:hover, main .sj-home-sport-grid > .sj-boxing-sport:hover { transform: translateY(-3px) scale(1.03); filter: brightness(1.12); }
+main .sj-home-sport-grid > button:nth-child(1):hover > span:first-child,
+main .sj-home-sport-grid > button:nth-child(4):hover > span:first-child { animation: sjWobble .6s ease-in-out infinite; }
+main .sj-home-sport-grid > button:nth-child(2):hover > span:first-child,
+main .sj-home-sport-grid > button:nth-child(3):hover > span:first-child,
+main .sj-home-sport-grid > button:nth-child(5):hover > span:first-child { animation: sjSpin .9s linear infinite; }
+main .sj-home-sport-grid > .sj-boxing-sport:hover > span:first-child { animation: sjPunch .35s ease-in-out infinite alternate; }
+main .sj-home-sport-grid > button.active { box-shadow: 0 0 0 3px #fff, 0 0 20px #ffffffcc, inset 0 2px 10px #fff6 !important; }
+@keyframes sjPunch { from { transform: translateX(-4px) rotate(-8deg); } to { transform: translateX(6px) rotate(6deg) scale(1.12); } }
+
+@media (prefers-reduced-motion: reduce) {
+  main .sj-home-sport-grid span { animation: none !important; }
+}
+
+/* home sport tiles: icon on top, bigger, like the parlay cards */
+main .sj-home-sport-grid > button, main .sj-home-sport-grid > .sj-boxing-sport { flex-direction: column !important; gap: 4px !important; min-height: 104px !important; }
+main .sj-home-sport-grid > button > span:first-child, main .sj-home-sport-grid > .sj-boxing-sport > span:first-child { font-size: 2.9rem !important; }
+@media (max-width: 650px) {
+  main .sj-home-sport-grid > button, main .sj-home-sport-grid > .sj-boxing-sport { min-height: 92px !important; }
+  main .sj-home-sport-grid > button > span:first-child, main .sj-home-sport-grid > .sj-boxing-sport > span:first-child { font-size: 2.3rem !important; }
+}
+
+/* Home banner as a background (not an <img>) so Safari doesn't place its Live Text button over it */
+.sj-approved-hero-art {
+  display: block; width: 100%; aspect-ratio: 709 / 261;
+  background: url(/artwork/approved-home-hero.webp) center / 100% 100% no-repeat;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+
+/* Real "More Sports" button over the banner corner. It covers the iPhone Live Text
+   icon that was baked into approved-home-hero.webp (image edit refused: real people). */
+.sj-approved-hero .sj-more-tile {
+  position: absolute !important; left: 86.7% !important; top: 59% !important; right: auto !important; bottom: auto !important;
+  width: 12.7% !important; height: 37.5% !important; z-index: 3; opacity: 1 !important;
+  display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 2%;
+  border-radius: 10px; border: 2px solid #8cc4ff; color: #fff !important; text-decoration: none;
+  background: linear-gradient(180deg, #3a7fe8, #1645a3 60%, #0a1f55) !important;
+  box-shadow: 0 0 12px #4aa3ffaa, inset 0 1px 8px #fff7, 0 2px 0 #051640;
+  font-size: clamp(6px, 1.55vw, 18px); line-height: 1.05; text-align: center;
+}
+.sj-approved-hero .sj-more-tile span { font-size: 1.6em; letter-spacing: .05em; color: #ffe07a; text-shadow: 0 0 6px #ffd45e; }
+.sj-approved-hero .sj-more-tile b { font-weight: 900; text-shadow: 0 1px 0 #0008; }
+.sj-approved-hero .sj-more-tile:hover { filter: brightness(1.15); }
+.sj-approved-hero .sj-more-tile::before { /* small left tab: covers the last sliver of the baked-in icon above the Boxing chip */
+  content: ""; position: absolute; left: -13%; top: 14%; width: 16%; height: 46%; z-index: -1;
+  background: linear-gradient(180deg, #3a7fe8, #1645a3); border-radius: 6px 0 0 6px;
+}
+
+/* ==========================================================
+   NEW HOME BANNER: fictional athletes art + real HTML text/buttons
+   ========================================================== */
+.sj-hero2 {
+  position: relative; overflow: hidden; isolation: isolate; border-radius: 18px; margin: 0 auto 14px; max-width: 1200px;
+  border: 2px solid #3d6fe0; box-shadow: 0 0 24px #2774ff55, 0 12px 30px #000a;
+  background: url(/artwork/home-hero-art.webp) 70% 38% / cover no-repeat, #050b24;
+  min-height: 430px; display: flex; flex-direction: column; justify-content: space-between; padding: 26px 26px 18px;
+}
+.sj-hero2::before { /* darken the left so text is easy to read; keep athletes bright on the right */
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(90deg, #040a22ee 0%, #040a22bb 34%, #040a2222 62%, transparent 80%),
+              linear-gradient(0deg, #040a22e6 0%, transparent 32%);
+}
+.sj-hero2-copy { max-width: 560px; margin-left: 16%; }
+.sj-hero2-tag { display: inline-block; font-size: 12px; font-weight: 900; letter-spacing: .14em; color: #9fd0ff; text-shadow: 0 0 10px #2c8cff; }
+.sj-hero2 h1 {
+  margin: 8px 0 16px; font-size: clamp(30px, 4.4vw, 54px); line-height: 1.02; font-style: italic; font-weight: 950;
+  color: #fff; letter-spacing: -.02em; text-shadow: 0 3px 0 #0008, 0 0 24px #2c8cff88;
+}
+.sj-hero2 h1 em { display: block; font-style: italic; background: linear-gradient(90deg, #ffe07a, #ffffff 55%, #c59bff);
+  -webkit-background-clip: text; background-clip: text; color: transparent; font-size: .78em; filter: drop-shadow(0 3px 0 #0008); }
+.sj-hero2-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.sj-hero2-btn {
+  display: flex; flex-direction: column; justify-content: center; padding: 12px 20px; border-radius: 16px; min-height: 62px;
+  text-decoration: none; border: 2px solid; transition: transform .15s, filter .15s;
+}
+.sj-hero2-btn b { font-size: 20px; font-weight: 950; line-height: 1.1; }
+.sj-hero2-btn small { font-size: 13px; font-weight: 700; opacity: .92; }
+.sj-hero2-gold { background: var(--c-gold); border-color: #ffe07a; color: #1b1300; box-shadow: inset 0 2px 10px #fff8, 0 0 18px #ffbc3c88, 0 4px 0 #5a3a05; }
+.sj-hero2-purple { background: var(--c-purple); border-color: #c59bff; color: #fff; box-shadow: inset 0 2px 10px #fff6, 0 0 18px #9a43ffaa, 0 4px 0 #13072c; }
+.sj-hero2-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+.sj-hero2-btn:active { transform: translateY(3px); }
+
+.sj-hero2-chips { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+.sj-hero2-chips > span { color: #fff; font-weight: 900; font-style: italic; margin-right: 4px; text-shadow: 0 2px 0 #0008; }
+.sj-hero2-chips a {
+  padding: 8px 14px; border-radius: 12px; color: #fff; font-weight: 900; font-size: 15px; text-decoration: none;
+  border: 2px solid #ffffff99; box-shadow: inset 0 2px 8px #fff5, 0 3px 0 #0008;
+}
+.sj-hero2-chips .c-red { background: var(--c-red); border-color: #ff9aa0; }
+.sj-hero2-chips .c-orange { background: linear-gradient(180deg, #ff9a3d, #d0590d 60%, #642506); border-color: #ffc58a; }
+.sj-hero2-chips .c-blue { background: var(--c-blue); border-color: #9fd0ff; }
+.sj-hero2-chips .c-green { background: var(--c-green); border-color: #8dffc4; }
+.sj-hero2-chips .c-purple { background: var(--c-purple); border-color: #d2b2ff; }
+.sj-hero2-chips a:hover { filter: brightness(1.15); }
+
+@media (max-width: 760px) {
+  .sj-hero2 { min-height: 0; padding: 16px 14px 14px; background-position: 74% 30%; border-radius: 14px; }
+  .sj-hero2::before { background: linear-gradient(90deg, #040a22f2 0%, #040a22b0 48%, #040a2240 80%), linear-gradient(0deg, #040a22f2 0%, transparent 45%); }
+  .sj-hero2-copy { margin-left: 0; max-width: 72%; padding-top: 70px; }
+  .sj-hero2 h1 { font-size: 27px; margin-bottom: 12px; }
+  .sj-hero2-actions { flex-direction: column; gap: 9px; max-width: 250px; }
+  .sj-hero2-btn { min-height: 54px; padding: 9px 14px; }
+  .sj-hero2-btn b { font-size: 17px; }
+  .sj-hero2-btn small { font-size: 12px; }
+  .sj-hero2-chips { flex-wrap: nowrap; overflow-x: auto; margin: 14px -14px 0; padding: 4px 14px 8px; scrollbar-width: none; }
+  .sj-hero2-chips::-webkit-scrollbar { display: none; }
+  .sj-hero2-chips a { flex: 0 0 auto; }
+  .sj-hero2-chips > span { flex: 0 0 auto; font-size: 14px; }
+}
+
+/* desktop: let the hooded mascot on the far left show; shade only behind the text */
+@media (min-width: 761px) {
+  .sj-hero2 { background-position: 0% 40%; }
+  .sj-hero2::before {
+    background: linear-gradient(90deg, #040a2210 0%, #040a2230 16%, #040a22cc 26%, #040a22aa 48%, #040a2200 66%),
+                linear-gradient(0deg, #040a22e6 0%, transparent 30%);
+  }
+  .sj-hero2-copy { margin-left: 23%; }
+  .sj-hero2-chips { margin-left: 0; }
+}
+@media (min-width: 761px) { .sj-hero2-copy { max-width: 430px; } .sj-hero2 h1 { font-size: clamp(30px, 3.6vw, 46px); } }
+
+/* hero text column fix: text lives between the mascot and the athletes, never on a face */
+.sj-hero2 { justify-content: center; }
+@media (min-width: 761px) {
+  .sj-hero2 { min-height: 380px; padding: 24px; }
+  .sj-hero2-copy { margin-left: 21%; width: 28%; max-width: 28% !important; }
+  .sj-hero2 h1 { font-size: clamp(24px, 2.7vw, 40px) !important; }
+  .sj-hero2 h1 em { font-size: .74em; }
+  .sj-hero2-actions { flex-direction: column; gap: 10px; }
+  .sj-hero2-btn { padding: 10px 16px; min-height: 56px; }
+  .sj-hero2-btn b { font-size: clamp(15px, 1.4vw, 19px); }
+  .sj-hero2-btn small { font-size: clamp(11px, 1vw, 13px); }
+}
+@media (max-width: 760px) {
+  .sj-hero2-copy { padding-top: 56px; }
+}
+
+/* phones: picture on top (all faces clear), words and buttons underneath */
+@media (max-width: 760px) {
+  .sj-hero2 { background: url(/artwork/home-hero-art.webp) top center / 100% auto no-repeat, #050b24; padding: 0 14px 16px; }
+  .sj-hero2::before { background: linear-gradient(180deg, transparent 0, transparent 34vw, #050b24 60vw, #050b24 100%); }
+  .sj-hero2-copy { max-width: none !important; width: auto !important; margin-left: 0 !important; padding-top: 47vw !important; }
+  .sj-hero2 h1 br { display: none; }
+  .sj-hero2-actions { flex-direction: row; max-width: none; }
+  .sj-hero2-btn { flex: 1 1 0; }
+}
+
+/* FONT + HELMET POLISH */
+/* 3D helmets: bigger, glowing, home team flipped so they face each other */
+img[src*="/helmets3d/"] { object-fit: contain; filter: drop-shadow(0 10px 12px #000c) drop-shadow(0 0 14px #5aa9ff55); }
+.matchup-teams img[src*="/helmets3d/"] { width: min(150px, 36vw) !important; height: auto !important; max-height: 120px; margin: 4px auto 8px; display: block; }
+.gamecast-scoreboard img[src*="/helmets3d/"] { width: min(120px, 28vw) !important; height: auto !important; max-height: 96px; display: block; margin: 0 auto 6px; }
+img[src*="/helmets3d/"][data-side="home"] { transform: scaleX(-1); }
+
+/* pick cards: no broken words, calmer type */
+body.sj-guided .pick-title-row { display: flex !important; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+body.sj-guided .pick-main h3 { font-size: clamp(22px, 6vw, 28px) !important; line-height: 1.1; font-weight: 900; margin: 6px 0 !important; }
+body.sj-guided .grade { white-space: nowrap; flex-shrink: 0; font-size: 12px !important; letter-spacing: .08em; padding: 5px 12px !important; border-radius: 999px !important; line-height: 1; }
+body.sj-guided .pick-main > span { text-transform: none !important; letter-spacing: 0 !important; font-size: 14px !important; font-weight: 700 !important; color: #dbe6ff !important; line-height: 1.4; }
+body.sj-guided .pick-main p { font-size: 16px !important; line-height: 1.45; }
+body.sj-guided .pick-metrics span { font-size: 13px !important; }
+body.sj-guided .section-head h2, body.sj-guided main h2 { font-size: clamp(24px, 6.2vw, 34px) !important; line-height: 1.12; }
+@media (max-width: 560px) {
+  /* confidence goes under the title as a pill so the text gets the full width */
+  body.sj-guided .pick-card { grid-template-columns: 1fr !important; }
+  body.sj-guided .confidence-ring { justify-self: start; flex-direction: row !important; gap: 8px; padding: 8px 14px !important; min-width: 0 !important; order: 2; }
+  body.sj-guided .confidence-ring strong { font-size: 22px !important; }
+}
+/* game page names: clean and bold, not cramped */
+.matchup-teams strong { font-size: clamp(26px, 7.5vw, 44px) !important; letter-spacing: -.01em !important; font-weight: 900; }
+@media (max-width: 560px) {
+  body.sj-guided .confidence-ring { display: inline-flex !important; width: max-content !important; height: auto !important; align-items: center !important; white-space: nowrap; }
+  body.sj-guided .confidence-ring span { font-size: 12px !important; }
+}
+body.sj-guided .confidence-ring strong, body.sj-guided .confidence-ring span { width: auto !important; min-width: max-content !important; flex-shrink: 0 !important; margin: 0 !important; }
+body.sj-guided .pick-card .confidence-ring { width: max-content !important; max-width: none !important; min-width: 0 !important; flex: none !important; padding: 8px 16px !important; gap: 8px !important; }
+body.sj-guided .pick-card .grade, body.sj-guided .pick-card .grade * { color: #1b1300 !important; background: #ffd45e !important; -webkit-text-fill-color: #1b1300 !important; }
+
+/* TEXT FIT FIXES */
+/* game page team names never run off the card */
+.matchup-teams > div { min-width: 0; }
+.matchup-teams strong { font-size: clamp(22px, 6.4vw, 44px) !important; max-width: 100%; overflow-wrap: anywhere; line-height: 1.05; }
+.matchup-teams .versus strong { font-size: clamp(30px, 9vw, 56px) !important; white-space: nowrap; }
+.matchup-teams span { font-size: 14px !important; }
+
+/* gamecast scoreboard + stat boxes: sized to fit their boxes */
+.gamecast-scoreboard span { font-size: 14px !important; font-weight: 800; color: #e6eeff !important; overflow-wrap: anywhere; }
+.count-board > div { min-width: 0; overflow: hidden; }
+.count-board span { font-size: 11px !important; letter-spacing: .08em !important; }
+.count-board strong { font-size: clamp(16px, 4.6vw, 26px) !important; line-height: 1.15; overflow-wrap: anywhere; display: block; }
+.latest-play p { font-size: 16px !important; color: #eef3ff !important; }
+
+/* parlay pop-up: readable empty state + clear "add picks first" button */
+.slip .empty-slip, .sj-parlay-modal .empty-slip { color: #dbe6ff !important; font-size: 16px !important; }
+.slip button:disabled, .primary-btn:disabled, .primary-button:disabled { opacity: .55 !important; filter: grayscale(.4); cursor: not-allowed; }
+.slip-disclaimer, .slip p { font-size: 13px !important; color: #b9c6dc !important; line-height: 1.45; }
+/* never split a word: long names shrink to fit their box instead */
+.matchup-teams strong, .count-board strong, .gamecast-scoreboard span { overflow-wrap: normal !important; word-break: normal !important; white-space: nowrap; }
+.matchup-teams > div:not(.versus) strong { font-size: clamp(20px, 5.6vw, 44px) !important; }
+.count-board strong { font-size: clamp(13px, 3.9vw, 24px) !important; }
+@media (max-width: 560px) {
+  .count-board > div { padding-left: 6px !important; padding-right: 6px !important; }
+  .count-board strong { font-size: clamp(13px, 3.6vw, 22px) !important; letter-spacing: -.01em; }
+}
+
+/* same-game parlay pop-up: it's already one game, so no sport switcher */
+.sj-game-only .league-tabs.standalone { display: none !important; }
+
+/* SINGLE-GAME BUILDER */
+.sj-game-builder { border-radius: 22px; padding: 18px; margin: 4px 0 18px; border: 2px solid var(--c-purple-b, #c59bff);
+  background: var(--d-purple, linear-gradient(160deg,#4a1f9c,#1a0d44)); box-shadow: inset 0 2px 14px #fff3, 0 0 18px #9a43ff66, 0 5px 0 #13072c; }
+.sj-game-builder h2 { margin: 0 0 12px; font-size: 24px !important; font-style: italic; font-weight: 950; color: #fff; }
+.sj-gb-choices, .sj-gb-styles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sj-gb-styles { grid-template-columns: repeat(3, 1fr); margin-top: 12px; }
+.sj-gb-choices button, .sj-gb-styles button {
+  display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 14px 8px; border-radius: 18px; cursor: pointer;
+  color: #fff; border: 2px solid var(--c-blue-b, #74b5ff); background: var(--c-blue); box-shadow: inset 0 2px 10px #fff5, 0 4px 0 #051640;
+  transition: transform .15s, filter .15s; text-align: center; }
+.sj-gb-choices button:first-child { background: var(--c-gold); border-color: var(--c-gold-b, #ffe07a); color: #1b1300; box-shadow: inset 0 2px 10px #fff8, 0 4px 0 #5a3a05; }
+.sj-gb-choices button.on, .sj-gb-market button.on { outline: 3px solid #fff; outline-offset: 2px; }
+.sj-gb-choices b { font-size: 30px; }
+.sj-gb-choices strong { font-size: 18px; font-weight: 950; }
+.sj-gb-choices small, .sj-gb-styles small { font-size: 13px; opacity: .95; }
+.sj-gb-styles button:nth-child(1) { background: var(--c-green); border-color: var(--c-green-b, #5ff0a0); box-shadow: inset 0 2px 10px #fff6, 0 4px 0 #053420; }
+.sj-gb-styles button:nth-child(2) { background: var(--c-blue); }
+.sj-gb-styles button:nth-child(3) { background: var(--c-red); border-color: var(--c-red-b, #ff7a80); box-shadow: inset 0 2px 10px #fff6, 0 4px 0 #3a0610; }
+.sj-gb-styles b { font-size: 26px; }
+.sj-gb-styles strong { font-size: 16px; font-weight: 950; }
+.sj-gb-choices button:hover, .sj-gb-styles button:hover, .sj-gb-market button:hover { transform: translateY(-2px); filter: brightness(1.1); }
+.sj-gb-choices button:active, .sj-gb-styles button:active, .sj-gb-market button:active { transform: translateY(3px); }
+.sj-gb-styles button:disabled { opacity: .6; cursor: wait; }
+.sj-gb-note { margin: 10px 2px 0 !important; font-size: 14px !important; color: #e6e0ff !important; text-align: center; }
+.sj-gb-lines { margin-top: 12px; display: grid; gap: 12px; }
+.sj-gb-market h3 { margin: 0 0 6px; font-size: 16px; font-weight: 900; color: #ffe07a; }
+.sj-gb-market > div { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sj-gb-market button { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 8px; border-radius: 14px; cursor: pointer;
+  color: #fff; background: #ffffff14; border: 2px solid #ffffff40; transition: transform .15s, filter .15s; }
+.sj-gb-market button strong { font-size: 15px; font-weight: 900; line-height: 1.2; }
+.sj-gb-market button span { font-size: 14px; font-weight: 800; color: #9fffc9; }
+.sj-gb-market button.on { background: var(--c-green); border-color: var(--c-green-b, #5ff0a0); }
+.sj-gb-market button.on span { color: #fff; }
+.sj-gb-gate { margin-top: 12px; padding: 14px; border-radius: 16px; background: #00000040; border: 2px solid #ffe07a; }
+.sj-gb-gate p { margin: 0 0 10px !important; font-size: 16px !important; color: #fff !important; font-weight: 700; }
+.sj-gb-gate div { display: flex; flex-wrap: wrap; gap: 8px; }
+.sj-gb-gate a, .sj-gb-gate button { padding: 10px 16px; border-radius: 12px; font-weight: 900; font-size: 15px; text-decoration: none; cursor: pointer;
+  background: var(--c-gold); color: #1b1300; border: 2px solid #ffe07a; }
+.sj-gb-gate a.alt, .sj-gb-gate button { background: var(--c-blue); color: #fff; border-color: #74b5ff; }
+.sj-gb-error { margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: #3a0610cc; border: 2px solid #ff7a80; color: #fff; font-size: 15px; font-weight: 700; }
+@media (max-width: 420px) { .sj-gb-styles { gap: 7px; } .sj-gb-styles button { padding: 12px 4px; } .sj-gb-styles small { font-size: 12px; } }
+
+/* hero sub-line: crisp solid gold instead of the blurry gradient */
+.sj-hero2 h1 em {
+  display: block; margin-top: 4px;
+  background: none !important; -webkit-background-clip: border-box !important; background-clip: border-box !important;
+  color: #ffd45e !important; -webkit-text-fill-color: #ffd45e !important;
+  filter: none !important; text-shadow: 0 2px 0 #00000099, 0 0 14px #ffbc3c55 !important;
+  font-style: normal !important; font-weight: 800 !important; letter-spacing: 0 !important;
+  font-size: .62em !important; line-height: 1.15;
+}

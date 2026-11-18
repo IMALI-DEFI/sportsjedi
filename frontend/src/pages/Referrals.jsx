@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Copy, Link2, Users, DollarSign, Trophy, Share2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import PartnerEarningsCalculator from "../components/PartnerEarningsCalculator";
 
 const IMALI_API =
   import.meta.env.VITE_IMALI_API_URL ||
@@ -100,6 +101,8 @@ export default function Referrals() {
         </article>
       </section>
 
+      <PartnerEarningsCalculator />
+
       {!loading && !user ? (
         <section className="referral-join-card">
           <span className="eyebrow">READY TO PARTNER?</span>
@@ -143,6 +146,19 @@ export default function Referrals() {
           {notice && <p className="referral-notice">{notice}</p>}
         </section>
       )}
+
+      <section className="referral-join-card referral-grader-card">
+        <span className="eyebrow">YOUR EASIEST THING TO SHARE</span>
+        <h2>Share your Parlay Grades. Earn when friends go Pro.</h2>
+        <p>
+          Grade any parlay, tap <b>Share my grade</b>, and your partner link rides along.
+          Friends who sign up from your grade are credited to you, and you earn 25% recurring
+          when they upgrade, for up to 12 months.
+        </p>
+        <Link className="primary-btn" to="/parlay-grader">
+          Grade a parlay
+        </Link>
+      </section>
 
       <section className="referral-terms-note">
         <p>

@@ -185,6 +185,11 @@ export const api = {
     );
   },
 
+  gameOptions: (league, eventId) =>
+    request(
+      `/api/parlays/game-options?league=${encodeURIComponent(league)}&eventId=${encodeURIComponent(eventId)}`
+    ),
+
   playerParlay: (selections) =>
     request(
       "/api/parlays/player",
@@ -198,4 +203,39 @@ export const api = {
 
   account: () =>
     request("/api/account/me"),
+
+  // Developer API self-service (sportsjedi.com/developers)
+  developerPlans: () =>
+    request("/api/developer/plans"),
+
+  developerAccount: () =>
+    request("/api/developer/account"),
+
+  createApiKey: (name) =>
+    request("/api/developer/keys", {
+      method: "POST",
+      body: JSON.stringify({ name }),
+    }),
+
+  revokeApiKey: (id) =>
+    request(`/api/developer/keys/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    }),
+
+  apiCheckout: (plan) =>
+    request("/api/developer/checkout", {
+      method: "POST",
+      body: JSON.stringify({ plan }),
+    }),
+
+  apiCheckoutConfirm: (sessionId) =>
+    request("/api/developer/checkout/confirm", {
+      method: "POST",
+      body: JSON.stringify({ sessionId }),
+    }),
+
+  apiBillingPortal: () =>
+    request("/api/developer/billing-portal", {
+      method: "POST",
+    }),
 };

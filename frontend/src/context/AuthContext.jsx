@@ -111,7 +111,10 @@ export function AuthProvider({ children }) {
 
     setUser(payload.data.user);
 
-    await loadAccount(token);
+    const sportsAccount = await loadAccount(token);
+    if (!sportsAccount) {
+      throw new Error("Sign-in succeeded, but SportsJedi could not load your account. Please try again shortly or contact support.");
+    }
 
     return payload;
   }
@@ -136,6 +139,9 @@ export function AuthProvider({ children }) {
             utm_campaign: a.utm_campaign || null,
             utm_content: a.utm_content || null,
             marketing_product: "sports_jedi",
+            terms_accepted: true,
+            accepted_terms: true,
+            termsAccepted: true,
             landing_page: a.landing_page || null,
             referral_code: a.referral_code || null,
           };
@@ -171,7 +177,26 @@ export function AuthProvider({ children }) {
       { email }
     );
 
-    await loadAccount(token);
+    const sportsAccount = await loadAccount(token);
+    if (!sportsAccount) {
+      throw new Error("Your registration was received, but SportsJedi could not activate your account. Please try signing in; if this continues, contact support. Do not register again.");
+    }
+
+    // Start the one-time three-day Pro preview. This is a server-side
+    // entitlement with a fixed expiry, never a localStorage flag.
+    try {
+      const trialResponse = await fetch(`${SPORTS_API}/api/account/trial/start`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!trialResponse.ok && trialResponse.status !== 409) {
+        console.warn("Trial activation returned status:", trialResponse.status);
+      }
+      // Refresh entitlements so the dashboard immediately reflects Pro access.
+      await loadAccount(token);
+    } catch (error) {
+      console.warn("Trial activation unavailable:", error);
+    }
     trackMarketingEvent("signup_completed", {
       userId: payload?.data?.user?.id || payload?.user?.id || null,
     });

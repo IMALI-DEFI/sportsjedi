@@ -6,6 +6,7 @@ import { AuthProvider } from "./context/AuthContext";
 
 import "./styles.css";
 import "./App.css";
+import "./sj-simple.css";
 
 ReactDOM.createRoot(
   document.getElementById("root")

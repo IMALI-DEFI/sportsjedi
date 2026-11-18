@@ -75,6 +75,10 @@ export default function Account() {
       result.url;
   }
 
+  const trialEnd = account.trialEndsAt
+    ? new Date(account.trialEndsAt)
+    : null;
+
   const admin =
     account.isAdmin === true;
 
@@ -99,6 +103,9 @@ export default function Account() {
             Manage your access, subscription,
             billing and advanced builder
             privileges.
+            {trialEnd && trialEnd > new Date() && (
+              <span> Pro preview ends {trialEnd.toLocaleDateString()}.</span>
+            )}
           </p>
         </div>
 

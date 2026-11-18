@@ -1,0 +1,31 @@
+import {Link} from "react-router-dom";
+import {Clock,ChevronRight} from "lucide-react";
+const when=s=>{const d=new Date(s);return Number.isNaN(d.getTime())?"Time TBA":d.toLocaleString("en-US",{weekday:"short",hour:"numeric",minute:"2-digit",timeZoneName:"short"})};
+function Team({team,league}) {
+ const name=team?.name||team?.abbr||"Team";
+ const asset=team?.licensedHelmetUrl||team?.approvedHelmetUrl||team?.licensedLogoUrl||team?.approvedLogoUrl||null;
+ const football=["NFL","NCAAF","CFB"].includes(league);
+ return <div className="sj-match-team">
+   <div className={`sj-team-art ${football?"sj-team-art-helmet":"sj-team-art-player"}`}>
+     {asset?<img src={asset} alt={name+" team artwork"} loading="lazy"/>:
+       football?<svg viewBox="0 0 120 95" role="img" aria-label="Football helmet illustration"><defs><linearGradient id="helm" x1="0" x2="1" y1="0" y2="1"><stop stopColor="#eaf8ff"/><stop offset=".5" stopColor="#8fcaff"/><stop offset="1" stopColor="#3458ae"/></linearGradient></defs><path d="M13 50Q12 12 57 8Q100 7 106 47L91 54L80 79L52 79L45 65L21 65Z" fill="url(#helm)" stroke="#fff" strokeWidth="3"/><path d="M83 50L113 50L110 69L94 69L85 82L70 82L65 66L88 66" fill="none" stroke="#e8f6ff" strokeWidth="6" strokeLinecap="round"/><circle cx="80" cy="52" r="5" fill="#152d64"/></svg>:
+       <svg viewBox="0 0 100 100" role="img" aria-label="Sports player silhouette"><circle cx="50" cy="29" r="18" fill="#c4e5ff"/><path d="M13 98Q12 60 50 58Q88 60 87 98" fill="#78a7f8" stroke="#d6f4ff" strokeWidth="3"/></svg>}
+   </div>
+   <strong>{name}</strong>
+ </div>;
+}
+const matchupArtwork=(game)=>{
+ const teams=[game?.away?.name||"",game?.home?.name||""].map(x=>x.toLowerCase());
+ const both=(a,b)=>teams.some(x=>x.includes(a))&&teams.some(x=>x.includes(b));
+ if(both("commander","eagle"))return "/artwork/matchups/commanders-eagles.png";
+ if(both("laker","celtic"))return "/artwork/matchups/lakers-celtics.png";
+ if(both("raven","chief"))return "/artwork/matchups/ravens-chiefs.png";
+ if(both("michigan","ohio state"))return "/artwork/matchups/michigan-ohio-state.png";
+ return null;
+};
+export default function GameCard({game}) {const art=matchupArtwork(game);return <Link className={`game-card sj-premium-match sj-match-${String(game.league||"").toLowerCase()}`} to={`/game/${encodeURIComponent(game.id)}`}>
+  <div className="sj-match-top"><span>{game.league}</span><span><Clock size={14}/>{when(game.startTime)}</span></div>
+  {art ? <div className="sj-match-photo"><img src={art} alt={`${game.away?.name} versus ${game.home?.name} matchup artwork`} loading="lazy" /></div> :
+  <div className="sj-match-arena"><div className="sj-match-arena-lights" aria-hidden="true"/><div className="sj-match-versus"><Team team={game.away} league={game.league}/><b>VS</b><Team team={game.home} league={game.league}/></div></div>}
+  <div className="sj-match-bottom"><span>{game.status==="live"?"🔴 LIVE":game.status==="upcoming"?"UPCOMING":game.status}</span><span>View matchup <ChevronRight size={17}/></span></div>
+</Link>}

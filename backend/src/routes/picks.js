@@ -22,9 +22,12 @@ router.get("/", async (req, res, next) => {
           b.analysis.confidence - a.analysis.confidence
       );
 
+    // Server-side entitlement limits. Anonymous visitors get one preview;
+    // signed-in free members get three; Pro keeps full access.
+    const maxPicks = req.user?.isPro ? picks.length : req.user ? 3 : 1;
     res.json({
       success: true,
-      data: picks,
+      data: picks.slice(0, maxPicks),
     });
   } catch (err) {
     next(err);
@@ -37,9 +40,10 @@ router.get("/props", async (req, res, next) => {
       league: req.query.league,
     });
 
+    const maxProps = req.user?.isPro ? props.length : req.user ? 5 : 0;
     res.json({
       success: true,
-      data: props,
+      data: props.slice(0, maxProps),
     });
   } catch (err) {
     next(err);

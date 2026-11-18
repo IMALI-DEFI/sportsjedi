@@ -1,3 +1,4 @@
+import Parlay from "./Parlay";
 import {
   useEffect,
   useState,
@@ -20,11 +21,23 @@ import {
 } from "lucide-react";
 
 import { api } from "../lib/api";
+import { teamShort, pickName, friendlyTime, plainSummary, plainFactor, propLabel } from "../lib/plain";
 import LiveGamecast from "../components/LiveGamecast";
+import { GoProNudge } from "../components/GoPro";
 
+const teamArt = (league, name) => {
+  const sport = String(league || "").toUpperCase();
+  const slug = String(name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  if (sport === "NFL") return `/artwork/helmets3d/nfl/${slug}.webp`;
+  if (sport === "NCAAF") return `/artwork/library/helmets/ncaaf/${slug}.svg`;
+  if (sport === "NBA") return `/artwork/library/teams/nba/${slug}.svg`;
+  if (sport === "MLB") return `/artwork/library/teams/mlb/${slug}.svg`;
+  return "";
+};
 export default function GameDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [parlayOpen, setParlayOpen] = useState(false);
 
   const [game, setGame] = useState(null);
   const [analysis, setAnalysis] = useState(null);
@@ -207,22 +220,19 @@ export default function GameDetail() {
   }
 
   function buildThisGameParlay() {
-    const params = new URLSearchParams({
-      league: game.league,
-      eventId: id,
-      gameMode: "same_game",
-    });
-
-    navigate(
-      `/parlay?${params.toString()}`
-    );
+    setParlayOpen(true);
   }
 
   return (
     <main className="shell detail-page">
+      {parlayOpen && <div className="sj-inline-parlay-overlay" role="dialog" aria-modal="true" aria-label="Same-game parlay">
+        <div className="sj-inline-parlay-header"><strong>🏆 {game.away.name} vs {game.home.name}</strong><button type="button" onClick={() => setParlayOpen(false)}>✕ Close</button></div>
+        <Parlay embeddedEventId={id} embeddedLeague={game.league} />
+      </div>}
+
       <Link to="/" className="back">
         <ArrowLeft />
-        Back to board
+        Back
       </Link>
 
       <section className="matchup-hero">
@@ -243,7 +253,7 @@ export default function GameDetail() {
         <div className="matchup-teams">
           <div>
             <small>AWAY</small>
-            <strong>{game.away.abbr}</strong>
+            <img className="sj-team-art" src={teamArt(game.league, game.away.name)} alt="" onError={(e) => { const i = e.currentTarget; if (i.src.includes("/helmets3d/")) { i.src = i.src.replace("/artwork/helmets3d/nfl/", "/artwork/library/helmets/nfl/").replace(".webp", ".svg"); } else { i.style.display = "none"; } }} /><strong>{teamShort(game.away)}</strong>
             <span>{game.away.name}</span>
           </div>
 
@@ -275,7 +285,7 @@ export default function GameDetail() {
 
           <div>
             <small>HOME</small>
-            <strong>{game.home.abbr}</strong>
+            <img className="sj-team-art" src={teamArt(game.league, game.home.name)} alt="" data-side="home" onError={(e) => { const i = e.currentTarget; if (i.src.includes("/helmets3d/")) { i.src = i.src.replace("/artwork/helmets3d/nfl/", "/artwork/library/helmets/nfl/").replace(".webp", ".svg"); } else { i.style.display = "none"; } }} /><strong>{teamShort(game.home)}</strong>
             <span>{game.home.name}</span>
           </div>
         </div>
@@ -283,17 +293,15 @@ export default function GameDetail() {
         <div className="matchup-meta">
           <span>
             <Clock />
-            {new Date(
-              game.startTime
-            ).toLocaleString()}
+            {friendlyTime(game.startTime)}
           </span>
 
           <span>
             <TrendingUp />
             {game.spread
-              ? `${game.spread.favorite} ${game.spread.line}`
-              : "Spread unavailable"}
-            {" · "}O/U {game.total ?? "—"}
+              ? `${pickName(game, game.spread.favorite)} ${game.spread.line}`
+              : "Spread not posted yet"}
+            {" · "}Total {game.total ?? "—"} pts
           </span>
 
           {game.bookmaker && (
@@ -329,7 +337,7 @@ export default function GameDetail() {
           <p>
             {game.status === "live"
               ? "Sports Jedi will only use qualifying markets that remain available for this live matchup."
-              : "Sports Jedi will only use qualifying picks and player props from this matchup."}
+              : "Choose from the available picks for these two teams. Sports Jedi checks which picks meet its recommendation rules."}
           </p>
         </div>
 
@@ -344,6 +352,8 @@ export default function GameDetail() {
         </button>
       </section>
 
+      <GoProNudge title="See this game's full prop board" text="Pro members get every player prop and our long-shot pick for this game, plus unlimited parlays." />
+
       <section className="analysis-grid">
         <div className="analysis-main">
           <div className="analysis-title">
@@ -352,8 +362,8 @@ export default function GameDetail() {
             <div>
               <span className="eyebrow">
                 {game.status === "live"
-                  ? "LIVE MARKET READ"
-                  : "JEDI MARKET READ"}
+                  ? "LIVE JEDI READ"
+                  : "THE JEDI READ"}
               </span>
 
               {game.status === "live" &&
@@ -372,19 +382,19 @@ export default function GameDetail() {
 
               <h2>
                 {analysis.pick
-                  ? `${analysis.pick} leads consensus`
-                  : "No qualified signal"}
+                  ? `Jedi lean: ${pickName(game, analysis.pick)}`
+                  : "No strong lean yet"}
               </h2>
             </div>
           </div>
 
-          <p>{analysis.summary}</p>
+          <p>{plainSummary(game, analysis)}</p>
 
           {analysis.awayWinProbability != null &&
             analysis.homeWinProbability != null && (
               <div className="probability">
                 <div>
-                  <span>{game.away.abbr}</span>
+                  <span>{teamShort(game.away)}</span>
                   <b>
                     {analysis.awayWinProbability}%
                   </b>
@@ -400,7 +410,7 @@ export default function GameDetail() {
                 </div>
 
                 <div>
-                  <span>{game.home.abbr}</span>
+                  <span>{teamShort(game.home)}</span>
                   <b>
                     {analysis.homeWinProbability}%
                   </b>
@@ -419,7 +429,7 @@ export default function GameDetail() {
 
         <div className="metric-card">
           <Target />
-          <span>Market strength</span>
+          <span>How strong the lean is</span>
           <strong>
             {analysis.edge ?? "—"}%
           </strong>
@@ -427,7 +437,7 @@ export default function GameDetail() {
 
         <div className="metric-card">
           <Building2 />
-          <span>Books analyzed</span>
+          <span>Sportsbooks checked</span>
           <strong>
             {analysis.consensusBooks || 1}
           </strong>
@@ -436,7 +446,7 @@ export default function GameDetail() {
 
       <section className="factor-card">
         <h3>
-          Why Sports Jedi sees this signal
+          Why the Jedi leans this way
         </h3>
 
         {(analysis.factors || []).map(
@@ -445,7 +455,7 @@ export default function GameDetail() {
               className="factor"
               key={factor.label}
             >
-              <span>{factor.label}</span>
+              <span>{plainFactor(factor.label)}</span>
               <b>{factor.impact}</b>
             </div>
           )

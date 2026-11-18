@@ -1,0 +1,38 @@
+[
+  {
+    "id": "ravens-chiefs",
+    "path": "/artwork/library/approved-matchups/ravens-chiefs.png",
+    "kind": "approved-complete-poster",
+    "reusableFor": "exact-matching-teams-only"
+  },
+  {
+    "id": "lakers-celtics",
+    "path": "/artwork/library/approved-matchups/lakers-celtics.png",
+    "kind": "approved-complete-poster",
+    "reusableFor": "exact-matching-teams-only"
+  },
+  {
+    "id": "commanders-eagles",
+    "path": "/artwork/library/approved-matchups/commanders-eagles.png",
+    "kind": "approved-complete-poster",
+    "reusableFor": "exact-matching-teams-only"
+  },
+  {
+    "id": "michigan-ohio-state",
+    "path": "/artwork/library/approved-matchups/michigan-ohio-state.png",
+    "kind": "approved-complete-poster",
+    "reusableFor": "exact-matching-teams-only"
+  },
+  {
+    "id": "notre-dame-navy",
+    "path": "/artwork/library/approved-matchups/notre-dame-navy.png",
+    "kind": "approved-complete-poster",
+    "reusableFor": "exact-matching-teams-only"
+  },
+  {
+    "id": "miami-clemson",
+    "path": "/artwork/library/approved-matchups/miami-clemson.png",
+    "kind": "approved-complete-poster",
+    "reusableFor": "exact-matching-teams-only"
+  }
+]

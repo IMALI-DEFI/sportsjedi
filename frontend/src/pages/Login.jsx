@@ -40,6 +40,8 @@ export default function Login() {
   const [password, setPassword] =
     useState("");
 
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+
   const [working, setWorking] =
     useState(false);
 
@@ -68,6 +70,9 @@ export default function Login() {
           password
         );
       } else {
+        if (!acceptedTerms) {
+          throw new Error("Please accept the Terms of Use and Privacy Policy to create an account.");
+        }
         await signup(
           email,
           password
@@ -101,10 +106,10 @@ export default function Login() {
         </h1>
 
         <p>
-          Sign in or create an account to access
-          Sports Jedi picks, player props,
-          advanced builders and subscription
-          features.
+          Create a free account for daily picks,
+          game matchups and basic predictions.
+          No credit card required. Eligible new
+          members get a one-time 3-day Pro preview.
         </p>
 
         <div className="auth-mode-tabs">
@@ -175,6 +180,13 @@ export default function Login() {
               }
             />
           </label>
+
+          {mode === "signup" && (
+            <label style={{display:"flex",alignItems:"flex-start",gap:"10px",lineHeight:1.5,cursor:"pointer"}}>
+              <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} required style={{width:"18px",height:"18px",flexShrink:0,marginTop:"3px"}} />
+              <span>I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms of Use</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</span>
+            </label>
+          )}
 
           <button
             type="submit"
